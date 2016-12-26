@@ -30,7 +30,7 @@
 #include <Mod/Part/Gui/SoBrepEdgeSet.h>
 
 class SoCoordinate3;
-class SoDrawStyle;  
+class SoDrawStyle;
 class SoMaterial;
 class SoBaseColor;
 class SoMaterialBinding;
@@ -49,7 +49,7 @@ public:
 
     /// destructor.
     ~ViewProviderPath();
-    
+
     // Display properties
     App::PropertyInteger LineWidth;
     App::PropertyColor   NormalColor;
@@ -67,20 +67,25 @@ public:
 protected:
 
     virtual void onChanged(const App::Property* prop);
- 
-    Gui::SoFCSelection    * pcPathRoot;
-    SoTransform           * pcTransform;
-    SoCoordinate3         * pcLineCoords;
-    SoCoordinate3         * pcMarkerCoords;
-    SoDrawStyle           * pcDrawStyle;
-    PartGui::SoBrepEdgeSet         * pcLines;
-    SoMaterial            * pcLineColor;
-    SoBaseColor           * pcMarkerColor;
-    SoMaterialBinding     * pcMatBind;
-    std::vector<int>        colorindex;
+
+    Gui::SoFCSelection      * pcPathRoot;
+    SoTransform             * pcTransform;
+    SoCoordinate3           * pcLineCoords;
+    SoCoordinate3           * pcMarkerCoords;
+    SoDrawStyle             * pcDrawStyle;
+    SoDrawStyle             * pcDrawStyleHL;
+    PartGui::SoBrepEdgeSet  * pcLines;
+    PartGui::SoBrepEdgeSet  * pcLinesHL;
+    SoMaterial              * pcLineColor;
+    SoMaterial              * pcLineColorHL;
+    SoBaseColor             * pcMarkerColor;
+    SoMaterialBinding       * pcMatBind;
+    std::vector<int>          colorIndex;
+    std::vector<int>          cmdIndex;
+    std::vector<int>          cmdHighlight;
 
  };
- 
+
  typedef Gui::ViewProviderPythonFeatureT<ViewProviderPath> ViewProviderPathPython;
 
 } //namespace PathGui

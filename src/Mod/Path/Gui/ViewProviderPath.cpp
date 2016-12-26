@@ -50,6 +50,7 @@
 #include <Base/Console.h>
 #include <Base/Parameter.h>
 #include <Gui/BitmapFactory.h>
+#include <Gui/Selection.h>
 #include <Gui/SoFCBoundingBox.h>
 
 #ifndef M_PI
@@ -105,12 +106,24 @@ ViewProviderPath::ViewProviderPath()
     pcDrawStyle->style = SoDrawStyle::LINES;
     pcDrawStyle->lineWidth = LineWidth.getValue();
 
+    pcDrawStyleHL = new SoDrawStyle();
+    pcDrawStyleHL->ref();
+    pcDrawStyleHL->style = SoDrawStyle::LINES;
+    pcDrawStyleHL->lineWidth = 4;
+
     pcLines = new PartGui::SoBrepEdgeSet();
     pcLines->ref();
     pcLines->coordIndex.setNum(0);
 
+    pcLinesHL = new PartGui::SoBrepEdgeSet();
+    pcLinesHL->ref();
+    pcLinesHL->coordIndex.setNum(0);
+
     pcLineColor = new SoMaterial;
     pcLineColor->ref();
+
+    pcLineColorHL = new SoMaterial;
+    pcLineColorHL->ref();
 
     pcMatBind = new SoMaterialBinding;
     pcMatBind->ref();
@@ -121,17 +134,22 @@ ViewProviderPath::ViewProviderPath()
 
     NormalColor.touch();
     MarkerColor.touch();
+    attachSelection();
 }
 
 ViewProviderPath::~ViewProviderPath()
 {
+    detachSelection();
     pcPathRoot->unref();
     pcTransform->unref();
     pcLineCoords->unref();
     pcMarkerCoords->unref();
     pcDrawStyle->unref();
+    pcDrawStyleHL->unref();
     pcLines->unref();
+    pcLinesHL->unref();
     pcLineColor->unref();
+    pcLineColorHL->unref();
     pcMatBind->unref();
     pcMarkerColor->unref();
 }
@@ -148,6 +166,14 @@ void ViewProviderPath::attach(App::DocumentObject *pcObj)
     linesep->addChild(pcLineCoords);
     linesep->addChild(pcLines);
 
+    // Draw trajectory lines
+    SoSeparator* linesepHL = new SoSeparator;
+    linesepHL->addChild(pcLineColorHL);
+    linesepHL->addChild(pcMatBind);
+    linesepHL->addChild(pcDrawStyleHL);
+    linesepHL->addChild(pcLineCoords);
+    linesepHL->addChild(pcLinesHL);
+
     // Draw markers
     SoSeparator* markersep = new SoSeparator;
     SoMarkerSet* marker = new SoMarkerSet;
@@ -158,6 +184,7 @@ void ViewProviderPath::attach(App::DocumentObject *pcObj)
 
     pcPathRoot->addChild(pcTransform);
     pcPathRoot->addChild(linesep);
+    pcPathRoot->addChild(linesepHL);
     pcPathRoot->addChild(markersep);
 
     addDisplayMaskMode(pcPathRoot, "Waypoints");
@@ -184,8 +211,9 @@ void ViewProviderPath::onChanged(const App::Property* prop)
 {
     if (prop == &LineWidth) {
         pcDrawStyle->lineWidth = LineWidth.getValue();
+        pcDrawStyleHL->lineWidth = 4;
     } else if (prop == &NormalColor) {
-        if (colorindex.size() > 0) {
+        if (colorIndex.size() > 0) {
             const App::Color& c = NormalColor.getValue();
             ParameterGrp::handle hGrp = App::GetApplication().GetParameterGroupByPath("User parameter:BaseApp/Preferences/Mod/Path");
             unsigned long rcol = hGrp->GetUnsigned("DefaultRapidPathColor",2852126975UL); // dark red (170,0,0)
@@ -198,17 +226,55 @@ void ViewProviderPath::onChanged(const App::Property* prop)
 
             pcMatBind->value = SoMaterialBinding::PER_PART;
             // resizing and writing the color vector:
-            pcLineColor->diffuseColor.setNum(colorindex.size());
+            pcLineColor->diffuseColor.setNum(colorIndex.size());
             SbColor* colors = pcLineColor->diffuseColor.startEditing();
-            for(unsigned int i=0;i<colorindex.size();i++) {
-                if (colorindex[i] == 0)
+            for(unsigned int i=0;i<colorIndex.size();i++) {
+                if (colorIndex[i] == 0)
                     colors[i] = SbColor(rr,rg,rb);
-                else if (colorindex[i] == 1)
+                else if (colorIndex[i] == 1)
                     colors[i] = SbColor(c.r,c.g,c.b);
                 else
                     colors[i] = SbColor(pr,pg,pb);
             }
             pcLineColor->diffuseColor.finishEditing();
+
+            if (cmdHighlight.size()) {
+                Base::Console().Log("Here we go ...\n");
+                std::vector<int32_t> lineIndex;
+                std::vector<int> colorIndexHL;
+                for (unsigned int i=0; i<cmdHighlight.size(); i+=2) {
+                    int startIndex = cmdIndex[cmdHighlight[i]];
+                    int endIndex = ((i+1) < cmdHighlight.size()) ? cmdIndex[cmdHighlight[i+1]] : pcLineCoords->point.getNum();
+                    Base::Console().Log("%2u(%u): Highlight from %d to %d\n", i, cmdHighlight.size(), startIndex, endIndex);
+                    for ( int index = startIndex; index <= endIndex; ++index) {
+                        lineIndex.push_back(index);
+                      Base::Console().Log("%        Highlight %d color[%d]\n", index, colorIndex[index]);
+                        if (index != startIndex) {
+                            colorIndexHL.push_back(colorIndex[index]);
+                        }
+                    }
+                    lineIndex.push_back(SO_END_LINE_INDEX);
+                }
+
+                int32_t *lines = &lineIndex[0];
+                pcLinesHL->coordIndex.setNum(lineIndex.size());
+                pcLinesHL->coordIndex.setValues(0, lineIndex.size(), lines);
+
+                pcLineColorHL->diffuseColor.setNum(colorIndexHL.size());
+                SbColor *colors = pcLineColorHL->diffuseColor.startEditing();
+                for(unsigned int i = 0; i<colorIndexHL.size(); i++) {
+                    if (colorIndexHL[i] == 0)
+                        colors[i] = SbColor(rr,rg,rb);
+                    else if (colorIndexHL[i] == 1)
+                        colors[i] = SbColor(c.r,c.g,c.b);
+                    else
+                        colors[i] = SbColor(pr,pg,pb);
+                }
+                pcLineColorHL->diffuseColor.finishEditing();
+            } else {
+                pcLinesHL->coordIndex.setNum(0);
+                pcLineColorHL->diffuseColor.setNum(0);
+            }
         }
     } else if (prop == &MarkerColor) {
         const App::Color& c = MarkerColor.getValue();
@@ -239,12 +305,18 @@ void ViewProviderPath::updateData(const App::Property* prop)
         std::vector<Base::Vector3d> points;
         std::vector<Base::Vector3d> markers;
         Base::Vector3d last(0,0,0);
-        colorindex.clear();
+        colorIndex.clear();
         bool absolute = true;
         bool absolutecenter = false;
         bool first = true;
 
+        cmdIndex.clear();
+        cmdHighlight.clear();
+        bool lastSelected = false;
+
         for (unsigned int  i = 0; i < tp.getSize(); i++) {
+            cmdIndex.push_back(points.size());
+            //Base::Console().Log("cmdIndex[%2u] = %2u\n", i, points.size());
             Path::Command cmd = tp.getCommand(i);
             std::string name = cmd.Name;
             Base::Vector3d next = cmd.getPlacement().getPosition();
@@ -256,6 +328,14 @@ void ViewProviderPath::updateData(const App::Property* prop)
                 next.y = last.y;
             if (!cmd.has("Z"))
                 next.z = last.z;
+
+            std::string s = std::to_string(i);
+            bool selected = Gui::Selection().isSelected(pcObject, s.c_str());
+            if (lastSelected != selected) {
+                Base::Console().Log("Highlight: %2u\n", i);
+                cmdHighlight.push_back(i);
+                lastSelected = selected;
+            }
 
             if ( (name == "G0") || (name == "G00") || (name == "G1") || (name == "G01") ) {
                 // straight line
@@ -269,9 +349,9 @@ void ViewProviderPath::updateData(const App::Property* prop)
                         markers.push_back(next); // endpoint
                     last = next;
                     if ( (name == "G0") || (name == "G00") )
-                        colorindex.push_back(0); // rapid color
+                        colorIndex.push_back(0); // rapid color
                     else
-                        colorindex.push_back(1); // std color
+                        colorIndex.push_back(1); // std color
                 } else {
                     // don't show first G0 move if ShowFirstRapid is False
                     last = next;
@@ -317,7 +397,7 @@ void ViewProviderPath::updateData(const App::Property* prop)
                     inter.z = last.z + dZ * j; //Enable displaying helices
                     //std::cout << "result " << inter.x << " , " << inter.y << " , " << inter.z << std::endl;
                     points.push_back( center0 + inter);
-                    colorindex.push_back(1);
+                    colorIndex.push_back(1);
                 }
                 //std::cout << "next " << next.x << " , " << next.y << " , " << next.z << std::endl;
                 points.push_back(next);
@@ -326,7 +406,7 @@ void ViewProviderPath::updateData(const App::Property* prop)
                     markers.push_back(center); // add a marker at center too
                 }
                 last = next;
-                colorindex.push_back(1);
+                colorIndex.push_back(1);
 
             } else if (name == "G90") {
                 // absolute mode
@@ -354,16 +434,16 @@ void ViewProviderPath::updateData(const App::Property* prop)
                 points.push_back(p1);
                 if (ShowNodes.getValue() == true)
                     markers.push_back(p1);
-                colorindex.push_back(0);
+                colorIndex.push_back(0);
                 Base::Vector3d p2(next.x,next.y,r);
                 points.push_back(p2);
                 if (ShowNodes.getValue() == true)
                     markers.push_back(p2);
-                colorindex.push_back(0);
+                colorIndex.push_back(0);
                 points.push_back(next);
                 if (ShowNodes.getValue() == true)
                     markers.push_back(next);
-                colorindex.push_back(1);
+                colorIndex.push_back(1);
                 double q;
                 if (cmd.has("Q")) {
                     q = cmd.getValue("Q");
@@ -378,19 +458,20 @@ void ViewProviderPath::updateData(const App::Property* prop)
                 points.push_back(p3);
                 if (ShowNodes.getValue() == true)
                     markers.push_back(p2);
-                colorindex.push_back(0);
+                colorIndex.push_back(0);
 
             } else if ((name=="G38.2")||(name=="38.3")||(name=="G38.4")||(name=="G38.5")){
                 // Straight probe
                 Base::Vector3d p1(next.x,next.y,last.z);
                 points.push_back(p1);
-                colorindex.push_back(0);
+                colorIndex.push_back(0);
                 points.push_back(next);
-                colorindex.push_back(2);
+                colorIndex.push_back(2);
                 Base::Vector3d p3(next.x,next.y,last.z);
                 points.push_back(p3);
-                colorindex.push_back(0);
-            }}
+                colorIndex.push_back(0);
+            }
+        }
 
         if (!points.empty()) {
             pcLineCoords->point.deleteValues(0);
