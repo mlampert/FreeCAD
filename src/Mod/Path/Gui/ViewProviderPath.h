@@ -26,6 +26,7 @@
 
 #include <Gui/ViewProviderGeometryObject.h>
 #include <Gui/SoFCSelection.h>
+#include <Gui/Selection.h>
 #include <Gui/ViewProviderPythonFeature.h>
 #include <Mod/Part/Gui/SoBrepEdgeSet.h>
 
@@ -39,7 +40,9 @@ class SoTransform;
 namespace PathGui
 {
 
-class PathGuiExport ViewProviderPath : public Gui::ViewProviderGeometryObject
+class PathGuiExport ViewProviderPath
+    : public Gui::ViewProviderGeometryObject
+    , public Gui::SelectionObserver
 {
     PROPERTY_HEADER(PathGui::ViewProviderPath);
 
@@ -84,6 +87,8 @@ protected:
     std::vector<int>          cmdIndex;
     std::vector<int>          cmdHighlight;
 
+    virtual void onSelectionChanged(const Gui::SelectionChanges& msg);
+    void updateHighlight();
  };
 
  typedef Gui::ViewProviderPythonFeatureT<ViewProviderPath> ViewProviderPathPython;

@@ -237,44 +237,7 @@ void ViewProviderPath::onChanged(const App::Property* prop)
                     colors[i] = SbColor(pr,pg,pb);
             }
             pcLineColor->diffuseColor.finishEditing();
-
-            if (cmdHighlight.size()) {
-                Base::Console().Log("Here we go ...\n");
-                std::vector<int32_t> lineIndex;
-                std::vector<int> colorIndexHL;
-                for (unsigned int i=0; i<cmdHighlight.size(); i+=2) {
-                    int startIndex = cmdIndex[cmdHighlight[i]];
-                    int endIndex = ((i+1) < cmdHighlight.size()) ? cmdIndex[cmdHighlight[i+1]] : pcLineCoords->point.getNum();
-                    Base::Console().Log("%2u(%u): Highlight from %d to %d\n", i, cmdHighlight.size(), startIndex, endIndex);
-                    for ( int index = startIndex; index <= endIndex; ++index) {
-                        lineIndex.push_back(index);
-                      Base::Console().Log("%        Highlight %d color[%d]\n", index, colorIndex[index]);
-                        if (index != startIndex) {
-                            colorIndexHL.push_back(colorIndex[index]);
-                        }
-                    }
-                    lineIndex.push_back(SO_END_LINE_INDEX);
-                }
-
-                int32_t *lines = &lineIndex[0];
-                pcLinesHL->coordIndex.setNum(lineIndex.size());
-                pcLinesHL->coordIndex.setValues(0, lineIndex.size(), lines);
-
-                pcLineColorHL->diffuseColor.setNum(colorIndexHL.size());
-                SbColor *colors = pcLineColorHL->diffuseColor.startEditing();
-                for(unsigned int i = 0; i<colorIndexHL.size(); i++) {
-                    if (colorIndexHL[i] == 0)
-                        colors[i] = SbColor(rr,rg,rb);
-                    else if (colorIndexHL[i] == 1)
-                        colors[i] = SbColor(c.r,c.g,c.b);
-                    else
-                        colors[i] = SbColor(pr,pg,pb);
-                }
-                pcLineColorHL->diffuseColor.finishEditing();
-            } else {
-                pcLinesHL->coordIndex.setNum(0);
-                pcLineColorHL->diffuseColor.setNum(0);
-            }
+            updateHighlight();
         }
     } else if (prop == &MarkerColor) {
         const App::Color& c = MarkerColor.getValue();
@@ -286,6 +249,78 @@ void ViewProviderPath::onChanged(const App::Property* prop)
         ViewProviderGeometryObject::onChanged(prop);
     }
 }
+
+void ViewProviderPath::updateHighlight() {
+    cmdHighlight.clear();
+    bool lastSelected = false;
+
+    Path::Feature* pcPathObj = static_cast<Path::Feature*>(pcObject);
+    const Toolpath &tp = pcPathObj->Path.getValue();
+    for (unsigned int  i = 0; i < tp.getSize(); i++) {
+          std::string s = std::to_string(i);
+          bool selected = Gui::Selection().isSelected(pcObject, s.c_str());
+          if (lastSelected != selected) {
+              Base::Console().Log("Highlight: %2u\n", i);
+              cmdHighlight.push_back(i);
+              lastSelected = selected;
+          }
+    }
+
+    const App::Color& c = NormalColor.getValue();
+    ParameterGrp::handle hGrp = App::GetApplication().GetParameterGroupByPath("User parameter:BaseApp/Preferences/Mod/Path");
+    unsigned long rcol = hGrp->GetUnsigned("DefaultRapidPathColor",2852126975UL); // dark red (170,0,0)
+    float rr,rg,rb;
+    rr = ((rcol >> 24) & 0xff) / 255.0; rg = ((rcol >> 16) & 0xff) / 255.0; rb = ((rcol >> 8) & 0xff) / 255.0;
+
+    unsigned long pcol = hGrp->GetUnsigned("DefaultProbePathColor",4293591295UL); // yellow (255,255,5)
+    float pr,pg,pb;
+    pr = ((pcol >> 24) & 0xff) / 255.0; pg = ((pcol >> 16) & 0xff) / 255.0; pb = ((pcol >> 8) & 0xff) / 255.0;
+
+    if (cmdHighlight.size() && colorIndex.size()) {
+        Base::Console().Log("Here we go ...\n");
+        std::vector<int32_t> lineIndex;
+        std::vector<int> colorIndexHL;
+        for (unsigned int i=0; i<cmdHighlight.size(); i+=2) {
+            int startIndex = cmdIndex[cmdHighlight[i]];
+            int endIndex = ((i+1) < cmdHighlight.size()) ? cmdIndex[cmdHighlight[i+1]] : pcLineCoords->point.getNum();
+            Base::Console().Log("%2u(%u): Highlight from %d to %d\n", i, cmdHighlight.size(), startIndex, endIndex);
+            for ( int index = startIndex; index <= endIndex; ++index) {
+                lineIndex.push_back(index);
+              Base::Console().Log("%        Highlight %d color[%d]\n", index, colorIndex[index]);
+                if (index != startIndex) {
+                    colorIndexHL.push_back(colorIndex[index]);
+                }
+            }
+            lineIndex.push_back(SO_END_LINE_INDEX);
+        }
+
+        int32_t *lines = &lineIndex[0];
+        pcLinesHL->coordIndex.setNum(lineIndex.size());
+        pcLinesHL->coordIndex.setValues(0, lineIndex.size(), lines);
+
+        pcLineColorHL->diffuseColor.setNum(colorIndexHL.size());
+        SbColor *colors = pcLineColorHL->diffuseColor.startEditing();
+        for(unsigned int i = 0; i<colorIndexHL.size(); i++) {
+            if (colorIndexHL[i] == 0)
+                colors[i] = SbColor(rr,rg,rb);
+            else if (colorIndexHL[i] == 1)
+                colors[i] = SbColor(c.r,c.g,c.b);
+            else
+                colors[i] = SbColor(pr,pg,pb);
+        }
+        pcLineColorHL->diffuseColor.finishEditing();
+    } else {
+        pcLinesHL->coordIndex.setNum(0);
+        pcLineColorHL->diffuseColor.setNum(0);
+    }
+}
+
+void ViewProviderPath::onSelectionChanged(const Gui::SelectionChanges& msg) {
+  if (!strcmp(msg.pDocName, pcObject->getDocument()->getName()) && !strcmp(msg.pObjectName, pcObject->getNameInDocument())) {
+    updateHighlight();
+  }
+}
+
 
 void ViewProviderPath::updateData(const App::Property* prop)
 {
@@ -311,8 +346,6 @@ void ViewProviderPath::updateData(const App::Property* prop)
         bool first = true;
 
         cmdIndex.clear();
-        cmdHighlight.clear();
-        bool lastSelected = false;
 
         for (unsigned int  i = 0; i < tp.getSize(); i++) {
             cmdIndex.push_back(points.size());
@@ -328,14 +361,6 @@ void ViewProviderPath::updateData(const App::Property* prop)
                 next.y = last.y;
             if (!cmd.has("Z"))
                 next.z = last.z;
-
-            std::string s = std::to_string(i);
-            bool selected = Gui::Selection().isSelected(pcObject, s.c_str());
-            if (lastSelected != selected) {
-                Base::Console().Log("Highlight: %2u\n", i);
-                cmdHighlight.push_back(i);
-                lastSelected = selected;
-            }
 
             if ( (name == "G0") || (name == "G00") || (name == "G1") || (name == "G01") ) {
                 // straight line
