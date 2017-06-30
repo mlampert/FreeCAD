@@ -1,6 +1,7 @@
 import FreeCAD
 import FreeCADGui
 import Part
+import math
 import random
 
 from FreeCAD import Vector
@@ -83,16 +84,58 @@ class Joint:
         self.n0s = [f.Surface.Axis if f.Orientation == 'Forward' else f.Surface.Axis * -1 for f in self.f0s]
         self.n1s = [f.Surface.Axis if f.Orientation == 'Forward' else f.Surface.Axis * -1 for f in self.f1s]
 
-        self.f01 = [f for f in o0.Shape.Faces if f.Surfaces.Axis == self.f00.Surface.Axis and f.Orientattion != self.f00.Orientation]
-        self.f11 = [f for f in o1.Shape.Faces if f.Surfaces.Axis == self.f10.Surface.Axis and f.Orientattion != self.f10.Orientation]
+        self.f01 = [f for f in o0.Shape.Faces if f.Surface.Axis == self.f00.Surface.Axis and f.Orientation != self.f00.Orientation]
+        self.f11 = [f for f in o1.Shape.Faces if f.Surface.Axis == self.f10.Surface.Axis and f.Orientation != self.f10.Orientation]
 
         self.sections = []
         for f0 in self.f0s:
             for f1 in self.f1s:
-                self.sections.append(f0.seciont(f1))
+                self.sections.append(f0.section(f1))
 
-        return (o0, self.f00, o1, self.f10)
+        return (o0.Shape, self.f00, o1.Shape, self.f10)
 
+    def pointIntoSameDirection(self, p1, p2, tol = 0.001):
+        p1.normalize()
+        p2.normalize()
+        e = p1 - p2
+        return math.fabs(e.x) <= tol and math.fabs(e.y) <= tol and math.fabs(e.z) <= tol
+
+    def getEdge(self, solid, face, cutFace):
+        section = face.section(cutFace)
+        if section.Solids:
+            raise Exception("Found solids - there aren't supposed to be any")
+        if section.Faces:
+            raise Exception("Found faces - there aren't supposed to be any")
+        if len(section.Edges) != 1:
+            raise Exception("Found %d edges - there is supposed to be exactly 1" % len(section.Edges))
+        edge = section.Edges[0]
+
+        n1 = face.Surface.Axis
+        n2 = cutFace.Surface.Axis
+        nDir = n1.cross(n2)
+        eDir = edge.Vertexes[1].Point - edge.Vertexes[0].Point
+
+        if self.pointIntoSameDirection(nDir, eDir):
+            return edge
+        return Part.Edge(Part.LineSegment(edge.Vertexes[1].Point, edge.Vertexes[0].Point))
+
+    def edgesAreParallel(self, e1, e2, tol=0.0001):
+        p10 = e1.Vertexes[0].Point
+        p11 = e1.Vertexes[1].Point
+        p20 = e2.Vertexes[0].Point
+        p21 = e2.Vertexes[1].Point
+        d2 = p21 - p20 # there's no point in flipping both edges
+        return self.pointIntoSameDirection(p11 - p10, d2) or self.pointIntoSameDirection(p10 - p11, d2)
+
+    def getThickness(self, solid, cutFace, edge):
+        common = solid.common(cutFace)
+        if len(common.Edges) != 4:
+            raise Exception("Found %d edges - expected exactly 1")
+
+        eDir = edge.Vertexes[1].Point - edge.Vertexes[0].Point
+        eDir.normalize()
+        depths = [e.Length for e in common.Edges if not self.edgesAreParallel(e, edge)]
+        return max(depths)
 
 FreeCADGui.doCommand("from FreeCAD import Vector")
 FreeCADGui.doCommand("from fingerjoint import Joint, display")
@@ -102,7 +145,7 @@ FreeCADGui.doCommand("doc = FreeCAD.newDocument('finger-joint')")
 FreeCADGui.doCommand("sheet0 = doc.addObject('Part::Box', 'sheet0')")
 sheet0 = FreeCAD.ActiveDocument.sheet0
 sheet0.Width  = 200 # 20cm heigh
-sheet0.Height =   3 # 3mm thick
+sheet0.Height =  11 # 3mm thick
 sheet0.Length = 300 # 30cm wide
 sheet0.ViewObject.Transparency = 80
 sheet0.ViewObject.ShapeColor = (random(), random(), random())
@@ -112,8 +155,8 @@ FreeCADGui.doCommand("sheet1 = doc.addObject('Part::Box', 'sheet1')")
 sheet1 = FreeCAD.ActiveDocument.sheet1
 sheet1.Width  = 200
 sheet1.Height = 300
-sheet1.Length =   3
-sheet1.Placement = FreeCAD.Placement(Vector(297,0,0), FreeCAD.Rotation(Vector(0,0,1), 0))
+sheet1.Length =   20
+sheet1.Placement = FreeCAD.Placement(Vector(sheet0.Length - sheet1.Length,0,0), FreeCAD.Rotation(Vector(0,0,1), 0))
 sheet1.ViewObject.Transparency = 80
 sheet1.ViewObject.ShapeColor = (random(), random(), random())
 FreeCADGui.doCommand("(faceId1,face1) = [f for f in enumerate(sheet1.Shape.Faces) if f[1].Surface.Axis == Vector(1,0,0) and f[1].Orientation == 'Reversed'][0]")
@@ -123,7 +166,7 @@ if False:
     FreeCADGui.doCommand("dim0 = FreeCAD.Vector(20, 3, 3)")
 
     FreeCADGui.doCommand("j0 = Joint()")
-    FreeCADGui.doCommand("f0 = j0.featherSolid(sheet0.Shape, face0, edge, dim0, offset=10)")
+    FreeCADGui.doCommand("f0 = j0.featherSolid(sheet0.Shape, face0, edge, dim0, 10)")
     FreeCADGui.doCommand("display(f0, 'feather0')")
 
     FreeCAD.ActiveDocument.feather0.ViewObject.ShapeColor = sheet0.ViewObject.ShapeColor
@@ -132,7 +175,7 @@ if False:
     FreeCADGui.doCommand("dim1 = FreeCAD.Vector(20, -3, 3)")
 
     FreeCADGui.doCommand("j1 = Joint()")
-    FreeCADGui.doCommand("f1 = j1.featherSolid(sheet1.Shape, face1, edge, dim1, offset=-10)")
+    FreeCADGui.doCommand("f1 = j1.featherSolid(sheet1.Shape, face1, edge, dim1, -10)")
     FreeCADGui.doCommand("display(f1, 'feather1')")
 
     FreeCAD.ActiveDocument.feather1.ViewObject.ShapeColor = sheet1.ViewObject.ShapeColor
@@ -150,9 +193,25 @@ else:
     FreeCADGui.doCommand("Gui.Selection.addSelection(sheet1, 'Face%d' % (faceId1+1))")
 
     FreeCADGui.doCommand("j = Joint()")
-    FreeCADGui.doCommand("(o0, f0, o1, f1)  = j.getSelection()")
-    #FreeCADGui.doCommand("(f0, f1, e) = j.findFacesAndEdge(o0, f0, o1, f1))")
-    FreeCADGui.doCommand("display(f0.section(f1), 'intersection')")
+    FreeCADGui.doCommand("(s0, f0, s1, f1)  = j.getSelection()")
+    FreeCADGui.doCommand("e0 = j.getEdge(s0, f0, f1)")
+    FreeCADGui.doCommand("e1 = j.getEdge(s1, f1, f0)")
+    FreeCADGui.doCommand("d0 = j.getThickness(s0, f1, e0)")
+    FreeCADGui.doCommand("d1 = j.getThickness(s1, f0, e1)")
+
+    FreeCADGui.doCommand("f0 = j.featherSolid(s0, f0, e0, Vector(20, d1, d0),  10)")
+    FreeCADGui.doCommand("display(f0, 'feather0')")
+
+    FreeCADGui.doCommand("f1 = j.featherSolid(s1, f1, e1, Vector(20, d0, d1), -10)")
+    FreeCADGui.doCommand("display(f1, 'feather1')")
+
+    FreeCAD.ActiveDocument.feather0.ViewObject.ShapeColor = sheet0.ViewObject.ShapeColor
+    FreeCAD.ActiveDocument.feather0.ViewObject.Transparency = 80
+    FreeCAD.ActiveDocument.feather1.ViewObject.ShapeColor = sheet1.ViewObject.ShapeColor
+    FreeCAD.ActiveDocument.feather1.ViewObject.Transparency = 80
+
+    sheet0.ViewObject.Visibility = False
+    sheet1.ViewObject.Visibility = False
 
 FreeCADGui.ActiveDocument.ActiveView.fitAll()
 FreeCADGui.ActiveDocument.ActiveView.viewAxonometric()
