@@ -354,6 +354,7 @@ void Workbench::activated()
         "PartDesign_Chamfer",
         "PartDesign_Draft",
         "PartDesign_Thickness",
+        "PartDesign_FingerJoint",
         0};
     Watcher.push_back(new Gui::TaskView::TaskWatcherCommands(
         "SELECT Part::Feature SUBELEMENT Face COUNT 2..",
@@ -478,6 +479,7 @@ Gui::MenuItem* Workbench::setupMenuBar() const
           << "Separator"
           //<< "PartDesign_Hole"
           << "PartDesign_InvoluteGear"
+          << "PartDesign_FingerJoint"
           << "Separator"
           << "PartDesign_Migrate";
 
@@ -541,7 +543,8 @@ Gui::ToolBarItem* Workbench::setupToolBars() const
           << "PartDesign_Draft"
           << "PartDesign_Thickness"
           << "Separator"
-          << "PartDesign_Boolean";
+          << "PartDesign_Boolean"
+          << "PartDesign_FingerJoint";
 
     return root;
 }
