@@ -22,6 +22,13 @@ def getShapeFor(obj):
         shape.transformShape(body.Shape.Matrix)
     return shape
 
+def getNormal(face):
+    normal = face.Surface.Axis
+    normal.normalize()
+    if face.Orientation == 'Reversed':
+        normal *= -1
+    return normal
+
 class Joint:
 
     def __init__(self, obj, base, face, joiner):
@@ -30,7 +37,7 @@ class Joint:
         obj.addProperty('App::PropertyDistance', 'ExtraWidth', 'Joint', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
         obj.Proxy = self
 
-        obj.Face     = (base, [face])
+        obj.Face     = (base, face)
         obj.Joiner   = joiner
 
     def getBody(self, obj):
@@ -42,10 +49,10 @@ class Joint:
         return self.getBody(obj).Shape.Matrix
 
     def getBaseObject(self, obj):
-        return obj.Support[0][0]
+        return obj.Face[0]
 
     def getBaseFace(self, obj):
-        face = self.getBaseObject(obj).Shape.getElement(obj.Support[0][1][0])
+        face = self.getBaseObject(obj).Shape.getElement(obj.Face[1][0])
         face.transformShape(self.getMatrix(obj))
         return face
 
@@ -53,6 +60,7 @@ class Joint:
         if not hasattr(obj, 'Joiner'):
             return None
 
+        self.name   = obj.Name
         self.joiner = obj.Joiner.Proxy
         self.solid  = self.joiner.jointShapeFor(obj)
         self.face   = self.joiner.jointFaceFor(obj)
@@ -64,9 +72,9 @@ class Joint:
 
         self.shape  = self.featherSolid(self.solid, self.face, self.edge, self.dim, self.offset)
 
-        obj.Placement = FreeCAD.Placement()
         #self.shape.transformShape(self.matrix)
         obj.Shape = self.shape
+        obj.Placement = self.getBody(obj).Placement.inverse()
 
     def featherSolid(self, solid, face, edge, dim, offset=0):
         '''
@@ -85,14 +93,13 @@ class Joint:
         #self.offset = offset
         self.start = edge.Vertexes[0].Point
         self.dir = (edge.Vertexes[1].Point - edge.Vertexes[0].Point).normalize()
+        print("%s.dir = [%.2f, %.2f, %.2f]" % (self.name, self.dir.x, self.dir.y, self.dir.z))
 
         # there's a possibility this will always be 1.0 ....
         self.scale = (edge.LastParameter - edge.FirstParameter) / edge.Length
 
-        self.normal = face.Surface.Axis
-        self.normal.normalize()
-        if face.Orientation == 'Reversed':
-            self.normal *= -1
+        self.normal = getNormal(face)
+        print("%s.nrm = [%.2f, %.2f, %.2f] flipped=%d" % (self.name, self.normal.x, self.normal.y, self.normal.z, face.Orientation == 'Reversed'))
 
         diff = self.dir * (self.scale * self.dim.x)
 
@@ -144,6 +151,7 @@ class FingerJoint:
         obj.Size = 20
 
     def execute(self, obj):
+        print('')
         self.shapeBase = getShapeFor(obj.Base)
         self.shapeTool = getShapeFor(obj.Tool)
         self.cutShape = self.shapeBase.common(self.shapeTool)
@@ -156,8 +164,8 @@ class FingerJoint:
         self.faceBase = self.base.getBaseFace(self.jointBase)
         self.faceTool = self.tool.getBaseFace(self.jointTool)
 
-        self.edgeBase = self.getEdge(self.shapeBase, self.faceBase, self.faceTool)
-        self.edgeTool = self.getEdge(self.shapeTool, self.faceTool, self.faceBase)
+        (self.flipBase, self.edgeBase) = self.getEdge(self.shapeBase, self.faceBase, self.faceTool, 'base')
+        (self.flipTool, self.edgeTool) = self.getEdge(self.shapeTool, self.faceTool, self.faceBase, 'tool')
 
         self.dimBase = self.getThickness(self.shapeBase, self.faceTool, self.edgeBase)
         self.dimTool = self.getThickness(self.shapeTool, self.faceBase, self.edgeTool)
@@ -179,12 +187,13 @@ class FingerJoint:
     def jointEdgeFor(self, joint):
         if joint == self.jointBase:
             return self.edgeBase
+        return self.edgeBase
         return self.edgeTool
 
     def jointDimensionsFor(self, joint):
         if joint == self.jointBase:
-            return FreeCAD.Vector(self.length, self.dimTool, self.dimBase)
-        return FreeCAD.Vector(self.length, self.dimBase, self.dimTool)
+            return FreeCAD.Vector(self.length, -self.dimTool, self.dimBase)
+        return FreeCAD.Vector(self.length,  self.dimBase, self.dimTool)
 
     def jointOffsetFor(self, joint):
         if joint == self.jointBase:
@@ -197,7 +206,7 @@ class FingerJoint:
         e = p1 - p2
         return math.fabs(e.x) <= tol and math.fabs(e.y) <= tol and math.fabs(e.z) <= tol
 
-    def getEdge(self, solid, face, cutFace):
+    def getEdge(self, solid, face, cutFace, name):
         section = face.section(cutFace)
         if section.Solids:
             raise Exception("Found solids - there aren't supposed to be any")
@@ -207,14 +216,16 @@ class FingerJoint:
             raise Exception("Found %d edges - there is supposed to be exactly 1" % len(section.Edges))
         edge = section.Edges[0]
 
-        n1 = face.Surface.Axis
-        n2 = cutFace.Surface.Axis
+        n1 = getNormal(face)
+        n2 = getNormal(cutFace)
         nDir = n1.cross(n2)
         eDir = edge.Vertexes[1].Point - edge.Vertexes[0].Point
 
         if self.pointIntoSameDirection(nDir, eDir):
-            return edge
-        return Part.Edge(Part.LineSegment(edge.Vertexes[1].Point, edge.Vertexes[0].Point))
+            print("%s: edge" % name)
+            return (False, edge)
+        print("%s: flipped edge" % name)
+        return (True, Part.Edge(Part.LineSegment(edge.Vertexes[1].Point, edge.Vertexes[0].Point)))
 
     def edgesAreParallel(self, e1, e2, tol=0.0001):
         p10 = e1.Vertexes[0].Point
@@ -263,6 +274,7 @@ class ViewProviderJoint:
         baseVobj = vobj.Object.BaseFeature.ViewObject
         baseVobj.Visibility = False
         vobj.DiffuseColor = baseVobj.DiffuseColor
+        vobj.Transparency = baseVobj.Transparency
 
     def __getstate__(self):
         return None
