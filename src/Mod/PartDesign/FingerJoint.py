@@ -31,14 +31,12 @@ def getNormal(face):
 
 class Joint:
 
-    def __init__(self, obj, base, face, joiner):
+    def __init__(self, obj, base, face):
         obj.addProperty('App::PropertyLinkSub',  'Face',       'Joint', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'The object coordinating the joint.'))
-        obj.addProperty('App::PropertyLink',     'Joiner',     'Joint', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'The object coordinating the joint.'))
         obj.addProperty('App::PropertyDistance', 'ExtraWidth', 'Joint', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
         obj.Proxy = self
 
         obj.Face     = (base, face)
-        obj.Joiner   = joiner
 
     def getBody(self, obj):
         return getBodyFor(obj)
@@ -58,11 +56,22 @@ class Joint:
         return face
 
     def execute(self, obj):
-        if not hasattr(obj, 'Joiner'):
-            return None
+        objs = [o for o in obj.InList if hasattr(o, 'Proxy') and isinstance(o.Proxy, FingerJoiner)]
+        if not objs:
+            print('joint skipping execute')
+            obj.Shape = self.getBaseShape(obj)
+            return
+        return self.updateShape(obj, True)
+
+    def updateShape(self, obj, updateJoiner):
+        print('joint execute')
+        joinerObject = [o for o in obj.InList if hasattr(o, 'Proxy') and isinstance(o.Proxy, FingerJoiner)][0]
+        joiner = joinerObject.Proxy
+        if updateJoiner:
+            joiner.updateShape(joinerObject, False)
 
         self.name   = obj.Name
-        self.joiner = obj.Joiner.Proxy
+        self.joiner = joiner
         self.solid  = self.joiner.jointShapeFor(obj)
         self.face   = self.joiner.jointFaceFor(obj)
         self.edge   = self.joiner.jointEdgeFor(obj)
@@ -76,6 +85,7 @@ class Joint:
         #self.shape.transformShape(self.matrix)
         obj.Shape = self.shape
         obj.Placement = self.getBody(obj).Placement.inverse()
+        joinerObject.purgeTouched()
 
     def featherSolid(self, solid, face, edge, dim, offset=0):
         '''
@@ -94,13 +104,11 @@ class Joint:
         #self.offset = offset
         self.start = edge.Vertexes[0].Point
         self.dir = (edge.Vertexes[1].Point - edge.Vertexes[0].Point).normalize()
-        print("%s.dir = [%.2f, %.2f, %.2f]" % (self.name, self.dir.x, self.dir.y, self.dir.z))
 
         # there's a possibility this will always be 1.0 ....
         self.scale = (edge.LastParameter - edge.FirstParameter) / edge.Length
 
         self.normal = getNormal(face)
-        print("%s.nrm = [%.2f, %.2f, %.2f] flipped=%d" % (self.name, self.normal.x, self.normal.y, self.normal.z, face.Orientation == 'Reversed'))
 
         diff = self.dir * (self.scale * self.dim.x)
 
@@ -139,7 +147,9 @@ class Joint:
 class FingerJoiner:
     def __init__(self, obj, base, tool):
         obj.addProperty('App::PropertyLink',     'Base',        'Joint',  QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'One body to add joint to'))
+        obj.addProperty('App::PropertyLink',     'BaseBody',    'Joint',  QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'One body to add joint to'))
         obj.addProperty('App::PropertyLink',     'Tool',        'Joint',  QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Another body to add joint to'))
+        obj.addProperty('App::PropertyLink',     'ToolBody',    'Joint',  QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'One body to add joint to'))
         obj.addProperty('App::PropertyDistance', 'Size',        'Finger', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
         obj.addProperty('App::PropertyDistance', 'Offset',      'Finger', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
         obj.addProperty('App::PropertyDistance', 'ExtraLength', 'Finger', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
@@ -147,19 +157,31 @@ class FingerJoiner:
         obj.addProperty('App::PropertyDistance', 'ExtraDepth',  'Finger', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
 
         obj.Proxy = self
-        obj.Base  = base
-        obj.Tool  = tool
+        obj.Base     = base
+        obj.BaseBody = getBodyFor(base)
+        obj.Tool     = tool
+        obj.ToolBody = getBodyFor(tool)
 
         obj.setEditorMode('Base', 1) # ro
         obj.setEditorMode('Tool', 1) # ro
+
+        obj.setEditorMode('BaseBody', 2) # hide
+        obj.setEditorMode('ToolBody', 2) # hide
 
         obj.Size = 20
 
     def execute(self, obj):
         print('')
-        self.joints = [o for o in obj.InList if hasattr(o, 'Proxy') and hasattr(o, 'Joiner')]
-        self.jointBase = next(j for j in self.joints if j.Proxy.getBaseObject(j).Name == obj.Base.Name)
-        self.jointTool = next(j for j in self.joints if j.Proxy.getBaseObject(j).Name == obj.Tool.Name)
+        if not hasattr(obj.Base, 'Proxy') or not hasattr(obj.Tool, 'Proxy'):
+            print('finger-joint skipping execute')
+            return
+        return self.updateShape(obj, True)
+
+    def updateShape(self, obj, updateJoints):
+        print('finger-joint execute')
+        self.jointBase = obj.Base
+        self.jointTool = obj.Tool
+
         self.base = self.jointBase.Proxy
         self.tool = self.jointTool.Proxy
 
@@ -169,8 +191,8 @@ class FingerJoiner:
         self.faceBase = self.base.getBaseFace(self.jointBase)
         self.faceTool = self.tool.getBaseFace(self.jointTool)
 
-        (self.flipBase, self.edgeBase) = self.getEdge(self.shapeBase, self.faceBase, self.faceTool, 'base')
-        (self.flipTool, self.edgeTool) = self.getEdge(self.shapeTool, self.faceTool, self.faceBase, 'tool')
+        (self.flipBase, self.edgeBase) = self.getEdge(self.shapeBase, self.faceBase, self.faceTool)
+        (self.flipTool, self.edgeTool) = self.getEdge(self.shapeTool, self.faceTool, self.faceBase)
 
         self.dimBase = self.getThickness(self.shapeBase, self.faceTool, self.edgeBase)
         self.dimTool = self.getThickness(self.shapeTool, self.faceBase, self.edgeTool)
@@ -181,6 +203,12 @@ class FingerJoiner:
 
         self.cutShape = self.shapeBase.common(self.shapeTool)
         obj.Shape = self.cutShape
+
+        if updateJoints:
+            obj.Base.Proxy.updateShape(obj.Base, False)
+            obj.Tool.Proxy.updateShape(obj.Tool, False)
+        else:
+            obj.purgeTouched()
 
     def jointShapeFor(self, joint):
         if joint == self.jointBase:
@@ -212,7 +240,7 @@ class FingerJoiner:
         e = p1 - p2
         return math.fabs(e.x) <= tol and math.fabs(e.y) <= tol and math.fabs(e.z) <= tol
 
-    def getEdge(self, solid, face, cutFace, name):
+    def getEdge(self, solid, face, cutFace):
         section = face.section(cutFace)
         if section.Solids:
             raise Exception("Found solids - there aren't supposed to be any")
@@ -228,9 +256,7 @@ class FingerJoiner:
         eDir = edge.Vertexes[1].Point - edge.Vertexes[0].Point
 
         if self.pointIntoSameDirection(nDir, eDir):
-            print("%s: edge" % name)
             return (False, edge)
-        print("%s: flipped edge" % name)
         return (True, Part.Edge(Part.LineSegment(edge.Vertexes[1].Point, edge.Vertexes[0].Point)))
 
     def edgesAreParallel(self, e1, e2, tol=0.0001):
@@ -297,27 +323,27 @@ class ViewProviderJoint:
         return None
 
 def Create(name):
-    def createJoint(obj, face, joiner):
+    def createJoint(obj, face):
         for o in obj.InList:
             if hasattr(o, 'Group') and hasattr(o, 'Tip'):
                 # PartDesign
                 joint = FreeCAD.ActiveDocument.addObject('PartDesign::FeaturePython', 'Joint')
-                proxy = Joint(joint, obj, face, joiner)
+                proxy = Joint(joint, obj, face)
                 o.addObject(joint)
                 return (joint, proxy)
         # All other objects
         joint = FreeCAD.ActiveDocument.addObject('Part::FeaturePython', 'Joint')
-        proxy = Joint(joint, obj, face, joiner)
+        proxy = Joint(joint, obj, face)
         o.addObject(joint)
         return (joint, proxy)
 
     sel = FreeCADGui.Selection.getSelectionEx()
     if len(sel) == 2 and len(sel[0].SubObjects) == 1 and len(sel[1].SubObjects) == 1:
-        joiner = FreeCAD.ActiveDocument.addObject('Part::FeaturePython', name)
-        finger = FingerJoiner(joiner, sel[0].Object, sel[1].Object)
+        (o0, p0) = createJoint(sel[0].Object, sel[0].SubElementNames[0])
+        (o1, p1) = createJoint(sel[1].Object, sel[1].SubElementNames[0])
 
-        (o0, p0) = createJoint(sel[0].Object, sel[0].SubElementNames[0], joiner)
-        (o1, p1) = createJoint(sel[1].Object, sel[1].SubElementNames[0], joiner)
+        joiner = FreeCAD.ActiveDocument.addObject('Part::FeaturePython', name)
+        finger = FingerJoiner(joiner, o0, o1)
 
         if FreeCAD.GuiUp:
             ViewProviderFingerJoint(joiner.ViewObject)
