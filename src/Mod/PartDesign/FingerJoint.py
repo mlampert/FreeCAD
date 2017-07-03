@@ -136,7 +136,7 @@ class Joint:
         self.cutOuts = Part.makeCompound(self.cut)
         return solid.cut(self.cutOuts)
 
-class FingerJoint:
+class FingerJoiner:
     def __init__(self, obj, base, tool):
         obj.addProperty('App::PropertyLink',     'Base',        'Joint',  QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'One body to add joint to'))
         obj.addProperty('App::PropertyLink',     'Tool',        'Joint',  QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Another body to add joint to'))
@@ -193,10 +193,8 @@ class FingerJoint:
         return self.faceTool
 
     def jointEdgeFor(self, joint):
-        if joint == self.jointBase:
-            return self.edgeBase
+        # both bodies should operate on the same edge for proper offset processing
         return self.edgeBase
-        return self.edgeTool
 
     def jointDimensionsFor(self, joint):
         if joint == self.jointBase:
@@ -316,7 +314,7 @@ def Create(name):
     sel = FreeCADGui.Selection.getSelectionEx()
     if len(sel) == 2 and len(sel[0].SubObjects) == 1 and len(sel[1].SubObjects) == 1:
         joiner = FreeCAD.ActiveDocument.addObject('Part::FeaturePython', name)
-        finger = FingerJoint(joiner, sel[0].Object, sel[1].Object)
+        finger = FingerJoiner(joiner, sel[0].Object, sel[1].Object)
 
         (o0, p0) = createJoint(sel[0].Object, sel[0].SubElementNames[0], joiner)
         (o1, p1) = createJoint(sel[1].Object, sel[1].SubElementNames[0], joiner)
