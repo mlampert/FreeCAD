@@ -41,15 +41,16 @@ class Joint:
         obj.Joiner   = joiner
 
     def getBody(self, obj):
-        if not hasattr(self, 'body'):
-            self.body = getBodyFor(obj)
-        return self.body
+        return getBodyFor(obj)
 
     def getMatrix(self, obj):
         return self.getBody(obj).Shape.Matrix
 
     def getBaseObject(self, obj):
         return obj.Face[0]
+
+    def getBaseShape(self, obj):
+        return getShapeFor(self.getBaseObject(obj))
 
     def getBaseFace(self, obj):
         face = self.getBaseObject(obj).Shape.getElement(obj.Face[1][0])
@@ -137,30 +138,34 @@ class Joint:
 
 class FingerJoint:
     def __init__(self, obj, base, tool):
-        obj.addProperty('App::PropertyLink',     'Base',        'Base',  QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'One body to add joint to'))
-        obj.addProperty('App::PropertyLink',     'Tool',        'Base',  QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Another body to add joint to'))
-        obj.addProperty('App::PropertyDistance', 'Size',        'Joint', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
-        obj.addProperty('App::PropertyDistance', 'Offset',      'Joint', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
-        obj.addProperty('App::PropertyDistance', 'ExtraLength', 'Joint', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
-        obj.addProperty('App::PropertyDistance', 'ExtraWidth',  'Joint', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
-        obj.addProperty('App::PropertyDistance', 'ExtraDepth',  'Joint', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
-        obj.Proxy = self
+        obj.addProperty('App::PropertyLink',     'Base',        'Joint',  QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'One body to add joint to'))
+        obj.addProperty('App::PropertyLink',     'Tool',        'Joint',  QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Another body to add joint to'))
+        obj.addProperty('App::PropertyDistance', 'Size',        'Finger', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
+        obj.addProperty('App::PropertyDistance', 'Offset',      'Finger', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
+        obj.addProperty('App::PropertyDistance', 'ExtraLength', 'Finger', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
+        obj.addProperty('App::PropertyDistance', 'ExtraWidth',  'Finger', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
+        obj.addProperty('App::PropertyDistance', 'ExtraDepth',  'Finger', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
 
-        obj.Base = base
-        obj.Tool = tool
+        obj.Proxy = self
+        obj.Base  = base
+        obj.Tool  = tool
+
+        obj.setEditorMode('Base', 1) # ro
+        obj.setEditorMode('Tool', 1) # ro
+
         obj.Size = 20
 
     def execute(self, obj):
         print('')
-        self.shapeBase = getShapeFor(obj.Base)
-        self.shapeTool = getShapeFor(obj.Tool)
-        self.cutShape = self.shapeBase.common(self.shapeTool)
-        obj.Shape = self.cutShape
         self.joints = [o for o in obj.InList if hasattr(o, 'Proxy') and hasattr(o, 'Joiner')]
         self.jointBase = next(j for j in self.joints if j.Proxy.getBaseObject(j).Name == obj.Base.Name)
         self.jointTool = next(j for j in self.joints if j.Proxy.getBaseObject(j).Name == obj.Tool.Name)
         self.base = self.jointBase.Proxy
         self.tool = self.jointTool.Proxy
+
+        self.shapeBase = self.base.getBaseShape(self.jointBase)
+        self.shapeTool = self.tool.getBaseShape(self.jointTool)
+
         self.faceBase = self.base.getBaseFace(self.jointBase)
         self.faceTool = self.tool.getBaseFace(self.jointTool)
 
@@ -172,7 +177,10 @@ class FingerJoint:
 
         self.length = obj.Size.Value
         self.offsetBase = obj.Offset.Value
-        self.offsetTool = obj.Offset.Value
+        self.offsetTool = self.offsetBase + self.length
+
+        self.cutShape = self.shapeBase.common(self.shapeTool)
+        obj.Shape = self.cutShape
 
     def jointShapeFor(self, joint):
         if joint == self.jointBase:
@@ -237,8 +245,8 @@ class FingerJoint:
 
     def getThickness(self, solid, cutFace, edge):
         common = solid.common(cutFace)
-        if len(common.Edges) != 4:
-            raise Exception("Found %d edges - expected exactly 1")
+        #if len(common.Edges) != 4:
+        #    raise Exception("Found %d edges - expected exactly 1" % len(common.Edges))
 
         eDir = edge.Vertexes[1].Point - edge.Vertexes[0].Point
         eDir.normalize()
@@ -255,7 +263,10 @@ class ViewProviderFingerJoint:
         self.Object = vobj.Object
 
     def getIcon(self):
-        return ':/icons/PathDesign_FingerJoint.svg'
+        return ':/icons/PartDesign_FingerJoint.svg'
+
+    def onChanged(self, vobj, prop):
+        print("finger-joint: %s" % prop)
 
     def __getstate__(self):
         return None
@@ -275,6 +286,12 @@ class ViewProviderJoint:
         baseVobj.Visibility = False
         vobj.DiffuseColor = baseVobj.DiffuseColor
         vobj.Transparency = baseVobj.Transparency
+
+    def getIcon(self):
+        return ':/icons/PartDesign_FingerJoint.svg'
+
+    def onChanged(self, vobj, prop):
+        print("joint: %s" % prop)
 
     def __getstate__(self):
         return None
