@@ -96,6 +96,9 @@ class Joint:
           edge   ... an edge on the face along which to feather
           dim    ... vector of feather dimensions Vector(length, width, depth)
           offset ... offset from the edge's starting point to the first feather cut
+          slack  ... vector of extra material to be removed in each direction (length, width, depth)
+          extend ... extend the width of the finger in one direction by given amount
+                     positive values are in finger direction, negative values in opposite direction
         '''
 
         #self.solid = solid
