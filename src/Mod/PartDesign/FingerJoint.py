@@ -77,17 +77,18 @@ class Joint:
         self.edge   = self.joiner.jointEdgeFor(obj)
         self.dim    = self.joiner.jointDimensionsFor(obj)
         self.offset = self.joiner.jointOffsetFor(obj)
+        self.slack  = self.joiner.jointSlackFor(obj)
         # need to convert world coordinates into body coordinates
         self.matrix = self.getMatrix(obj).inverse()
 
-        self.shape  = self.featherSolid(self.solid, self.face, self.edge, self.dim, self.offset)
+        self.shape  = self.featherSolid(self.solid, self.face, self.edge, self.dim, self.offset, self.slack, obj.ExtraWidth.Value)
 
         #self.shape.transformShape(self.matrix)
         obj.Shape = self.shape
         obj.Placement = self.getBody(obj).Placement.inverse()
         joinerObject.purgeTouched()
 
-    def featherSolid(self, solid, face, edge, dim, offset=0):
+    def featherSolid(self, solid, face, edge, dim, offset=0, slack = FreeCAD.Vector(0,0,0), extend=0):
         '''
         featherSolid(solid, face, edge, dim, offst=0) .... create finger joint feathers,
           solid  ... the solid to feature
@@ -112,11 +113,11 @@ class Joint:
 
         diff = self.dir * (self.scale * self.dim.x)
 
-        p0 = self.start + self.dir * (self.scale * self.offset)
+        p0 = self.start + self.dir * (self.scale * (self.offset - slack.x))
         # the first side of the cutout is along the edge
-        p1 = p0 + diff
+        p1 = p0 + diff + self.dir * (self.scale * 2 * slack.x)
         # second side is in the opposite direction of the normal
-        e2 = self.normal * dim.z
+        e2 = self.normal * (dim.z + slack.z)
         self.e2 = e2
 
         p2 = p1 - e2
@@ -129,7 +130,22 @@ class Joint:
         v = Part.Vertex(self.dir)
         v.rotate(FreeCAD.Vector(), self.normal, -90)
 
-        self.cutSolid = self.cutFace.extrude(v.Point * dim.y)
+        width = dim.y + slack.y
+        if extend > 0:
+            if width > 0:
+                width += extend
+            else:
+                width -= extend
+        self.cutSolid = self.cutFace.extrude(v.Point * self.scale * width)
+
+        if math.fabs(slack.y) > 0.000001 or extend < 0:
+            if width < 0:
+                width = slack.y + extend
+            else:
+                width = slack.y - extend
+            self.cutFinger = self.cutSolid
+            self.cutSlack = self.cutFace.extrude(v.Point * -1 * self.scale * width)
+            self.cutSolid = self.cutSolid.fuse(self.cutSlack)
 
         trans = FreeCAD.Vector(0,0,0)
         self.cut = []
@@ -201,6 +217,10 @@ class FingerJoiner:
         self.offsetBase = obj.Offset.Value
         self.offsetTool = self.offsetBase + self.length
 
+        self.extraLength = obj.ExtraLength.Value
+        self.extraWidth  = obj.ExtraWidth.Value
+        self.extraDepth  = obj.ExtraDepth.Value
+
         self.cutShape = self.shapeBase.common(self.shapeTool)
         obj.Shape = self.cutShape
 
@@ -233,6 +253,11 @@ class FingerJoiner:
         if joint == self.jointBase:
             return self.offsetBase
         return self.offsetTool
+
+    def jointSlackFor(self, joint):
+        if joint == self.jointBase:
+            return FreeCAD.Vector(self.extraLength, -self.extraWidth, self.extraDepth)
+        return FreeCAD.Vector(self.extraLength, self.extraWidth, self.extraDepth)
 
     def pointIntoSameDirection(self, p1, p2, tol = 0.001):
         p1.normalize()
