@@ -32,8 +32,8 @@ def getNormal(face):
 class Joint:
 
     def __init__(self, obj, base, face):
-        obj.addProperty('App::PropertyLinkSub',  'Face',       'Joint', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'The object coordinating the joint.'))
-        obj.addProperty('App::PropertyDistance', 'ExtraWidth', 'Joint', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
+        obj.addProperty('App::PropertyLinkSub',  'Face',       'Joint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'The object coordinating the joint.'))
+        obj.addProperty('App::PropertyDistance', 'ExtraWidth', 'Joint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Extra width applied to joint cut.'))
         obj.Proxy = self
 
         obj.Face     = (base, face)
@@ -58,13 +58,13 @@ class Joint:
     def execute(self, obj):
         objs = [o for o in obj.InList if hasattr(o, 'Proxy') and isinstance(o.Proxy, FingerJoiner)]
         if not objs:
-            print('joint skipping execute')
+            #print('joint skipping execute')
             obj.Shape = self.getBaseShape(obj)
             return
         return self.updateShape(obj, True)
 
     def updateShape(self, obj, updateJoiner):
-        print('joint execute')
+        #print('joint execute')
         joinerObject = [o for o in obj.InList if hasattr(o, 'Proxy') and isinstance(o.Proxy, FingerJoiner)][0]
         joiner = joinerObject.Proxy
         if updateJoiner:
@@ -162,15 +162,15 @@ class Joint:
 
 class FingerJoiner:
     def __init__(self, obj, base, tool):
-        obj.addProperty('App::PropertyLink',     'Base',        'Joint',  QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'One body to add joint to'))
-        obj.addProperty('App::PropertyLink',     'BaseBody',    'Joint',  QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'One body to add joint to'))
-        obj.addProperty('App::PropertyLink',     'Tool',        'Joint',  QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Another body to add joint to'))
-        obj.addProperty('App::PropertyLink',     'ToolBody',    'Joint',  QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'One body to add joint to'))
-        obj.addProperty('App::PropertyDistance', 'Size',        'Finger', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
-        obj.addProperty('App::PropertyDistance', 'Offset',      'Finger', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
-        obj.addProperty('App::PropertyDistance', 'ExtraLength', 'Finger', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
-        obj.addProperty('App::PropertyDistance', 'ExtraWidth',  'Finger', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
-        obj.addProperty('App::PropertyDistance', 'ExtraDepth',  'Finger', QtCore.QT_TRANSLATE_NOOP('PartDesign_FingerJoint', 'Extra width applied to joint cut.'))
+        obj.addProperty('App::PropertyLink',     'Base',        'Joint',  QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'One body to add joint to'))
+        obj.addProperty('App::PropertyLink',     'BaseBody',    'Joint',  QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'One body to add joint to'))
+        obj.addProperty('App::PropertyLink',     'Tool',        'Joint',  QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Another body to add joint to'))
+        obj.addProperty('App::PropertyLink',     'ToolBody',    'Joint',  QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'One body to add joint to'))
+        obj.addProperty('App::PropertyDistance', 'Size',        'Finger', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Extra width applied to joint cut.'))
+        obj.addProperty('App::PropertyDistance', 'Offset',      'Finger', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Extra width applied to joint cut.'))
+        obj.addProperty('App::PropertyDistance', 'ExtraLength', 'Finger', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Extra width applied to joint cut.'))
+        obj.addProperty('App::PropertyDistance', 'ExtraWidth',  'Finger', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Extra width applied to joint cut.'))
+        obj.addProperty('App::PropertyDistance', 'ExtraDepth',  'Finger', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Extra width applied to joint cut.'))
 
         obj.Proxy = self
         obj.Base     = base
@@ -187,14 +187,14 @@ class FingerJoiner:
         obj.Size = 20
 
     def execute(self, obj):
-        print('')
+        #print('')
         if not hasattr(obj.Base, 'Proxy') or not hasattr(obj.Tool, 'Proxy'):
-            print('finger-joint skipping execute')
+            #print('finger-joint skipping execute')
             return
         return self.updateShape(obj, True)
 
     def updateShape(self, obj, updateJoints):
-        print('finger-joint execute')
+        #print('finger-joint execute')
         self.jointBase = obj.Base
         self.jointTool = obj.Tool
 
@@ -311,11 +311,8 @@ class ViewProviderFingerJoint:
     def attach(self, vobj):
         self.Object = vobj.Object
 
-    def getIcon(self):
-        return ':/icons/PartDesign_FingerJoint.svg'
-
-    def onChanged(self, vobj, prop):
-        print("finger-joint: %s" % prop)
+    #def getIcon(self):
+    #    return ':/icons/FingerJoint.svg'
 
     def __getstate__(self):
         return None
@@ -336,11 +333,8 @@ class ViewProviderJoint:
         vobj.DiffuseColor = baseVobj.DiffuseColor
         vobj.Transparency = baseVobj.Transparency
 
-    def getIcon(self):
-        return ':/icons/PartDesign_FingerJoint.svg'
-
-    def onChanged(self, vobj, prop):
-        print("joint: %s" % prop)
+    #def getIcon(self):
+    #    return ':/icons/FingerJoint.svg'
 
     def __getstate__(self):
         return None
@@ -382,23 +376,23 @@ def Create(name):
         return None
 
 
-class Command:
-    def GetResources(self):
-        return {'Pixmap'  : 'PartDesign_FingerJoint',
-                'MenuText': QtCore.QT_TRANSLATE_NOOP("PartDesign_FingerJoint","Finger Joint"),
-                'Accel': "",
-                'ToolTip': QtCore.QT_TRANSLATE_NOOP("PartDesign_FingerJoint","Creates matching finger joints in two intersecting bodies.")}
-        
-    def Activated(self):
-        FreeCAD.ActiveDocument.openTransaction("Create matching finger joint cuts")
-        FreeCADGui.addModule("FingerJoint")
-        FreeCADGui.doCommand("FingerJoint.Create('FingerJoint')")
-        FreeCAD.ActiveDocument.recompute()
-        FreeCAD.ActiveDocument.commitTransaction()
-        #FreeCADGui.doCommand("Gui.activeDocument().setEdit(App.ActiveDocument.ActiveObject.Name,0)")
-        
-    def IsActive(self):
-        return len(FreeCADGui.Selection.getSelection()) == 2
-
-if FreeCAD.GuiUp:
-    FreeCADGui.addCommand('PartDesign_FingerJoint',Command())
+#class Command:
+#    def GetResources(self):
+#        return {'Pixmap'  : 'FingerJoint',
+#                'MenuText': QtCore.QT_TRANSLATE_NOOP("FingerJoint","Finger Joint"),
+#                'Accel': "",
+#                'ToolTip': QtCore.QT_TRANSLATE_NOOP("FingerJoint","Creates matching finger joints in two intersecting bodies.")}
+#        
+#    def Activated(self):
+#        FreeCAD.ActiveDocument.openTransaction("Create matching finger joint cuts")
+#        FreeCADGui.addModule("FingerJoint")
+#        FreeCADGui.doCommand("FingerJoint.Create('FingerJoint')")
+#        FreeCAD.ActiveDocument.recompute()
+#        FreeCAD.ActiveDocument.commitTransaction()
+#        #FreeCADGui.doCommand("Gui.activeDocument().setEdit(App.ActiveDocument.ActiveObject.Name,0)")
+#        
+#    def IsActive(self):
+#        return len(FreeCADGui.Selection.getSelection()) == 2
+#
+#if FreeCAD.GuiUp:
+#    FreeCADGui.addCommand('FingerJoint',Command())

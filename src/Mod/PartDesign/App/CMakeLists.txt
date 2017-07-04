@@ -176,7 +176,6 @@ SET(PartDesign_Scripts
     fcgear/fcgeardialog.py
     fcgear/involute.py
     fcgear/svggear.py
-    FingerJoint.py
 )
 
 add_library(PartDesign SHARED ${PartDesign_SRCS})

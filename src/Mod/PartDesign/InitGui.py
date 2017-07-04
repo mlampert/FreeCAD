@@ -57,11 +57,6 @@ class PartDesignWorkbench ( Workbench ):
             #    from FeatureHole import HoleGui
             #except:
             #    pass
-        try:
-            import FingerJoint
-        except ImportError:
-            print("Finger Joint module cannot be loaded")
-
 
     def GetClassName(self):
         return "PartDesignGui::Workbench"

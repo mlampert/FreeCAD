@@ -13,7 +13,6 @@ INSTALL(
         TestPartDesignGui.py
         InvoluteGearFeature.py
         InvoluteGearFeature.ui
-        FingerJoint.py
     DESTINATION
         Mod/PartDesign
 )
