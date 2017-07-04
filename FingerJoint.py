@@ -160,6 +160,13 @@ class Joint:
         self.cutOuts = Part.makeCompound(self.cut)
         return solid.cut(self.cutOuts)
 
+class JointPart(Joint):
+    def __init__(self, obj, base, face):
+        Joint.__init__(self, obj, base, face)
+
+    def getBody(self, obj):
+        return obj
+
 class FingerJoiner:
     def __init__(self, obj, base, tool):
         obj.addProperty('App::PropertyLink',     'Base',        'Joint',  QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'One body to add joint to'))
@@ -324,14 +331,22 @@ class ViewProviderJoint:
         vobj.Proxy = self
         self.vobj = vobj
 
+    def forPartDesign(self):
+        return hasattr(self.Object, 'BaseFeature')
+
     def attach(self, vobj):
         self.vobj = vobj
         self.Object = vobj.Object
 
-        baseVobj = vobj.Object.BaseFeature.ViewObject
+        baseVobj = self.Object.BaseFeature.ViewObject if self.forPartDesign() else self.Object.Face[0].ViewObject
         baseVobj.Visibility = False
         vobj.DiffuseColor = baseVobj.DiffuseColor
         vobj.Transparency = baseVobj.Transparency
+
+    def claimChildren(self):
+        if self.forPartDesign():
+            return []
+        return [self.Object.Face[0]]
 
     #def getIcon(self):
     #    return ':/icons/FingerJoint.svg'
@@ -352,12 +367,13 @@ def Create(name):
                 return (joint, proxy)
         # All other objects
         joint = FreeCAD.ActiveDocument.addObject('Part::FeaturePython', 'Joint')
-        proxy = Joint(joint, obj, face)
-        o.addObject(joint)
+        proxy = JointPart(joint, obj, face)
         return (joint, proxy)
 
     sel = FreeCADGui.Selection.getSelectionEx()
     if len(sel) == 2 and len(sel[0].SubObjects) == 1 and len(sel[1].SubObjects) == 1:
+        FreeCAD.ActiveDocument.openTransaction("Create matching finger joint cuts")
+
         (o0, p0) = createJoint(sel[0].Object, sel[0].SubElementNames[0])
         (o1, p1) = createJoint(sel[1].Object, sel[1].SubElementNames[0])
 
@@ -370,6 +386,8 @@ def Create(name):
             ViewProviderJoint(o0.ViewObject)
             ViewProviderJoint(o1.ViewObject)
 
+        FreeCAD.ActiveDocument.recompute()
+        FreeCAD.ActiveDocument.commitTransaction()
         return joiner
 
     else:
@@ -384,12 +402,8 @@ def Create(name):
 #                'ToolTip': QtCore.QT_TRANSLATE_NOOP("FingerJoint","Creates matching finger joints in two intersecting bodies.")}
 #        
 #    def Activated(self):
-#        FreeCAD.ActiveDocument.openTransaction("Create matching finger joint cuts")
 #        FreeCADGui.addModule("FingerJoint")
 #        FreeCADGui.doCommand("FingerJoint.Create('FingerJoint')")
-#        FreeCAD.ActiveDocument.recompute()
-#        FreeCAD.ActiveDocument.commitTransaction()
-#        #FreeCADGui.doCommand("Gui.activeDocument().setEdit(App.ActiveDocument.ActiveObject.Name,0)")
 #        
 #    def IsActive(self):
 #        return len(FreeCADGui.Selection.getSelection()) == 2
