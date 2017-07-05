@@ -40,8 +40,11 @@ class Joint:
         obj.Face     = (base, face)
         obj.Joiner   = joiner
 
+    def isPartDesignFeature(self, obj):
+        return hasattr(obj.Face[0], 'BaseFeature')
+
     def getBody(self, obj):
-        if hasattr(obj.Face[0], 'BaseFeature'):
+        if self.isPartDesignFeature(obj):
             return getBodyFor(obj)
         return obj
 
@@ -65,20 +68,19 @@ class Joint:
 
         self.name   = obj.Name
         self.joiner = obj.Joiner.Proxy
-        self.solid  = self.joiner.jointShapeFor(obj)
-        self.face   = self.joiner.jointFaceFor(obj)
-        self.edge   = self.joiner.jointEdgeFor(obj)
-        self.dim    = self.joiner.jointDimensionsFor(obj)
-        self.offset = self.joiner.jointOffsetFor(obj)
-        self.slack  = self.joiner.jointSlackFor(obj)
-        # need to convert world coordinates into body coordinates
-        self.matrix = self.getMatrix(obj).inverse()
-
-        self.shape  = self.featherSolid(self.solid, self.face, self.edge, self.dim, self.offset, self.slack, obj.ExtraWidth.Value)
-
-        #self.shape.transformShape(self.matrix)
-        obj.Shape = self.shape
-        obj.Placement = self.getBody(obj).Placement.inverse()
+        if self.joiner.jointIsValidFor(obj):
+            self.solid  = self.joiner.jointShapeFor(obj)
+            self.face   = self.joiner.jointFaceFor(obj)
+            self.edge   = self.joiner.jointEdgeFor(obj)
+            self.dim    = self.joiner.jointDimensionsFor(obj)
+            self.offset = self.joiner.jointOffsetFor(obj)
+            self.slack  = self.joiner.jointSlackFor(obj)
+            self.shape  = self.featherSolid(self.solid, self.face, self.edge, self.dim, self.offset, self.slack, obj.ExtraWidth.Value)
+            obj.Shape   = self.shape
+            obj.Placement = self.getBody(obj).Placement.inverse()
+        else:
+            obj.Shape = self.getBaseShape(obj)
+            obj.Placement = self.getBaseObject(obj).Placement
 
     def featherSolid(self, solid, face, edge, dim, offset=0, slack = FreeCAD.Vector(0,0,0), extend=0):
         '''
@@ -204,6 +206,9 @@ class FingerJoiner:
 
         self.cutShape = self.shapeBase.common(self.shapeTool)
         obj.Shape = self.cutShape
+
+    def jointIsValidFor(self, joint):
+        return self.dimBase != 0 and self.dimTool != 0
 
     def jointShapeFor(self, joint):
         if joint == self.jointBase:
