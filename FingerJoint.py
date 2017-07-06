@@ -173,8 +173,9 @@ class FingerJoiner:
 
         obj.setEditorMode('Base', 1) # ro
         obj.setEditorMode('Tool', 1) # ro
+        obj.setEditorMode('Placement', 2) # hide
 
-        obj.Size = 20
+        obj.Size = 100
 
     def execute(self, obj):
         print('')
@@ -251,9 +252,23 @@ class FingerJoiner:
             raise Exception("Found solids - there aren't supposed to be any")
         if section.Faces:
             raise Exception("Found faces - there aren't supposed to be any")
-        if len(section.Edges) != 1:
+        if len(section.Edges) == 0:
+            self.rogueEdges = section.Edges
             raise Exception("Found %d edges - there is supposed to be exactly 1" % len(section.Edges))
-        edge = section.Edges[0]
+        if len(section.Edges) == 1:
+            edge = section.Edges[0]
+        else:
+            # this can happen if the edge is interrupted by pockets, most likely from
+            # another FingerJoint operation
+            self.rogueEdges = section.Edges
+            curve = section.Edges[0].Curve
+            pts = [v.Point for e in section.Edges for v in e.Vertexes]
+            params = [curve.parameter(p) for p in pts]
+            minParam = min(params)
+            maxParam = max(params)
+            begin = curve.value(minParam)
+            end   = curve.value(maxParam)
+            edge = Part.Edge(Part.LineSegment(begin, end))
 
         n1 = getNormal(face)
         n2 = getNormal(cutFace)
@@ -298,7 +313,7 @@ class ViewProviderFingerJoint:
 
     def __getstate__(self):
         return None
-    def __setstate__(self):
+    def __setstate__(self, state):
         return None
 
 class ViewProviderJoint:
@@ -328,7 +343,7 @@ class ViewProviderJoint:
 
     def __getstate__(self):
         return None
-    def __setstate__(self):
+    def __setstate__(self, state):
         return None
 
 def Create(name):
@@ -368,19 +383,26 @@ def Create(name):
         return None
 
 
-#class Command:
-#    def GetResources(self):
-#        return {'Pixmap'  : 'FingerJoint',
-#                'MenuText': QtCore.QT_TRANSLATE_NOOP("FingerJoint","Finger Joint"),
-#                'Accel': "",
-#                'ToolTip': QtCore.QT_TRANSLATE_NOOP("FingerJoint","Creates matching finger joints in two intersecting bodies.")}
-#        
-#    def Activated(self):
-#        FreeCADGui.addModule("FingerJoint")
-#        FreeCADGui.doCommand("FingerJoint.Create('FingerJoint')")
-#        
-#    def IsActive(self):
-#        return len(FreeCADGui.Selection.getSelection()) == 2
-#
-#if FreeCAD.GuiUp:
-#    FreeCADGui.addCommand('FingerJoint',Command())
+class Command:
+    def GetResources(self):
+        return {'Pixmap'  : 'FingerJoint.svg',
+                'MenuText': QtCore.QT_TRANSLATE_NOOP("FingerJoint","Finger Joint"),
+                'Accel': "",
+                'ToolTip': QtCore.QT_TRANSLATE_NOOP("FingerJoint","Creates matching finger joints in two intersecting bodies.")}
+        
+    def Activated(self):
+        FreeCADGui.addModule("FingerJoint")
+        FreeCADGui.doCommand("FingerJoint.Create('FingerJoint')")
+        
+    def IsActive(self):
+        return len(FreeCADGui.Selection.getSelection()) == 2
+
+if FreeCAD.GuiUp:
+    FreeCADGui.addCommand('FingerJoint',Command())
+    w0 = FreeCADGui.activeWorkbench()
+    FreeCADGui.activateWorkbench('CompleteWorkbench')
+    w = FreeCADGui.getWorkbench('CompleteWorkbench')
+    w.appendMenu('Joint', ['FingerJoint'])
+    w.appendToolbar('Joint', ['FingerJoint'])
+    FreeCADGui.activateWorkbench(w0.name())
+    FreeCADGui.activateWorkbench(w.name())
