@@ -40,6 +40,11 @@ class Joint:
         obj.Face     = (base, face)
         obj.Joiner   = joiner
 
+    def __getstate__(self):
+        return None
+    def __setstate__(self, state):
+        return None
+
     def isPartDesignFeature(self, obj):
         return hasattr(obj.Face[0], 'BaseFeature')
 
@@ -177,6 +182,11 @@ class FingerJoiner:
 
         obj.Size = 100
 
+    def __getstate__(self):
+        return None
+    def __setstate__(self, state):
+        return None
+
     def execute(self, obj):
         print('')
         self.joints = [o for o in obj.InList if hasattr(o, 'Proxy') and hasattr(o, 'Joiner')]
@@ -194,16 +204,20 @@ class FingerJoiner:
         (self.flipBase, self.edgeBase) = self.getEdge(self.shapeBase, self.faceBase, self.faceTool)
         (self.flipTool, self.edgeTool) = self.getEdge(self.shapeTool, self.faceTool, self.faceBase)
 
-        self.dimBase = self.getThickness(self.shapeBase, self.faceTool, self.edgeBase)
-        self.dimTool = self.getThickness(self.shapeTool, self.faceBase, self.edgeTool)
+        if self.edgeBase and self.edgeTool:
+            self.dimBase = self.getThickness(self.shapeBase, self.faceTool, self.edgeBase)
+            self.dimTool = self.getThickness(self.shapeTool, self.faceBase, self.edgeTool)
 
-        self.length = obj.Size.Value
-        self.offsetBase = obj.Offset.Value
-        self.offsetTool = self.offsetBase + self.length
+            self.length = obj.Size.Value
+            self.offsetBase = obj.Offset.Value
+            self.offsetTool = self.offsetBase + self.length
 
-        self.extraLength = obj.ExtraLength.Value
-        self.extraWidth  = obj.ExtraWidth.Value
-        self.extraDepth  = obj.ExtraDepth.Value
+            self.extraLength = obj.ExtraLength.Value
+            self.extraWidth  = obj.ExtraWidth.Value
+            self.extraDepth  = obj.ExtraDepth.Value
+        else:
+            self.dimBase = 0
+            self.dimTool = 0
 
         self.cutShape = self.shapeBase.common(self.shapeTool)
         obj.Shape = self.cutShape
@@ -253,8 +267,8 @@ class FingerJoiner:
         if section.Faces:
             raise Exception("Found faces - there aren't supposed to be any")
         if len(section.Edges) == 0:
-            self.rogueEdges = section.Edges
-            raise Exception("Found %d edges - there is supposed to be exactly 1" % len(section.Edges))
+            #raise Exception("Found %d edges - there is supposed to be exactly 1" % len(section.Edges))
+            return (False, None)
         if len(section.Edges) == 1:
             edge = section.Edges[0]
         else:
@@ -405,4 +419,3 @@ if FreeCAD.GuiUp:
     w.appendMenu('Joint', ['FingerJoint'])
     w.appendToolbar('Joint', ['FingerJoint'])
     FreeCADGui.activateWorkbench(w0.name())
-    FreeCADGui.activateWorkbench(w.name())
