@@ -34,6 +34,7 @@ class Joint:
     def __init__(self, obj, base, face, joiner):
         obj.addProperty('App::PropertyLinkSub',  'Face',       'Joint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'The object coordinating the joint.'))
         obj.addProperty('App::PropertyLink',     'Joiner',     'Joint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'The object coordinating the joint.'))
+        obj.addProperty('App::PropertyDistance', 'ExtraDepth', 'Joint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Extra width applied to joint cut.'))
         obj.addProperty('App::PropertyDistance', 'ExtraWidth', 'Joint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Extra width applied to joint cut.'))
         obj.Proxy = self
 
@@ -70,6 +71,8 @@ class Joint:
     def execute(self, obj):
         if not hasattr(obj, 'Joiner'):
             return None
+        if not hasattr(self, 'obj'):
+            self.obj = obj
 
         self.name   = obj.Name
         self.joiner = obj.Joiner.Proxy
@@ -80,6 +83,8 @@ class Joint:
             self.dim    = self.joiner.jointDimensionsFor(obj)
             self.offset = self.joiner.jointOffsetFor(obj)
             self.slack  = self.joiner.jointSlackFor(obj)
+            if 'ExtraDepth' in obj.PropertiesList:
+                self.slack.z += obj.ExtraDepth.Value
             self.shape  = self.featherSolid(self.solid, self.face, self.edge, self.dim, self.offset, self.slack, obj.ExtraWidth.Value)
             obj.Shape   = self.shape
             obj.Placement = self.getBody(obj).Placement.inverse()
@@ -163,7 +168,7 @@ class Joint:
         return solid.cut(self.cutOuts)
 
 class FingerJoiner:
-    def __init__(self, obj, base, tool):
+    def __init__(self, obj, base, tool, size=100):
         obj.addProperty('App::PropertyString',   'BaseJoint',   'Joint',  QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'One body to add joint to'))
         obj.addProperty('App::PropertyString',   'ToolJoint',   'Joint',  QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Another body to add joint to'))
         obj.addProperty('App::PropertyDistance', 'Size',        'Finger', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Extra width applied to joint cut.'))
@@ -175,12 +180,11 @@ class FingerJoiner:
         obj.Proxy = self
         obj.BaseJoint = base.Name
         obj.ToolJoint = tool.Name
+        obj.Size = size
 
         obj.setEditorMode('BaseJoint', 1) # ro
         obj.setEditorMode('ToolJoint', 1) # ro
         obj.setEditorMode('Placement', 2) # hide
-
-        obj.Size = 100
 
     def __getstate__(self):
         return None
@@ -189,6 +193,9 @@ class FingerJoiner:
 
     def execute(self, obj):
         print("%s(%s, %s)" % (obj.Name, obj.BaseJoint, obj.ToolJoint))
+        if not hasattr(self, 'obj'):
+            self.obj = obj
+
         self.jointBase = obj.Document.getObject(obj.BaseJoint)
         self.jointTool = obj.Document.getObject(obj.ToolJoint)
         self.base = self.jointBase.Proxy
