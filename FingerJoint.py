@@ -29,8 +29,133 @@ def getNormal(face):
         normal *= -1
     return normal
 
-class Joint:
 
+class JointValues:
+    def __init__(self, joiner, joint):
+        self.joiner = joiner
+        self.joint  = joint
+
+        self.jointBase = joiner.obj.Document.getObject(joiner.obj.BaseJoint)
+        self.jointTool = joiner.obj.Document.getObject(joiner.obj.ToolJoint)
+        self.base = self.jointBase.Proxy
+        self.tool = self.jointTool.Proxy
+
+        self.shapeBase = self.base.getBaseShape(self.jointBase)
+        self.shapeTool = self.tool.getBaseShape(self.jointTool)
+
+        self.faceBase = self.base.getBaseFace(self.jointBase)
+        self.faceTool = self.tool.getBaseFace(self.jointTool)
+
+        (self.flipBase, self.edgeBase) = self.getEdge(self.shapeBase, self.faceBase, self.faceTool)
+        (self.flipTool, self.edgeTool) = self.getEdge(self.shapeTool, self.faceTool, self.faceBase)
+
+        if self.edgeBase and self.edgeTool:
+            self.dimBase = self.getThickness(self.shapeBase, self.faceTool, self.edgeBase)
+            self.dimTool = self.getThickness(self.shapeTool, self.faceBase, self.edgeTool)
+
+            self.length = joiner.obj.Size.Value
+            self.offsetBase = joiner.obj.Offset.Value
+            self.offsetTool = self.offsetBase + self.length
+
+            self.extraLength = joiner.obj.ExtraLength.Value
+            self.extraWidth  = joiner.obj.ExtraWidth.Value
+            self.extraDepth  = joiner.obj.ExtraDepth.Value
+        else:
+            self.dimBase = 0
+            self.dimTool = 0
+
+    def jointIsValidFor(self, joint):
+        return hasattr(self, 'dimBase') and hasattr(self, 'dimTool') and self.dimBase != 0 and self.dimTool != 0
+
+    def jointShapeFor(self, joint):
+        if joint == self.jointBase:
+            return self.shapeBase
+        return self.shapeTool
+
+    def jointFaceFor(self, joint):
+        if joint == self.jointBase:
+            return self.faceBase
+        return self.faceTool
+
+    def jointEdgeFor(self, joint):
+        # both bodies should operate on the same edge for proper offset processing
+        return self.edgeBase
+
+    def jointDimensionsFor(self, joint):
+        if joint == self.jointBase:
+            return FreeCAD.Vector(self.length, -self.dimTool, self.dimBase)
+        return FreeCAD.Vector(self.length,  self.dimBase, self.dimTool)
+
+    def jointOffsetFor(self, joint):
+        if joint == self.jointBase:
+            return self.offsetBase
+        return self.offsetTool
+
+    def jointSlackFor(self, joint):
+        if joint == self.jointBase:
+            return FreeCAD.Vector(self.extraLength, -self.extraWidth, self.extraDepth)
+        return FreeCAD.Vector(self.extraLength, self.extraWidth, self.extraDepth)
+
+    def pointIntoSameDirection(self, p1, p2, tol = 0.001):
+        p1.normalize()
+        p2.normalize()
+        e = p1 - p2
+        return math.fabs(e.x) <= tol and math.fabs(e.y) <= tol and math.fabs(e.z) <= tol
+
+    def getEdge(self, solid, face, cutFace):
+        section = face.section(cutFace)
+        if section.Solids:
+            raise Exception("Found solids - there aren't supposed to be any")
+        if section.Faces:
+            raise Exception("Found faces - there aren't supposed to be any")
+        if len(section.Edges) == 0:
+            #raise Exception("Found %d edges - there is supposed to be exactly 1" % len(section.Edges))
+            return (False, None)
+        if len(section.Edges) == 1:
+            edge = section.Edges[0]
+        else:
+            # this can happen if the edge is interrupted by pockets, most likely from
+            # another FingerJoint operation
+            self.rogueEdges = section.Edges
+            curve = section.Edges[0].Curve
+            pts = [v.Point for e in section.Edges for v in e.Vertexes]
+            params = [curve.parameter(p) for p in pts]
+            minParam = min(params)
+            maxParam = max(params)
+            begin = curve.value(minParam)
+            end   = curve.value(maxParam)
+            edge = Part.Edge(Part.LineSegment(begin, end))
+
+        n1 = getNormal(face)
+        n2 = getNormal(cutFace)
+        nDir = n1.cross(n2)
+        eDir = edge.Vertexes[1].Point - edge.Vertexes[0].Point
+
+        if self.pointIntoSameDirection(nDir, eDir):
+            return (False, edge)
+        return (True, Part.Edge(Part.LineSegment(edge.Vertexes[1].Point, edge.Vertexes[0].Point)))
+
+    def edgesAreParallel(self, e1, e2, tol=0.0001):
+        p10 = e1.Vertexes[0].Point
+        p11 = e1.Vertexes[1].Point
+        p20 = e2.Vertexes[0].Point
+        p21 = e2.Vertexes[1].Point
+        d2 = p21 - p20 # there's no point in flipping both edges
+        return self.pointIntoSameDirection(p11 - p10, d2) or self.pointIntoSameDirection(p10 - p11, d2)
+
+    def getThickness(self, solid, cutFace, edge):
+        common = solid.common(cutFace)
+        #if len(common.Edges) != 4:
+        #    raise Exception("Found %d edges - expected exactly 1" % len(common.Edges))
+
+        eDir = edge.Vertexes[1].Point - edge.Vertexes[0].Point
+        eDir.normalize()
+        depths = [e.Length for e in common.Edges if not self.edgesAreParallel(e, edge)]
+        if depths:
+            return max(depths)
+        return 0
+
+class Joint:
     def __init__(self, obj, base, face, joiner):
         obj.addProperty('App::PropertyLinkSub',  'Face',       'Joint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'The object coordinating the joint.'))
         obj.addProperty('App::PropertyLink',     'Joiner',     'Joint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'The object coordinating the joint.'))
@@ -74,15 +199,16 @@ class Joint:
         if not hasattr(self, 'obj'):
             self.obj = obj
 
+        self.values = JointValues(obj.Joiner.Proxy, self)
+
         self.name   = obj.Name
-        self.joiner = obj.Joiner.Proxy
-        if self.joiner.jointIsValidFor(obj):
-            self.solid  = self.joiner.jointShapeFor(obj)
-            self.face   = self.joiner.jointFaceFor(obj)
-            self.edge   = self.joiner.jointEdgeFor(obj)
-            self.dim    = self.joiner.jointDimensionsFor(obj)
-            self.offset = self.joiner.jointOffsetFor(obj)
-            self.slack  = self.joiner.jointSlackFor(obj)
+        if self.values.jointIsValidFor(obj):
+            self.solid  = self.values.jointShapeFor(obj)
+            self.face   = self.values.jointFaceFor(obj)
+            self.edge   = self.values.jointEdgeFor(obj)
+            self.dim    = self.values.jointDimensionsFor(obj)
+            self.offset = self.values.jointOffsetFor(obj)
+            self.slack  = self.values.jointSlackFor(obj)
             if 'ExtraDepth' in obj.PropertiesList:
                 self.slack.z += obj.ExtraDepth.Value
             self.shape  = self.featherSolid(self.solid, self.face, self.edge, self.dim, self.offset, self.slack, obj.ExtraWidth.Value)
@@ -198,126 +324,12 @@ class FingerJoiner:
 
         self.jointBase = obj.Document.getObject(obj.BaseJoint)
         self.jointTool = obj.Document.getObject(obj.ToolJoint)
-        self.base = self.jointBase.Proxy
-        self.tool = self.jointTool.Proxy
 
-        self.shapeBase = self.base.getBaseShape(self.jointBase)
-        self.shapeTool = self.tool.getBaseShape(self.jointTool)
-
-        self.faceBase = self.base.getBaseFace(self.jointBase)
-        self.faceTool = self.tool.getBaseFace(self.jointTool)
-
-        (self.flipBase, self.edgeBase) = self.getEdge(self.shapeBase, self.faceBase, self.faceTool)
-        (self.flipTool, self.edgeTool) = self.getEdge(self.shapeTool, self.faceTool, self.faceBase)
-
-        if self.edgeBase and self.edgeTool:
-            self.dimBase = self.getThickness(self.shapeBase, self.faceTool, self.edgeBase)
-            self.dimTool = self.getThickness(self.shapeTool, self.faceBase, self.edgeTool)
-
-            self.length = obj.Size.Value
-            self.offsetBase = obj.Offset.Value
-            self.offsetTool = self.offsetBase + self.length
-
-            self.extraLength = obj.ExtraLength.Value
-            self.extraWidth  = obj.ExtraWidth.Value
-            self.extraDepth  = obj.ExtraDepth.Value
-        else:
-            self.dimBase = 0
-            self.dimTool = 0
+        self.shapeBase = self.jointBase.Proxy.getBaseShape(self.jointBase)
+        self.shapeTool = self.jointTool.Proxy.getBaseShape(self.jointTool)
 
         self.cutShape = self.shapeBase.common(self.shapeTool)
         obj.Shape = self.cutShape
-
-    def jointIsValidFor(self, joint):
-        return hasattr(self, 'dimBase') and hasattr(self, 'dimTool') and self.dimBase != 0 and self.dimTool != 0
-
-    def jointShapeFor(self, joint):
-        if joint == self.jointBase:
-            return self.shapeBase
-        return self.shapeTool
-
-    def jointFaceFor(self, joint):
-        if joint == self.jointBase:
-            return self.faceBase
-        return self.faceTool
-
-    def jointEdgeFor(self, joint):
-        # both bodies should operate on the same edge for proper offset processing
-        return self.edgeBase
-
-    def jointDimensionsFor(self, joint):
-        if joint == self.jointBase:
-            return FreeCAD.Vector(self.length, -self.dimTool, self.dimBase)
-        return FreeCAD.Vector(self.length,  self.dimBase, self.dimTool)
-
-    def jointOffsetFor(self, joint):
-        if joint == self.jointBase:
-            return self.offsetBase
-        return self.offsetTool
-
-    def jointSlackFor(self, joint):
-        if joint == self.jointBase:
-            return FreeCAD.Vector(self.extraLength, -self.extraWidth, self.extraDepth)
-        return FreeCAD.Vector(self.extraLength, self.extraWidth, self.extraDepth)
-
-    def pointIntoSameDirection(self, p1, p2, tol = 0.001):
-        p1.normalize()
-        p2.normalize()
-        e = p1 - p2
-        return math.fabs(e.x) <= tol and math.fabs(e.y) <= tol and math.fabs(e.z) <= tol
-
-    def getEdge(self, solid, face, cutFace):
-        section = face.section(cutFace)
-        if section.Solids:
-            raise Exception("Found solids - there aren't supposed to be any")
-        if section.Faces:
-            raise Exception("Found faces - there aren't supposed to be any")
-        if len(section.Edges) == 0:
-            #raise Exception("Found %d edges - there is supposed to be exactly 1" % len(section.Edges))
-            return (False, None)
-        if len(section.Edges) == 1:
-            edge = section.Edges[0]
-        else:
-            # this can happen if the edge is interrupted by pockets, most likely from
-            # another FingerJoint operation
-            self.rogueEdges = section.Edges
-            curve = section.Edges[0].Curve
-            pts = [v.Point for e in section.Edges for v in e.Vertexes]
-            params = [curve.parameter(p) for p in pts]
-            minParam = min(params)
-            maxParam = max(params)
-            begin = curve.value(minParam)
-            end   = curve.value(maxParam)
-            edge = Part.Edge(Part.LineSegment(begin, end))
-
-        n1 = getNormal(face)
-        n2 = getNormal(cutFace)
-        nDir = n1.cross(n2)
-        eDir = edge.Vertexes[1].Point - edge.Vertexes[0].Point
-
-        if self.pointIntoSameDirection(nDir, eDir):
-            return (False, edge)
-        return (True, Part.Edge(Part.LineSegment(edge.Vertexes[1].Point, edge.Vertexes[0].Point)))
-
-    def edgesAreParallel(self, e1, e2, tol=0.0001):
-        p10 = e1.Vertexes[0].Point
-        p11 = e1.Vertexes[1].Point
-        p20 = e2.Vertexes[0].Point
-        p21 = e2.Vertexes[1].Point
-        d2 = p21 - p20 # there's no point in flipping both edges
-        return self.pointIntoSameDirection(p11 - p10, d2) or self.pointIntoSameDirection(p10 - p11, d2)
-
-    def getThickness(self, solid, cutFace, edge):
-        common = solid.common(cutFace)
-        #if len(common.Edges) != 4:
-        #    raise Exception("Found %d edges - expected exactly 1" % len(common.Edges))
-
-        eDir = edge.Vertexes[1].Point - edge.Vertexes[0].Point
-        eDir.normalize()
-        depths = [e.Length for e in common.Edges if not self.edgesAreParallel(e, edge)]
-        if depths:
-            return max(depths)
-        return 0
 
 class ViewProviderFingerJoint:
     def __init__(self, vobj):
