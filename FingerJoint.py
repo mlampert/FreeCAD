@@ -164,8 +164,8 @@ class Joint:
 
 class FingerJoiner:
     def __init__(self, obj, base, tool):
-        obj.addProperty('App::PropertyLink',     'Base',        'Joint',  QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'One body to add joint to'))
-        obj.addProperty('App::PropertyLink',     'Tool',        'Joint',  QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Another body to add joint to'))
+        obj.addProperty('App::PropertyString',   'BaseJoint',   'Joint',  QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'One body to add joint to'))
+        obj.addProperty('App::PropertyString',   'ToolJoint',   'Joint',  QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Another body to add joint to'))
         obj.addProperty('App::PropertyDistance', 'Size',        'Finger', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Extra width applied to joint cut.'))
         obj.addProperty('App::PropertyDistance', 'Offset',      'Finger', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Extra width applied to joint cut.'))
         obj.addProperty('App::PropertyDistance', 'ExtraLength', 'Finger', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Extra width applied to joint cut.'))
@@ -173,11 +173,11 @@ class FingerJoiner:
         obj.addProperty('App::PropertyDistance', 'ExtraDepth',  'Finger', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Extra width applied to joint cut.'))
 
         obj.Proxy = self
-        obj.Base = base
-        obj.Tool = tool
+        obj.BaseJoint = base.Name
+        obj.ToolJoint = tool.Name
 
-        obj.setEditorMode('Base', 1) # ro
-        obj.setEditorMode('Tool', 1) # ro
+        obj.setEditorMode('BaseJoint', 1) # ro
+        obj.setEditorMode('ToolJoint', 1) # ro
         obj.setEditorMode('Placement', 2) # hide
 
         obj.Size = 100
@@ -188,10 +188,9 @@ class FingerJoiner:
         return None
 
     def execute(self, obj):
-        print('')
-        self.joints = [o for o in obj.InList if hasattr(o, 'Proxy') and hasattr(o, 'Joiner')]
-        self.jointBase = next(j for j in self.joints if j.Proxy.getBaseObject(j).Name == obj.Base.Name)
-        self.jointTool = next(j for j in self.joints if j.Proxy.getBaseObject(j).Name == obj.Tool.Name)
+        print("%s(%s, %s)" % (obj.Name, obj.BaseJoint, obj.ToolJoint))
+        self.jointBase = obj.Document.getObject(obj.BaseJoint)
+        self.jointTool = obj.Document.getObject(obj.ToolJoint)
         self.base = self.jointBase.Proxy
         self.tool = self.jointTool.Proxy
 
@@ -223,7 +222,7 @@ class FingerJoiner:
         obj.Shape = self.cutShape
 
     def jointIsValidFor(self, joint):
-        return self.dimBase != 0 and self.dimTool != 0
+        return hasattr(self, 'dimBase') and hasattr(self, 'dimTool') and self.dimBase != 0 and self.dimTool != 0
 
     def jointShapeFor(self, joint):
         if joint == self.jointBase:
@@ -378,10 +377,11 @@ def Create(name):
     if len(sel) == 2 and len(sel[0].SubObjects) == 1 and len(sel[1].SubObjects) == 1:
         FreeCAD.ActiveDocument.openTransaction("Create matching finger joint cuts")
         joiner = FreeCAD.ActiveDocument.addObject('Part::FeaturePython', name)
-        finger = FingerJoiner(joiner, sel[0].Object, sel[1].Object)
 
         (o0, p0) = createJoint(sel[0].Object, sel[0].SubElementNames[0], joiner)
         (o1, p1) = createJoint(sel[1].Object, sel[1].SubElementNames[0], joiner)
+
+        finger = FingerJoiner(joiner, o0, o1)
 
         if FreeCAD.GuiUp:
             ViewProviderFingerJoint(joiner.ViewObject)
@@ -419,3 +419,14 @@ if FreeCAD.GuiUp:
     w.appendMenu('Joint', ['FingerJoint'])
     w.appendToolbar('Joint', ['FingerJoint'])
     FreeCADGui.activateWorkbench(w0.name())
+
+
+def ConvertFingerJoiners():
+    fingers = [o for o in FreeCAD.ActiveDocument.Objects if hasattr(o, 'Proxy') and isinstance(o.Proxy, FingerJoiner)]
+    for f in fingers:
+        f.addProperty('App::PropertyString',   'BaseJoint',   'Joint',  QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'One body to add joint to'))
+        f.addProperty('App::PropertyString',   'ToolJoint',   'Joint',  QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Another body to add joint to'))
+        f.BaseJoint = f.Base.Name
+        f.ToolJoint = f.Tool.Name
+        f.removeProperty('Base')
+        f.removeProperty('Tool')
