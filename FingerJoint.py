@@ -31,9 +31,12 @@ def getNormal(face):
 
 
 class JointValues:
-    def __init__(self, joiner, joint):
-        self.joiner = joiner
+    def __init__(self, joinerObject, joint):
+        self.joiner = joinerObject.Proxy
         self.joint  = joint
+
+        joiner = self.joiner
+        joiner.setObject(joinerObject)
 
         self.jointBase = joiner.obj.Document.getObject(joiner.obj.BaseJoint)
         self.jointTool = joiner.obj.Document.getObject(joiner.obj.ToolJoint)
@@ -114,24 +117,33 @@ class JointValues:
             #raise Exception("Found %d edges - there is supposed to be exactly 1" % len(section.Edges))
             return (False, None)
         if len(section.Edges) == 1:
+            #print("simple edge")
             edge = section.Edges[0]
         else:
             # this can happen if the edge is interrupted by pockets, most likely from
             # another FingerJoint operation
+            #print("stukko edge")
             self.rogueEdges = section.Edges
             curve = section.Edges[0].Curve
             pts = [v.Point for e in section.Edges for v in e.Vertexes]
             params = [curve.parameter(p) for p in pts]
             minParam = min(params)
             maxParam = max(params)
+            #print("stukko from %.2f to %.2f" % (minParam, maxParam))
             begin = curve.value(minParam)
             end   = curve.value(maxParam)
+            #print("stukko start(%.2f, %.2f, %.2f) end(%.2f, %.2f, %.2f)" % (begin.x, begin.y, begin.z, end.x, end.y, end.z))
             edge = Part.Edge(Part.LineSegment(begin, end))
 
         n1 = getNormal(face)
         n2 = getNormal(cutFace)
+        #print("getEdge n1(%.2f, %.2f, %.2f) n2(%.2f, %.2f, %.2f)" % (n1.x, n1.y, n1.z, n2.x, n2.y, n2.z))
         nDir = n1.cross(n2)
+        if FreeCAD.Vector() == nDir:
+            # seems we've lost track of one of our faces ...
+            print("%s face=%s" % (self.joint.name, self.joint.obj.Face[1][0]))
         eDir = edge.Vertexes[1].Point - edge.Vertexes[0].Point
+        #print("getEdge nDir(%.2f, %.2f, %.2f) eDir(%.2f, %.2f, %.2f)" % (nDir.x, nDir.y, nDir.z, eDir.x, eDir.y, eDir.z))
 
         if self.pointIntoSameDirection(nDir, eDir):
             return (False, edge)
@@ -202,7 +214,7 @@ class Joint:
             self.obj = obj
 
         self.name   = obj.Name
-        self.values = JointValues(obj.Joiner.Proxy, self)
+        self.values = JointValues(obj.Joiner, self)
         if self.values.jointIsValidFor(obj):
             self.solid  = self.values.jointShapeFor(obj)
             self.face   = self.values.jointFaceFor(obj)
@@ -295,13 +307,13 @@ class Joint:
             self.cut.append(cut)
             trans  += diff
             offset += dim.x
-            print("%s start with %.2f" % (self.name, initialLength))
-        print("%s start(%.2f, %.2f, %.2f)" % (self.name, p0.x, p0.y, p0.z))
-        print("%s trans(%.2f, %.2f, %.2f)" % (self.name, trans.x, trans.y, trans.z))
+            #print("%s start with %.2f" % (self.name, initialLength))
+        #print("%s start(%.2f, %.2f, %.2f)" % (self.name, p0.x, p0.y, p0.z))
+        #print("%s trans(%.2f, %.2f, %.2f)" % (self.name, trans.x, trans.y, trans.z))
 
         offset += dim.x
         while offset + dim.x < edge.Length:
-            print("  %.2f / %.2f" % (offset, edge.Length))
+            #print("  %.2f / %.2f" % (offset, edge.Length))
             cut = self.cutSolid.copy()
             cut.translate(trans)
             self.cut.append(cut)
@@ -313,9 +325,9 @@ class Joint:
             cut = self.extrudeCutFace(finalLength, slack.x)
             cut.translate(trans)
             self.cut.append(cut)
-            print("%s end with %.2f" % (self.name, finalLength))
+            #print("%s end with %.2f" % (self.name, finalLength))
 
-        print('')
+        #print('')
         self.cutOuts = Part.makeCompound(self.cut)
         return solid.cut(self.cutOuts)
 
@@ -350,8 +362,11 @@ class FingerJoiner:
     def __setstate__(self, state):
         return None
 
+    def setObject(self, obj):
+        self.obj = obj
+
     def execute(self, obj):
-        print("%s(%s, %s)" % (obj.Name, obj.BaseJoint, obj.ToolJoint))
+        #print("%s(%s, %s)" % (obj.Name, obj.BaseJoint, obj.ToolJoint))
         if not hasattr(self, 'obj'):
             self.obj = obj
 
@@ -473,12 +488,7 @@ if FreeCAD.GuiUp:
     FreeCADGui.activateWorkbench(w0.name())
 
 
-def ConvertFingerJoiners():
+def TouchAll():
     fingers = [o for o in FreeCAD.ActiveDocument.Objects if hasattr(o, 'Proxy') and isinstance(o.Proxy, FingerJoiner)]
     for f in fingers:
-        f.addProperty('App::PropertyString',   'BaseJoint',   'Joint',  QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'One body to add joint to'))
-        f.addProperty('App::PropertyString',   'ToolJoint',   'Joint',  QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Another body to add joint to'))
-        f.BaseJoint = f.Base.Name
-        f.ToolJoint = f.Tool.Name
-        f.removeProperty('Base')
-        f.removeProperty('Tool')
+        f.touch()
