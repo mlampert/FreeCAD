@@ -4,6 +4,9 @@ import math
 
 from PySide import QtCore
 
+
+DefaultSize = 20
+
 if FreeCAD.GuiUp:
     import FreeCADGui
     from PySide import QtGui
@@ -208,7 +211,9 @@ class Joint:
         return face
 
     def execute(self, obj):
+        print("%s" % obj.Name)
         if not hasattr(obj, 'Joiner'):
+            print("%s no Joiner" % (obj.Name))
             return None
         if not hasattr(self, 'obj'):
             self.obj = obj
@@ -229,6 +234,7 @@ class Joint:
             obj.Shape   = self.shape
             obj.Placement = self.getBody(obj).Placement.inverse()
         else:
+            print("%s invalid" % (self.name))
             obj.Shape = self.getBaseShape(obj)
             obj.Placement = self.getBaseObject(obj).Placement
 
@@ -366,7 +372,7 @@ class FingerJoiner:
         self.obj = obj
 
     def execute(self, obj):
-        #print("%s(%s, %s)" % (obj.Name, obj.BaseJoint, obj.ToolJoint))
+        print("%s(%s, %s)" % (obj.Name, obj.BaseJoint, obj.ToolJoint))
         if not hasattr(self, 'obj'):
             self.obj = obj
 
@@ -388,8 +394,8 @@ class ViewProviderFingerJoint:
     def attach(self, vobj):
         self.Object = vobj.Object
 
-    #def getIcon(self):
-    #    return ':/icons/FingerJoint.svg'
+    def getIcon(self):
+        return Command.Icon
 
     def __getstate__(self):
         return None
@@ -418,8 +424,8 @@ class ViewProviderJoint:
             return []
         return [self.Object.Face[0]]
 
-    #def getIcon(self):
-    #    return ':/icons/FingerJoint.svg'
+    def getIcon(self):
+        return Command.Icon
 
     def __getstate__(self):
         return None
@@ -448,7 +454,7 @@ def Create(name):
         (o0, p0) = createJoint(sel[0].Object, sel[0].SubElementNames[0], joiner)
         (o1, p1) = createJoint(sel[1].Object, sel[1].SubElementNames[0], joiner)
 
-        finger = FingerJoiner(joiner, o0, o1)
+        finger = FingerJoiner(joiner, o0, o1, DefaultSize)
 
         if FreeCAD.GuiUp:
             ViewProviderFingerJoint(joiner.ViewObject)
@@ -456,8 +462,8 @@ def Create(name):
             ViewProviderJoint(o0.ViewObject)
             ViewProviderJoint(o1.ViewObject)
 
-        FreeCAD.ActiveDocument.recompute()
         FreeCAD.ActiveDocument.commitTransaction()
+        FreeCAD.ActiveDocument.recompute()
         return joiner
 
     else:
@@ -465,8 +471,10 @@ def Create(name):
 
 
 class Command:
+    Icon = 'FingerJoint.svg'
+
     def GetResources(self):
-        return {'Pixmap'  : 'FingerJoint.svg',
+        return {'Pixmap'  : self.Icon,
                 'MenuText': QtCore.QT_TRANSLATE_NOOP("FingerJoint","Finger Joint"),
                 'Accel': "",
                 'ToolTip': QtCore.QT_TRANSLATE_NOOP("FingerJoint","Creates matching finger joints in two intersecting bodies.")}
