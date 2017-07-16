@@ -283,18 +283,15 @@ class Joint:
         self.cutFace = Part.Face(self.cutWire)
 
         # create solid we can use as a template
-        self.cutSolid = self.cutFace.extrude(self.dirLength * self.scale * (dim.x + slack.x))
-        if math.fabs(slack.x) > 0.000001:
-            self.cutSlack = self.cutFace.extrude(self.dirLength * -1 * self.scale * slack.x)
-            self.cutSolid = self.cutSolid.fuse(self.cutSlack)
+        self.cutSolid = self.extrudeCutFace(dim.x, slack.x)
 
         diff  = self.dirLength * self.scale * self.dim.x
         trans = self.dirLength * self.scale * offset + diff
         self.cut = []
 
         if startWithCut:
-            initialLength = dim.x + offset - slack.x
-            cut = self.cutFace.extrude(self.dirLength * self.scale * initialLength)
+            initialLength = dim.x + offset
+            cut = self.extrudeCutFace(initialLength, slack.x)
             self.cut.append(cut)
             trans  += diff
             offset += dim.x
@@ -302,7 +299,8 @@ class Joint:
         print("%s start(%.2f, %.2f, %.2f)" % (self.name, p0.x, p0.y, p0.z))
         print("%s trans(%.2f, %.2f, %.2f)" % (self.name, trans.x, trans.y, trans.z))
 
-        while offset < edge.Length:
+        offset += dim.x
+        while offset + dim.x < edge.Length:
             print("  %.2f / %.2f" % (offset, edge.Length))
             cut = self.cutSolid.copy()
             cut.translate(trans)
@@ -310,9 +308,23 @@ class Joint:
             trans  += 2 * diff
             offset += 2 * dim.x
 
+        if offset < edge.Length:
+            finalLength = edge.Length - offset
+            cut = self.extrudeCutFace(finalLength, slack.x)
+            cut.translate(trans)
+            self.cut.append(cut)
+            print("%s end with %.2f" % (self.name, finalLength))
+
         print('')
         self.cutOuts = Part.makeCompound(self.cut)
         return solid.cut(self.cutOuts)
+
+    def extrudeCutFace(self, length, slack):
+        solid = self.cutFace.extrude(self.dirLength * self.scale * (length + slack))
+        if math.fabs(slack) > 0.000001:
+            bwd = self.cutFace.extrude(self.dirLength * -1 * self.scale * slack)
+            solid = solid.fuse(bwd)
+        return solid
 
 class FingerJoiner:
     def __init__(self, obj, base, tool, size=100):
