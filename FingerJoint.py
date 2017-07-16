@@ -87,14 +87,16 @@ class JointValues:
         return FreeCAD.Vector(self.length,  self.dimBase, self.dimTool)
 
     def jointOffsetFor(self, joint):
-        if joint == self.jointBase:
-            return self.offsetBase
-        return self.offsetTool
+        return self.offsetBase
 
     def jointSlackFor(self, joint):
         if joint == self.jointBase:
             return FreeCAD.Vector(self.extraLength, -self.extraWidth, self.extraDepth)
         return FreeCAD.Vector(self.extraLength, self.extraWidth, self.extraDepth)
+
+    def jointStartWithCut(self, joint):
+        return joint != self.jointBase
+
 
     def pointIntoSameDirection(self, p1, p2, tol = 0.001):
         p1.normalize()
@@ -199,69 +201,53 @@ class Joint:
         if not hasattr(self, 'obj'):
             self.obj = obj
 
-        self.values = JointValues(obj.Joiner.Proxy, self)
-
         self.name   = obj.Name
+        self.values = JointValues(obj.Joiner.Proxy, self)
         if self.values.jointIsValidFor(obj):
             self.solid  = self.values.jointShapeFor(obj)
             self.face   = self.values.jointFaceFor(obj)
             self.edge   = self.values.jointEdgeFor(obj)
             self.dim    = self.values.jointDimensionsFor(obj)
             self.offset = self.values.jointOffsetFor(obj)
+            self.startWithCut = self.values.jointStartWithCut(obj)
             self.slack  = self.values.jointSlackFor(obj)
             if 'ExtraDepth' in obj.PropertiesList:
                 self.slack.z += obj.ExtraDepth.Value
-            self.shape  = self.featherSolid(self.solid, self.face, self.edge, self.dim, self.offset, self.slack, obj.ExtraWidth.Value)
+            self.shape  = self.featherSolid(self.solid, self.face, self.edge, self.dim, self.startWithCut, self.offset, self.slack, obj.ExtraWidth.Value)
             obj.Shape   = self.shape
             obj.Placement = self.getBody(obj).Placement.inverse()
         else:
             obj.Shape = self.getBaseShape(obj)
             obj.Placement = self.getBaseObject(obj).Placement
 
-    def featherSolid(self, solid, face, edge, dim, offset=0, slack = FreeCAD.Vector(0,0,0), extend=0):
+    def featherSolid(self, solid, face, edge, dim, startWithCut, offset=0, slack = FreeCAD.Vector(0,0,0), extend=0):
         '''
         featherSolid(solid, face, edge, dim, offst=0) .... create finger joint feathers,
           solid  ... the solid to feature
           face   ... a face on the solid
           edge   ... an edge on the face along which to feather
           dim    ... vector of feather dimensions Vector(length, width, depth)
-          offset ... offset from the edge's starting point to the first feather cut
-          slack  ... vector of extra material to be removed in each direction (length, width, depth)
-          extend ... extend the width of the finger in one direction by given amount
+          startWithCut    ... set to True if the joint starts with a cut, False if it should start with a notch
+          offset = 0      ... offset from the edge's starting point to the first feather cut
+          slack  = (0,0,) ... vector of extra material to be removed in each direction (length, width, depth)
+          extend = 0      ... extend the width of the finger in one direction by given amount
                      positive values are in finger direction, negative values in opposite direction
         '''
 
-        #self.solid = solid
-        #self.face = face
-        #self.edge = edge
-        #self.dim = dim
-        #self.offset = offset
-        self.start = edge.Vertexes[0].Point
-        self.dir = (edge.Vertexes[1].Point - edge.Vertexes[0].Point).normalize()
+        # First determine the directions of the feathers
+        self.normal = getNormal(face)
+        self.dirDepth = FreeCAD.Vector() - self.normal
+        self.dirLength = (edge.Vertexes[1].Point - edge.Vertexes[0].Point).normalize()
+        self.dirWidth  = self.dirDepth.cross(self.dirLength)
 
         # there's a possibility this will always be 1.0 ....
         self.scale = (edge.LastParameter - edge.FirstParameter) / edge.Length
 
-        self.normal = getNormal(face)
+        self.start = edge.Vertexes[0].Point
 
-        diff = self.dir * (self.scale * self.dim.x)
-
-        p0 = self.start + self.dir * (self.scale * (self.offset - slack.x))
-        # the first side of the cutout is along the edge
-        p1 = p0 + diff + self.dir * (self.scale * 2 * slack.x)
-        # second side is in the opposite direction of the normal
-        e2 = self.normal * (dim.z + slack.z)
-        self.e2 = e2
-
-        p2 = p1 - e2
-        p3 = p0 - e2
-
-        self.cutPoints = [p0,p1,p2,p3]
-        self.cutWire = Part.makePolygon([p0,p1,p2,p3,p0])
-        self.cutFace = Part.Face(self.cutWire)
-
-        v = Part.Vertex(self.dir)
-        v.rotate(FreeCAD.Vector(), self.normal, -90)
+        pts = []
+        p0 = self.start
+        pts.append(p0)
 
         width = dim.y + slack.y
         if extend > 0:
@@ -269,27 +255,62 @@ class Joint:
                 width += extend
             else:
                 width -= extend
-        self.cutSolid = self.cutFace.extrude(v.Point * self.scale * width)
+        p1 = p0 + self.dirWidth * self.scale * width
+        pts.append(p1)
 
-        if math.fabs(slack.y) > 0.000001 or extend < 0:
-            if width < 0:
-                width = slack.y + extend
+        # depth cut
+        self.eDepth  = self.dirDepth * self.scale * (dim.z + slack.z)
+
+        p2 = p1 + self.eDepth
+        pts.append(p2)
+        if math.fabs(slack.y) > 0.00001 or extend < 0:
+            backWidth = slack.y
+            if backWidth > 0:
+                backWidth += extend
             else:
-                width = slack.y - extend
-            self.cutFinger = self.cutSolid
-            self.cutSlack = self.cutFace.extrude(v.Point * -1 * self.scale * width)
+                backWidth -= extend
+            p4 = p0 - self.dirWidth * self.scale * backWidth
+            p3 = p4 + self.eDepth
+            pts.append(p3)
+            pts.append(p4)
+        else:
+            p3 = p0 + self.eDepth
+            pts.append(p3)
+        pts.append(p0)
+
+        self.cutPoints = pts
+        self.cutWire = Part.makePolygon(pts)
+        self.cutFace = Part.Face(self.cutWire)
+
+        # create solid we can use as a template
+        self.cutSolid = self.cutFace.extrude(self.dirLength * self.scale * (dim.x + slack.x))
+        if math.fabs(slack.x) > 0.000001:
+            self.cutSlack = self.cutFace.extrude(self.dirLength * -1 * self.scale * slack.x)
             self.cutSolid = self.cutSolid.fuse(self.cutSlack)
 
-        trans = FreeCAD.Vector(0,0,0)
+        diff  = self.dirLength * self.scale * self.dim.x
+        trans = self.dirLength * self.scale * offset + diff
         self.cut = []
 
+        if startWithCut:
+            initialLength = dim.x + offset - slack.x
+            cut = self.cutFace.extrude(self.dirLength * self.scale * initialLength)
+            self.cut.append(cut)
+            trans  += diff
+            offset += dim.x
+            print("%s start with %.2f" % (self.name, initialLength))
+        print("%s start(%.2f, %.2f, %.2f)" % (self.name, p0.x, p0.y, p0.z))
+        print("%s trans(%.2f, %.2f, %.2f)" % (self.name, trans.x, trans.y, trans.z))
+
         while offset < edge.Length:
+            print("  %.2f / %.2f" % (offset, edge.Length))
             cut = self.cutSolid.copy()
             cut.translate(trans)
             self.cut.append(cut)
             trans  += 2 * diff
             offset += 2 * dim.x
 
+        print('')
         self.cutOuts = Part.makeCompound(self.cut)
         return solid.cut(self.cutOuts)
 
