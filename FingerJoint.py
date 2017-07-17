@@ -168,10 +168,10 @@ class Joint:
      
 
     def __init__(self, obj, base, face, joiner):
-        obj.addProperty('App::PropertyLinkSub',  'Face',       'Joint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'The actual Face used for calculating the cuts.'))
-        obj.addProperty('App::PropertyLink',     'Joiner',     'Joint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'The object coordinating the joint.'))
-        obj.addProperty('App::PropertyDistance', 'ExtraDepth', 'Joint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Extra depth applied to joint cut.'))
-        obj.addProperty('App::PropertyDistance', 'ExtraWidth', 'Joint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Extra width applied to joint cut.'))
+        obj.addProperty('App::PropertyLinkSub',  'Face',       'FingerJoint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'The actual Face used for calculating the cuts.'))
+        obj.addProperty('App::PropertyLink',     'Joiner',     'FingerJoint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'The object coordinating the joint.'))
+        obj.addProperty('App::PropertyDistance', 'ExtraDepth', 'FingerJoint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Extra depth applied to joint cut.'))
+        obj.addProperty('App::PropertyDistance', 'ExtraWidth', 'FingerJoint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Extra width applied to joint cut.'))
         obj.Proxy = self
 
         obj.Face     = (base, face)
@@ -184,8 +184,8 @@ class Joint:
 
     def getBaseShape(self, obj):
         '''returns base shape, positioned and oriented in world CS'''
-        body = obj.getParentGeoFeatureGroup()
-        return body if body else base
+        body = obj.Face[0].getParentGeoFeatureGroup()
+        return body.Shape if body else obj.Face[0].Shape
 
     def getBaseFace(self, obj):
         '''returns base face, positioned and oriented in world CS'''
@@ -478,11 +478,19 @@ if FreeCAD.GuiUp:
     FreeCADGui.activateWorkbench(w0.name())
 
 
-def TouchAll():
+def getAllJoiners():
+    '''Returns all Joiner objects in the active document.'''
+    return [o for o in FreeCAD.ActiveDocument.Objects if hasattr(o, 'Proxy') and isinstance(o.Proxy, FingerJoiner)]
+
+def getAllJoints():
+    '''Returns all Joint objects in the active document.'''
+    return [o for o in FreeCAD.ActiveDocument.Objects if hasattr(o, 'Proxy') and isinstance(o.Proxy, Joint)]
+
+def touchAll():
     '''
     Marks all Joiner objects in the active document for recomputation.
     This can be handy if a lot of parts move around because the counterpart of a Joint does not get updated automatically.
     '''
-    fingers = [o for o in FreeCAD.ActiveDocument.Objects if hasattr(o, 'Proxy') and isinstance(o.Proxy, FingerJoiner)]
-    for f in fingers:
-        f.touch()
+    for j in getAllJoiners():
+        j.touch()
+
