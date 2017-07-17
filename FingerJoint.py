@@ -168,7 +168,6 @@ class Joint:
      
 
     def __init__(self, obj, base, face, joiner):
-        obj.addProperty('App::PropertyLink',     'BaseFeature','Joint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'The base feature that is being modified, typically the same as referenced in Face.'))
         obj.addProperty('App::PropertyLinkSub',  'Face',       'Joint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'The actual Face used for calculating the cuts.'))
         obj.addProperty('App::PropertyLink',     'Joiner',     'Joint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'The object coordinating the joint.'))
         obj.addProperty('App::PropertyDistance', 'ExtraDepth', 'Joint', QtCore.QT_TRANSLATE_NOOP('FingerJoint', 'Extra depth applied to joint cut.'))
@@ -177,8 +176,6 @@ class Joint:
 
         obj.Face     = (base, face)
         obj.Joiner   = joiner
-        body = base.getParentGeoFeatureGroup()
-        obj.BaseFeature = body if body else base
 
     def __getstate__(self):
         return None
@@ -187,7 +184,8 @@ class Joint:
 
     def getBaseShape(self, obj):
         '''returns base shape, positioned and oriented in world CS'''
-        return obj.BaseFeature.Shape
+        body = obj.getParentGeoFeatureGroup()
+        return body if body else base
 
     def getBaseFace(self, obj):
         '''returns base face, positioned and oriented in world CS'''
