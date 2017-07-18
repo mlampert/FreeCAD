@@ -262,10 +262,11 @@ class Joint:
         pts.append(p2)
         if math.fabs(slack.y) > 0.00001 or extend < 0:
             backWidth = slack.y
-            if backWidth > 0:
-                backWidth += extend
-            else:
-                backWidth -= extend
+            if extend < 0:
+                if backWidth > 0:
+                    backWidth -= extend
+                else:
+                    backWidth += extend
             p4 = p0 - self.dirWidth * self.scale * backWidth
             p3 = p4 + self.eDepth
             pts.append(p3)
@@ -480,11 +481,11 @@ if FreeCAD.GuiUp:
 
 def getAllJoiners():
     '''Returns all Joiner objects in the active document.'''
-    return [o for o in FreeCAD.ActiveDocument.Objects if hasattr(o, 'Proxy') and isinstance(o.Proxy, FingerJoiner)]
+    return [o for o in FreeCAD.ActiveDocument.Objects if hasattr(o, 'BaseJoint') and hasattr(o, 'ToolJoint')]
 
 def getAllJoints():
     '''Returns all Joint objects in the active document.'''
-    return [o for o in FreeCAD.ActiveDocument.Objects if hasattr(o, 'Proxy') and isinstance(o.Proxy, Joint)]
+    return [o for o in FreeCAD.ActiveDocument.Objects if hasattr(o, 'Joiner')]
 
 def touchAll():
     '''
@@ -494,3 +495,15 @@ def touchAll():
     for j in getAllJoiners():
         j.touch()
 
+def setAllExtra(length = None, width = None, depth = None):
+    '''
+    setAllExtra(lenght, width, depth) ... all parameters optional.
+    Sets the extra values on all Joiner objects in the current document, regardless of waht they were before.
+    '''
+    for o in getAllJoiners():
+        if length is not None:
+            o.ExtraLength = length
+        if width is not None:
+            o.ExtraWidth = width
+        if depth is not None:
+            o.ExtraDepth = depth
