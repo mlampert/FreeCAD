@@ -214,7 +214,7 @@ class Joint:
             self.shape  = self.featherSolid(self.solid, self.face, self.edge, self.dim, self.startWithCut, self.offset, self.slack, obj.ExtraWidth.Value)
             obj.Shape   = self.shape
         else:
-            print("%s invalid" % (self.name))
+            FreeCAD.Console.PrintWarning("Joint %s invalid\n" % (self.name))
             obj.Shape = self.getBaseShape(obj)
 
     def featherSolid(self, solid, face, edge, dim, startWithCut, offset=0, slack = FreeCAD.Vector(0,0,0), extend=0):
@@ -487,13 +487,6 @@ def getAllJoints():
     '''Returns all Joint objects in the active document.'''
     return [o for o in FreeCAD.ActiveDocument.Objects if hasattr(o, 'Joiner')]
 
-def touchAll():
-    '''
-    Marks all Joiner objects in the active document for recomputation.
-    This can be handy if a lot of parts move around because the counterpart of a Joint does not get updated automatically.
-    '''
-    for j in getAllJoiners():
-        j.touch()
 
 def setAllExtra(length = None, width = None, depth = None):
     '''
@@ -514,7 +507,7 @@ def assignFace(force = False):
     '''
     sel = FreeCADGui.Selection.getSelectionEx()
     if len(sel) != 1 or len(sel[0].SubElementNames) != 1:
-        print("Select exactly one Face.")
+        FreeCAD.Console.PrintError("Please select exactly one Face.\n")
         return
     obj  = sel[0].Object
     face = sel[0].SubElementNames[0]
@@ -526,6 +519,7 @@ def assignFace(force = False):
                 o.Face = (obj, face)
                 return True
             else:
-                print("Base object mismatch, selected %s, stored object %s" % (obj.Label, o.Face[0].Label))
+                FreeCAD.Console.PrintWarning("Base object mismatch, selected %s, stored object %s" % (obj.Label, o.Face[0].Label))
                 return False
+    FreeCAD.Console.PrintWarning("No Joint found that uses %s as it's base object" % (obj.Label))
     return None
