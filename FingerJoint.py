@@ -507,3 +507,25 @@ def setAllExtra(length = None, width = None, depth = None):
             o.ExtraWidth = width
         if depth is not None:
             o.ExtraDepth = depth
+
+def assignFace(force = False):
+    '''
+    assignFace(force=False) ... assigns the currently selected face to the parent Joint.
+    '''
+    sel = FreeCADGui.Selection.getSelectionEx()
+    if len(sel) != 1 or len(sel[0].SubElementNames) != 1:
+        print("Select exactly one Face.")
+        return
+    obj  = sel[0].Object
+    face = sel[0].SubElementNames[0]
+
+    joint = None
+    for o in obj.InList:
+        if hasattr(o, 'Joiner'):
+            if o.Face[0] == obj or force:
+                o.Face = (obj, face)
+                return True
+            else:
+                print("Base object mismatch, selected %s, stored object %s" % (obj.Label, o.Face[0].Label))
+                return False
+    return None
