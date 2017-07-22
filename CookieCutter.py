@@ -55,7 +55,7 @@ class CookieCutter:
         hol = Part.Compound(holes) if holes else None
         return (out, hol, None)
 
-class DrawCutViewProvider:
+class CookieCutterViewProvider:
     def __init__(self, vobj):
         vobj.Proxy = self
 
@@ -75,16 +75,16 @@ class DrawCutViewProvider:
         return children
 
 def CreateFromTree(tree, name):
-    def createDrawCut(o, children):
+    def createCookieCutter(o, children):
         obj = FreeCAD.ActiveDocument.addObject('Part::FeaturePython', 'CookieCutter')
         cut = CookieCutter(obj, o, children)
         if FreeCAD.GuiUp:
-            DrawCutViewProvider(obj.ViewObject)
+            CookieCutterViewProvider(obj.ViewObject)
         return obj
 
     def recursiveCreate(tree):
         children = [recursiveCreate(child) for child in tree.children]
-        obj = createDrawCut(tree.obj, children)
+        obj = createCookieCutter(tree.obj, children)
         return obj
 
     FreeCAD.ActiveDocument.openTransaction("Create CookieCutter hierarchy")
@@ -105,13 +105,14 @@ def wiresAreIdentical(w0, w1):
 def removeDuplicates(objects):
     unique = []
     for obj in objects:
-        dup = False
-        for o in unique:
-            if wiresAreIdentical(obj.Shape, o.Shape):
-                dup = True
-                break
-        if not dup:
-            unique.append(obj)
+        if obj.Shape.isClosed():
+            dup = False
+            for o in unique:
+                if wiresAreIdentical(obj.Shape, o.Shape):
+                    dup = True
+                    break
+            if not dup:
+                unique.append(obj)
     return unique
 
 def removeFrame(objects):
@@ -154,9 +155,16 @@ def dumpTree(tree):
     for t in tree:
         t.consoleDump('- ')
 
-def doall():
+def doall(removeUnused = False):
     import Arch
-    t = buildTree(FreeCAD.ActiveDocument.Objects)
+    objects = FreeCAD.ActiveDocument.Objects
+    objects = removeDuplicates(objects)
+    objects = removeFrame(objects)
+    if removeUnused:
+        for o in FreeCAD.ActiveDocument.Objects:
+            if not o in objects:
+                FreeCAD.ActiveDocument.removeObject(o.Name)
+    t = buildTree(objects)
     FreeCAD.ActiveDocument.recompute()
     o = CreateFromTree(t, 'CookieCutter')
     FreeCAD.ActiveDocument.recompute()
@@ -171,5 +179,7 @@ def doit():
     FreeCAD.open('pumpkin.fcstd')
     doall()
 
-FreeCADGui.addModule('CookieCutter')
+if FreeCAD.GuiUp:
+    FreeCADGui.addModule('CookieCutter')
+
 print("arguments = %s" % sys.argv)
