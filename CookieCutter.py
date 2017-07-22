@@ -9,6 +9,7 @@ import sys
 from PathScripts.PathGeom import PathGeom
 
 class __TreeObject:
+    '''Internal data object used to generate the tree of wires.'''
     def __init__(self, obj):
         self.obj  = obj
         self.children = []
@@ -20,11 +21,13 @@ class __TreeObject:
         return tree.face and tree.face.isInside(self.points[0], 0.001, True)
 
     def consoleDump(self, indent):
+        '''consoleDump(indent) ... recursively print entire subtree'''
         print("%s%s" % (indent, self.obj.Label))
         for child in self.children:
             child.consoleDump(indent + '  ')
 
 class CookieCutter:
+    '''Wrapper object for any shape constructed from wires to be used by Arch.PanelSheet.'''
     def __init__(self, obj, outline, children):
         obj.addProperty('App::PropertyLinkList', 'Children', 'CookieCutter', 'List of child shapes')
         obj.addProperty('App::PropertyLink',     'Outline',  'CookieCutter', 'The outline of the drawing.')
@@ -56,6 +59,7 @@ class CookieCutter:
         return (out, hol, None)
 
 class CookieCutterViewProvider:
+    '''ViewProvider for CookieCutter, claims children.'''
     def __init__(self, vobj):
         vobj.Proxy = self
 
@@ -75,6 +79,7 @@ class CookieCutterViewProvider:
         return children
 
 def CreateFromTree(tree, name):
+    '''CreateFromTree(tree, name) ... creates cookie cutters for all items.'''
     def createCookieCutter(o, children):
         obj = FreeCAD.ActiveDocument.addObject('Part::FeaturePython', 'CookieCutter')
         cut = CookieCutter(obj, o, children)
@@ -93,6 +98,12 @@ def CreateFromTree(tree, name):
     return objects
 
 def wiresAreIdentical(w0, w1):
+    '''wiresAreIdentical(w0, w1) ... simple check if 2 wires form an identical shape.
+    Note that the check just verifies that the vertices of the shapes match, it does
+    not verify if there are an eqivalent amount of edges. Meaning a closed wire and
+    a copy of the same with a missing edge will still be detected as identical.
+    This is intentional due to the way in some SVGs all shapes are duplicated. If the
+    user "fixes" the shape they most likely only fix one copy of the shape.'''
     w0points = [FreeCAD.Vector(v.X, v.Y, v.Z) for v in w0.Vertexes]
     w1points = [FreeCAD.Vector(v.X, v.Y, v.Z) for v in w1.Vertexes]
     if len(w0points) != len(w1points):
@@ -103,6 +114,8 @@ def wiresAreIdentical(w0, w1):
     return True
 
 def removeDuplicates(objects):
+    '''removeDuplicates(objects) ... looks for identical wires and only keeps one copy.
+    All returned shapes have are closed (all others are rejected as well).'''
     unique = []
     for obj in objects:
         if obj.Shape.isClosed():
@@ -116,6 +129,8 @@ def removeDuplicates(objects):
     return unique
 
 def removeFrame(objects):
+    '''removeFrame(objects) ... tries to determine if one of the shapes is a frame
+    enclosing all others. If it finds one of those it will remove it.'''
     result = copy.copy(objects)
     candidates = [o for o in objects if len(o.Shape.Vertexes) == 4]
     if candidates:
@@ -132,6 +147,7 @@ def removeFrame(objects):
 
 
 def buildTree(objects):
+    '''buildTree(objects) ... constructs a tree where each element holds its path and all shapes it surrounds'''
     def asTree(forrest):
         #print("asTree(%d)" % (len(forrest)))
         roots = []
@@ -152,10 +168,15 @@ def buildTree(objects):
     return asTree([__TreeObject(o) for o in objects])
 
 def dumpTree(tree):
+    '''dumpTree(tree) ... print tree to console - simple debugging tool'''
     for t in tree:
         t.consoleDump('- ')
 
 def doall(removeUnused = False):
+    '''doall(removeUnused=False) ... Preps all objects of the current document
+    and constructs CookieCutters for them and adds those into a Arch.PanelSheet.
+    It creates a PathJob from a template and - hopefully soon - automatically
+    generates the Path for it.'''
     import Arch
     objects = FreeCAD.ActiveDocument.Objects
     objects = removeDuplicates(objects)
@@ -174,6 +195,7 @@ def doall(removeUnused = False):
     FreeCAD.ActiveDocument.recompute()
 
 def doit():
+    '''doit() ... test script to load 'pumpkin' and call doall'''
     if 'pumpkin' in FreeCAD.listDocuments():
         FreeCAD.closeDocument('pumpkin')
     FreeCAD.open('pumpkin.fcstd')
