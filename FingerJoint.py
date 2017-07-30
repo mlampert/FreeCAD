@@ -153,12 +153,10 @@ class JointValues:
 
     def getThickness(self, solid, cutFace, edge):
         common = solid.common(cutFace)
-        #if len(common.Edges) != 4:
-        #    raise Exception("Found %d edges - expected exactly 1" % len(common.Edges))
+        # calculate distance of all edges parallel to edge to edge itself
+        depths = [edge.distToShape(e)[0] for e in common.Edges if self.edgesAreParallel(e, edge)]
 
-        eDir = edge.Vertexes[1].Point - edge.Vertexes[0].Point
-        eDir.normalize()
-        depths = [e.Length for e in common.Edges if not self.edgesAreParallel(e, edge)]
+        # the one farthest away determines the thickness necessary for the joint
         if depths:
             return max(depths)
         return 0
@@ -517,6 +515,7 @@ def assignFace(force = False):
         if hasattr(o, 'Joiner'):
             if o.Face[0] == obj or force:
                 o.Face = (obj, face)
+                o.Joiner.touch()
                 return True
             else:
                 FreeCAD.Console.PrintWarning("Base object mismatch, selected %s, stored object %s" % (obj.Label, o.Face[0].Label))
