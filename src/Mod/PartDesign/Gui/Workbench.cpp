@@ -151,7 +151,7 @@ void Workbench::slotNewObject(const App::DocumentObject& obj)
     if ((obj.getDocument() == ActiveAppDoc) && (ActivePartObject != NULL)) {
         // Add the new object to the active Body
         // Note: Will this break Undo? But how else can we catch Edit->Duplicate selection?
-        Gui::Command::doCommand(Gui::Command::Doc,"App.activeDocument().%s.addFeature(App.activeDocument().%s)",
+        Gui::Command::doCommand(Gui::Command::Doc,"App.activeDocument().%s.addObject(App.activeDocument().%s)",
                                 ActivePartObject->getNameInDocument(), obj.getNameInDocument());
     }
 }
@@ -164,7 +164,7 @@ void Workbench::setupContextMenu(const char* recipient, Gui::MenuItem* item) con
     if ( selection.size () >= 1 ) {
         App::DocumentObject *feature = selection.front().pObject;
         PartDesign::Body *body =  PartDesignGui::getBodyFor ( feature, false );
-        // lote of assertion so feature sould be marked as a tip
+        // lote of assertion so feature should be marked as a tip
         if ( selection.size () == 1 && feature && (
             feature->isDerivedFrom ( PartDesign::Body::getClassTypeId () ) ||
             ( feature->isDerivedFrom ( PartDesign::Feature::getClassTypeId () ) && body ) ||
@@ -191,9 +191,9 @@ void Workbench::setupContextMenu(const char* recipient, Gui::MenuItem* item) con
                         if ( addMoveFeature && !PartDesign::Body::isAllowed ( sel.pObject ) ) {
                             addMoveFeature = false;
                         }
-                        // if all at lest one selected feature doesn't belongs to the same body
+                        // if all at least one selected feature doesn't belong to the same body
                         // disable the menu entry
-                        if ( addMoveFeatureInTree && !body->hasFeature ( sel.pObject ) ) {
+                        if ( addMoveFeatureInTree && !body->hasObject ( sel.pObject ) ) {
                             addMoveFeatureInTree = false;
                         }
 
@@ -366,6 +366,7 @@ void Workbench::activated()
         "PartDesign_NewSketch",
         "PartDesign_Pad",
         "PartDesign_Pocket",
+        "PartDesign_Hole",
         "PartDesign_Revolution",
         "PartDesign_Groove",
         "PartDesign_AdditivePipe",
@@ -456,6 +457,7 @@ Gui::MenuItem* Workbench::setupMenuBar() const
           << "PartDesign_CompPrimitiveAdditive"
           << "Separator"
           << "PartDesign_Pocket"
+          << "PartDesign_Hole"
           << "PartDesign_Groove"
           << "PartDesign_SubtractiveLoft"
           << "PartDesign_SubtractivePipe"
@@ -505,9 +507,8 @@ Gui::ToolBarItem* Workbench::setupToolBars() const
     *part << "PartDesign_Part"
           << "PartDesign_Body"
           << "PartDesign_NewSketch"
-          << "Sketcher_ViewSketch"
+          << "Sketcher_EditSketch"
           << "Sketcher_MapSketch"
-          << "Sketcher_LeaveSketch"
           << "Separator"
           << "PartDesign_Point"
           << "PartDesign_Line"
@@ -523,6 +524,7 @@ Gui::ToolBarItem* Workbench::setupToolBars() const
           << "PartDesign_CompPrimitiveAdditive"
           << "Separator"
           << "PartDesign_Pocket"
+          << "PartDesign_Hole"
           << "PartDesign_Groove"
           << "PartDesign_SubtractiveLoft"
           << "PartDesign_SubtractivePipe"

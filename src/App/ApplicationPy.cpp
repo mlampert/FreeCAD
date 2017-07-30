@@ -129,6 +129,11 @@ PyMethodDef Application::Methods[] = {
     {"removeDocumentObserver",  (PyCFunction) Application::sRemoveDocObserver  ,1,
      "removeDocumentObserver() -> None\n\n"
      "Remove an added document observer."},
+    {"setLogLevel",          (PyCFunction) Application::sSetLogLevel, 1,
+     "setLogLevel(tag, level) -- Set the log level for a string tag.\n"
+     "'level' can either be string 'Log', 'Msg', 'Wrn', 'Error', or an integer value"},
+    {"getLogLevel",          (PyCFunction) Application::sGetLogLevel, 1,
+     "getLogLevel(tag) -- Get the log level of a string tag"},
 
     {NULL, NULL, 0, NULL}		/* Sentinel */
 };
@@ -352,7 +357,11 @@ PyObject* Application::sGetConfig(PyObject * /*self*/, PyObject *args,PyObject *
     }
     else {
         // do not set an error because this may break existing python code
+#if PY_MAJOR_VERSION >= 3
+        return PyUnicode_FromString("");
+#else
         return PyString_FromString("");
+#endif
     }
 }
 
@@ -364,7 +373,11 @@ PyObject* Application::sDumpConfig(PyObject * /*self*/, PyObject *args,PyObject 
     PyObject *dict = PyDict_New();
     for (std::map<std::string,std::string>::iterator It= GetApplication()._mConfig.begin();
          It!=GetApplication()._mConfig.end();++It) {
+#if PY_MAJOR_VERSION >= 3
+        PyDict_SetItemString(dict,It->first.c_str(), PyUnicode_FromString(It->second.c_str()));
+#else
         PyDict_SetItemString(dict,It->first.c_str(), PyString_FromString(It->second.c_str()));
+#endif
     }
     return dict;
 }
@@ -559,7 +572,11 @@ PyObject* Application::sListDocuments(PyObject * /*self*/, PyObject *args,PyObje
 
         for (std::map<std::string,Document*>::const_iterator It = GetApplication().DocMap.begin();
              It != GetApplication().DocMap.end();++It) {
+#if PY_MAJOR_VERSION >= 3
+            pKey   = PyUnicode_FromString(It->first.c_str());
+#else
             pKey   = PyString_FromString(It->first.c_str());
+#endif
             // GetPyObject() increments
             pValue = static_cast<Base::PyObjectBase*>(It->second->getPyObject());
             PyDict_SetItem(pDict, pKey, pValue);
@@ -592,3 +609,95 @@ PyObject* Application::sRemoveDocObserver(PyObject * /*self*/, PyObject *args,Py
         Py_Return;
     } PY_CATCH;
 }
+
+PyObject *Application::sSetLogLevel(PyObject * /*self*/, PyObject *args, PyObject * /*kwd*/)
+{
+    char *tag;
+    PyObject *pcObj;
+    if (!PyArg_ParseTuple(args, "sO", &tag, &pcObj))
+        return NULL;
+    PY_TRY{
+        int l;
+#if PY_MAJOR_VERSION < 3
+        if (PyString_Check(pcObj)) {
+            const char *pstr = PyString_AsString(pcObj);
+#else
+        if (PyUnicode_Check(pcObj)) {
+            const char *pstr = PyUnicode_AsUTF8(pcObj);
+#endif
+            if(strcmp(pstr,"Log") == 0)
+                l = FC_LOGLEVEL_LOG;
+            else if(strcmp(pstr,"Warning") == 0)
+                l = FC_LOGLEVEL_WARN;
+            else if(strcmp(pstr,"Message") == 0)
+                l = FC_LOGLEVEL_MSG;
+            else if(strcmp(pstr,"Error") == 0)
+                l = FC_LOGLEVEL_ERR;
+            else if(strcmp(pstr,"Trace") == 0)
+                l = FC_LOGLEVEL_TRACE;
+            else if(strcmp(pstr,"Default") == 0)
+                l = FC_LOGLEVEL_DEFAULT;
+            else {
+                Py_Error(Base::BaseExceptionFreeCADError,
+                        "Unknown Log Level (use 'Default', 'Error', 'Warning', 'Message', 'Log', 'Trace' or an integer)");
+                return NULL;
+            }
+        }else 
+            l = PyLong_AsLong(pcObj);
+        GetApplication().GetParameterGroupByPath("User parameter:BaseApp/LogLevels")->SetInt(tag,l);
+        if(strcmp(tag,"Default") == 0) {
+#ifndef FC_DEBUG
+            if(l>=0) Base::Console().SetDefaultLogLevel(l);
+#endif
+        }else if(strcmp(tag,"DebugDefault") == 0) {
+#ifdef FC_DEBUG
+            if(l>=0) Base::Console().SetDefaultLogLevel(l);
+#endif
+        }else
+            *Base::Console().GetLogLevel(tag) = l;
+        Py_INCREF(Py_None);
+        return Py_None;
+    }PY_CATCH;
+}
+
+PyObject *Application::sGetLogLevel(PyObject * /*self*/, PyObject *args, PyObject * /*kwd*/)
+{
+    char *tag;
+    if (!PyArg_ParseTuple(args, "s", &tag))
+        return NULL;
+
+    PY_TRY{
+        int l = -1;
+        if(strcmp(tag,"Default")==0) {
+#ifdef FC_DEBUG
+            l = _pcUserParamMngr->GetGroup("BaseApp/LogLevels")->GetInt(tag,-1);
+#endif
+        }else if(strcmp(tag,"DebugDefault")==0) {
+#ifndef FC_DEBUG
+            l = _pcUserParamMngr->GetGroup("BaseApp/LogLevels")->GetInt(tag,-1);
+#endif
+        }else{
+            int *pl = Base::Console().GetLogLevel(tag,false);
+            l = pl?*pl:-1;
+        }
+        // For performance reason, we only output integer value
+        return Py_BuildValue("i",Base::Console().LogLevel(l));
+
+        // switch(l) {
+        // case FC_LOGLEVEL_LOG:
+        //     return Py_BuildValue("s","Log");
+        // case FC_LOGLEVEL_WARN:
+        //     return Py_BuildValue("s","Warning");
+        // case FC_LOGLEVEL_ERR:
+        //     return Py_BuildValue("s","Error");
+        // case FC_LOGLEVEL_MSG:
+        //     return Py_BuildValue("s","Message");
+        // case FC_LOGLEVEL_TRACE:
+        //     return Py_BuildValue("s","Trace");
+        // default:
+        //     return Py_BuildValue("i",l);
+        // }
+    } PY_CATCH;
+}
+
+

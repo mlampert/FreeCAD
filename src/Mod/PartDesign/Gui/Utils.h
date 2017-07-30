@@ -23,8 +23,8 @@
 #ifndef UTILS_H_CS5LK2ZQ
 #define UTILS_H_CS5LK2ZQ
 
-/** \file Utils.h
- *  This fiel contains some utility function used over PartDesignGui module
+/** \file PartDesign/Gui/Utils.h
+ *  This file contains some utility function used over PartDesignGui module
  */
 namespace PartDesign {
     class Body;
@@ -32,6 +32,7 @@ namespace PartDesign {
 }
 
 namespace App {
+    class Document;
     class DocumentObject;
     class Part;
 }
@@ -44,6 +45,13 @@ namespace PartDesignGui {
 
 /// Return active body or show a warning message
 PartDesign::Body *getBody(bool messageIfNot);
+
+/// Display error when there are existing Body objects, but none are active
+void needActiveBodyError(void);
+
+/// Create a Body object in doc, set it active, and return pointer to it
+PartDesign::Body * makeBody(App::Document *doc);
+
 /**
  * Finds a body for the given feature. And shows a message if not found
  * Also unlike Body::findBodyFor it checks if the active body has the feature first.

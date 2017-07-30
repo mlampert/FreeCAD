@@ -24,7 +24,7 @@
  ***************************************************************************/
 /**************APPROX.H*********************
 *Class Approximate, inheriting from Routines
-*Dependancies:- BOOST, ATLAS, UMFPACK, BLAS
+*Dependencies:- BOOST, ATLAS, UMFPACK, BLAS
 *    LAPACK
 ********************************************/
 
@@ -115,7 +115,7 @@ private:
     std::vector<double> UnparamZ;
 
     std::vector<int> mapper;
-	/** @brief List of indicies of the boundary points*/
+	/** @brief List of indices of the boundary points*/
     std::list< std::vector <unsigned long> > BoundariesIndex;
 	/** @brief List of point-coordinates of the boundary points*/
     std::list< std::vector <Base::Vector3f> > BoundariesPoints;

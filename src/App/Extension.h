@@ -43,6 +43,16 @@ public: \
   static void *create(void);\
 private: \
   static Base::Type classTypeId
+
+/// Like EXTENSION_TYPESYSTEM_HEADER, with getExtensionTypeId declared override
+#define EXTENSION_TYPESYSTEM_HEADER_WITH_OVERRIDE() \
+public: \
+  static Base::Type getExtensionClassTypeId(void); \
+  virtual Base::Type getExtensionTypeId(void) const override; \
+  static void init(void);\
+  static void *create(void);\
+private: \
+  static Base::Type classTypeId
     
 /// define to implement a subclass of Base::BaseClass
 #define EXTENSION_TYPESYSTEM_SOURCE_P(_class_) \
@@ -84,6 +94,15 @@ protected: \
 private: \
   static App::PropertyData propertyData
 
+/// Like EXTENSION_PROPERTY_HEADER, but with override declarations.
+#define EXTENSION_PROPERTY_HEADER_WITH_OVERRIDE(_class_) \
+  EXTENSION_TYPESYSTEM_HEADER_WITH_OVERRIDE(); \
+protected: \
+  static const App::PropertyData * extensionGetPropertyDataPtr(void); \
+  virtual const App::PropertyData &extensionGetPropertyData(void) const override; \
+private: \
+  static App::PropertyData propertyData
+
 #define EXTENSION_PROPERTY_SOURCE(_class_, _parentclass_) \
 EXTENSION_TYPESYSTEM_SOURCE_P(_class_);\
 const App::PropertyData * _class_::extensionGetPropertyDataPtr(void){return &propertyData;} \
@@ -111,7 +130,7 @@ template<> void _class_::init(void){\
  * documentation. Following is a description howto create custom extensions. 
  * 
  * Extensions are like every other FreeCAD object and based on properties. All information storage 
- * and persistance should be achieved by use of those. Additional any number of methods can be 
+ * and persistence should be achieved by use of those. Additional any number of methods can be 
  * added to provide funtionality around the properties. There are 3 samll difference to normal objects:
  * 1. They must be derived from Extension class
  * 2. Properties must be handled with special extension macros
@@ -137,7 +156,7 @@ template<> void _class_::init(void){\
  * can be added to an object from python. It does not work to add the c++ version directly there. 
  * 
  * Note that every method of the extension becomes part of the extendded object when added from c++. 
- * This means one should carefully design the API and make only neccessary methods public or protected.
+ * This means one should carefully design the API and make only necessary methods public or protected.
  * Every internal method should be private.
  * 
  * The automatic availibility of methods in the class does not hold for the python interface, only 
@@ -146,15 +165,15 @@ template<> void _class_::init(void){\
  * extension, which works exactly like the normal FreeCAD python object workflow. There is nothing 
  * special at all for extension python objects, the normal xml + imp.cpp approach is used. It must 
  * only be taken care that the objects father is the correct extension base class. Of course also 
- * makse sure your extension returns the correct python ojbect in its "getPyObject" call.
+ * make sure your extension returns the correct python ojbect in its "getPyObject" call.
  * Every method you create in the extensions python will be later added to an extended object. This 
  * happens automatically for both, c++ and python extension, if "getPyObject" returns the correct 
  * python object. No extra work needs to be done.
  * 
- * A special case that needs to be handled for extensions is the possibility of overriden methods. 
+ * A special case that needs to be handled for extensions is the possibility of overridden methods. 
  * Often it is desired to customise extension behaviour by allowing the user to override methods 
  * provided by the extension. On c++ side this is trival, such methods are simply marked as "virtual" 
- * and can than be overriden in any derived class. This is more involved for the python interface and
+ * and can than be overridden in any derived class. This is more involved for the python interface and
  * here special care needs to be taken. 
  * 
  * As already seen above one needs to create a special ExtensionPythonT<> object for extension from 
@@ -215,7 +234,7 @@ public:
     Extension();
     virtual ~Extension();
 
-    void initExtension(App::ExtensionContainer* obj);
+    virtual void initExtension(App::ExtensionContainer* obj);
     
     App::ExtensionContainer*       getExtendedContainer() {return m_base;}
     const App::ExtensionContainer* getExtendedContainer() const {return m_base;}
@@ -253,7 +272,7 @@ public:
     virtual const char* extensionGetPropertyDocumentation(const char *name) const;
     //@}
     
-    /** @name Persistance */
+    /** @name Persistence */
     //@{
     virtual void extensionSave(Base::Writer&) const {}
     virtual void extensionRestore(Base::XMLReader&) {}
@@ -272,7 +291,7 @@ protected:
     friend class App::ExtensionContainer;
 
 protected:     
-    void initExtension(Base::Type type);
+    void initExtensionType(Base::Type type);
     bool m_isPythonExtension = false;
     Py::Object ExtensionPythonObject;
   
@@ -309,7 +328,7 @@ public:
     
     ExtensionPythonT() {
         ExtensionT::m_isPythonExtension = true;
-        ExtensionT::initExtension(ExtensionPythonT::getExtensionClassTypeId());
+        ExtensionT::initExtensionType(ExtensionPythonT::getExtensionClassTypeId());
         
         EXTENSION_ADD_PROPERTY(ExtensionProxy,(Py::Object()));
     }

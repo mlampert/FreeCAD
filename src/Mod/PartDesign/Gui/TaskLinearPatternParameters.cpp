@@ -195,7 +195,7 @@ void TaskLinearPatternParameters::updateUI()
     unsigned occurrences = pcLinearPattern->Occurrences.getValue();
 
     if (dirLinks.setCurrentLink(pcLinearPattern->Direction) == -1){
-        //failed to set current, because the link isnt in the list yet
+        //failed to set current, because the link isn't in the list yet
         dirLinks.addLink(pcLinearPattern->Direction, getRefStr(pcLinearPattern->Direction.getValue(),pcLinearPattern->Direction.getSubValues()));
         dirLinks.setCurrentLink(pcLinearPattern->Direction);
     }
@@ -370,22 +370,22 @@ unsigned TaskLinearPatternParameters::getOccurrences(void) const
     return ui->spinOccurrences->value();
 }
 
-
 TaskLinearPatternParameters::~TaskLinearPatternParameters()
 {
-    //hide the parts coordinate system axis for selection
-    PartDesign::Body * body = PartDesign::Body::findBodyOf ( getObject() );
-    if(body) {
-        try {
+    try {
+        //hide the parts coordinate system axis for selection
+        PartDesign::Body * body = PartDesign::Body::findBodyOf(getObject());
+        if (body) {
             App::Origin *origin = body->getOrigin();
             ViewProviderOrigin* vpOrigin;
             vpOrigin = static_cast<ViewProviderOrigin*>(Gui::Application::Instance->getViewProvider(origin));
             vpOrigin->resetTemporaryVisibility();
-        } catch (const Base::Exception &ex) {
-            Base::Console().Error ("%s\n", ex.what () );
         }
     }
-    
+    catch (const Base::Exception &ex) {
+        Base::Console().Error ("%s\n", ex.what () );
+    }
+
     delete ui;
     if (proxy)
         delete proxy;

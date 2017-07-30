@@ -33,6 +33,7 @@
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
 #include <BRepBuilderAPI_MakeWire.hxx>
+#include <BRepLib.hxx>
 #include <BRepLProp_CurveTool.hxx>
 #include <BRepLProp_CLProps.hxx>
 #include <BRepExtrema_DistShapeShape.hxx>
@@ -57,18 +58,23 @@
 #include <TopoDS.hxx>
 #include <TopoDS_Shape.hxx>
 #include <TopoDS_Face.hxx>
+#include <TopoDS_Edge.hxx>
+#include <TopoDS_Vertex.hxx>
+#include <TopoDS_Wire.hxx>
+
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
+#include <GeomLib_Tool.hxx>
 
 #endif
 
 #include <limits>
 #include <algorithm>
 #include <cmath>
-#include <GeomLib_Tool.hxx>
 
 #include <App/Application.h>
+#include <App/Document.h>
 #include <Base/BoundBox.h>
 #include <Base/Console.h>
 #include <Base/Exception.h>
@@ -78,10 +84,15 @@
 
 #include "DrawUtil.h"
 #include "DrawViewSection.h"
+#include "DrawProjectSplit.h"
 #include "Geometry.h"
 #include "GeometryObject.h"
 #include "DrawViewPart.h"
 #include "DrawHatch.h"
+#include "DrawGeomHatch.h"
+#include "DrawViewDimension.h"
+#include "DrawViewDetail.h"
+#include "DrawPage.h"
 #include "EdgeWalker.h"
 
 
@@ -103,6 +114,7 @@ DrawViewPart::DrawViewPart(void) : geometryObject(0)
     static const char *group = "Projection";
     static const char *fgroup = "Format";
     static const char *sgroup = "Show";
+    nowDeleting = false;
 
     //properties that affect Geometry
     ADD_PROPERTY_TYPE(Source ,(0),group,App::Prop_None,"3D Shape to view");
@@ -143,21 +155,19 @@ DrawViewPart::~DrawViewPart()
 
 App::DocumentObjectExecReturn *DrawViewPart::execute(void)
 {
-    //Base::Console().Message("TRACE - DVP::execute() - %s\n",getNameInDocument());
     App::DocumentObject *link = Source.getValue();
     if (!link) {
-        return new App::DocumentObjectExecReturn("FVP - No Source object linked");
+        return new App::DocumentObjectExecReturn("DVP - No Source object linked");
     }
 
     if (!link->getTypeId().isDerivedFrom(Part::Feature::getClassTypeId())) {
-        return new App::DocumentObjectExecReturn("FVP - Linked object is not a Part object");
+        return new App::DocumentObjectExecReturn("DVP - Linked object is not a Part object");
     }
 
     TopoDS_Shape shape = static_cast<Part::Feature*>(link)->Shape.getShape().getShape();
     if (shape.IsNull()) {
-        return new App::DocumentObjectExecReturn("FVP - Linked shape object is empty");
+        return new App::DocumentObjectExecReturn("DVP - Linked shape object is empty");
     }
-
 
     (void) DrawView::execute();           //make sure Scale is up to date
 
@@ -171,7 +181,11 @@ App::DocumentObjectExecReturn *DrawViewPart::execute(void)
                                                   inputCenter,
                                                   Scale.getValue());
 
-     geometryObject =  buildGeometryObject(mirroredShape,inputCenter);
+     gp_Ax2 viewAxis = getViewAxis(shapeCentroid,Direction.getValue());
+     geometryObject =  buildGeometryObject(mirroredShape,viewAxis);
+     
+     //Base::Console().Message("TRACE - DVP::execute - u: %s v: %s w: %s\n",
+     //         DrawUtil::formatVector(getUDir()).c_str(), DrawUtil::formatVector(getVDir()).c_str(), DrawUtil::formatVector(getWDir()).c_str());
 
 #if MOD_TECHDRAW_HANDLE_FACES
     if (handleFaces()) {
@@ -179,12 +193,15 @@ App::DocumentObjectExecReturn *DrawViewPart::execute(void)
             extractFaces();
         }
         catch (Standard_Failure) {
-            Handle_Standard_Failure e4 = Standard_Failure::Caught();
+            Handle(Standard_Failure) e4 = Standard_Failure::Caught();
             Base::Console().Log("LOG - DVP::execute - extractFaces failed for %s - %s **\n",getNameInDocument(),e4->GetMessageString());
             return new App::DocumentObjectExecReturn(e4->GetMessageString());
         }
     }
 #endif //#if MOD_TECHDRAW_HANDLE_FACES
+
+//   Base::Console().Message("TRACE _ DVP::exec - %s/%s u: %s v: %s w: %s\n",getNameInDocument(),Label.getValue(),
+//                           DrawUtil::formatVector(getUDir()).c_str(), DrawUtil::formatVector(getVDir()).c_str(),DrawUtil::formatVector(getWDir()).c_str());
 
     return App::DocumentObject::StdReturn;
 }
@@ -214,17 +231,16 @@ void DrawViewPart::onChanged(const App::Property* prop)
 }
 
 //note: slightly different than routine with same name in DrawProjectSplit
-TechDrawGeometry::GeometryObject* DrawViewPart::buildGeometryObject(TopoDS_Shape shape, gp_Pnt& inputCenter)
+TechDrawGeometry::GeometryObject* DrawViewPart::buildGeometryObject(TopoDS_Shape shape, gp_Ax2 viewAxis)
 {
-    TechDrawGeometry::GeometryObject* go = new TechDrawGeometry::GeometryObject(getNameInDocument());
+    TechDrawGeometry::GeometryObject* go = new TechDrawGeometry::GeometryObject(getNameInDocument(), this);
     go->setIsoCount(IsoCount.getValue());
 
     Base::Vector3d baseProjDir = Direction.getValue();
     saveParamSpace(baseProjDir);
 
     go->projectShape(shape,
-                     inputCenter,
-                     Direction.getValue());
+                     viewAxis);
     go->extractGeometry(TechDrawGeometry::ecHARD,                   //always show the hard&outline visible lines
                         true);
     go->extractGeometry(TechDrawGeometry::ecOUTLINE,
@@ -358,7 +374,7 @@ void DrawViewPart::extractFaces()
         return;
     }
 
-    newEdges = DrawProjectSplit::removeDuplicateEdges(newEdges);
+    newEdges = DrawProjectSplit::removeDuplicateEdges(newEdges);        //<<< here
 
 //find all the wires in the pile of faceEdges
     EdgeWalker ew;
@@ -383,7 +399,6 @@ void DrawViewPart::extractFaces()
     }
 }
 
-
 std::vector<TechDraw::DrawHatch*> DrawViewPart::getHatches() const
 {
     std::vector<TechDraw::DrawHatch*> result;
@@ -396,6 +411,33 @@ std::vector<TechDraw::DrawHatch*> DrawViewPart::getHatches() const
     }
     return result;
 }
+
+std::vector<TechDraw::DrawGeomHatch*> DrawViewPart::getGeomHatches() const
+{
+    std::vector<TechDraw::DrawGeomHatch*> result;
+    std::vector<App::DocumentObject*> children = getInList();
+    for (std::vector<App::DocumentObject*>::iterator it = children.begin(); it != children.end(); ++it) {
+        if ((*it)->getTypeId().isDerivedFrom(DrawGeomHatch::getClassTypeId())) {
+            TechDraw::DrawGeomHatch* geom = dynamic_cast<TechDraw::DrawGeomHatch*>(*it);
+            result.push_back(geom);
+        }
+    }
+    return result;
+}
+
+std::vector<TechDraw::DrawViewDimension*> DrawViewPart::getDimensions() const
+{
+    std::vector<TechDraw::DrawViewDimension*> result;
+    std::vector<App::DocumentObject*> children = getInList();
+    for (std::vector<App::DocumentObject*>::iterator it = children.begin(); it != children.end(); ++it) {
+        if ((*it)->getTypeId().isDerivedFrom(DrawViewDimension::getClassTypeId())) {
+            TechDraw::DrawViewDimension* dim = dynamic_cast<TechDraw::DrawViewDimension*>(*it);
+            result.push_back(dim);
+        }
+    }
+    return result;
+}
+
 
 const std::vector<TechDrawGeometry::Vertex *> & DrawViewPart::getVertexGeometry() const
 {
@@ -420,7 +462,11 @@ TechDrawGeometry::BaseGeom* DrawViewPart::getProjEdgeByIndex(int idx) const
         Base::Console().Log("INFO - getProjEdgeByIndex(%d) - no Edge Geometry. Probably restoring?\n",idx);
         return NULL;
     }
-    return geoms[idx];
+    if ((unsigned)idx >= geoms.size()) {
+        Base::Console().Log("INFO - getProjEdgeByIndex(%d) - invalid index\n",idx);
+        return NULL;
+    }
+    return geoms.at(idx);
 }
 
 //! returns existing geometry of 2D Vertex(idx)
@@ -431,13 +477,20 @@ TechDrawGeometry::Vertex* DrawViewPart::getProjVertexByIndex(int idx) const
         Base::Console().Log("INFO - getProjVertexByIndex(%d) - no Vertex Geometry. Probably restoring?\n",idx);
         return NULL;
     }
-    return geoms[idx];
+    if ((unsigned)idx >= geoms.size()) {
+        Base::Console().Log("INFO - getProjVertexByIndex(%d) - invalid index\n",idx);
+        return NULL;
+    }
+    return geoms.at(idx);
 }
 
+
+//this is never used!!
 //! returns existing geometry of 2D Face(idx)
 //version 1 Face has 1 wire
-std::vector<TechDrawGeometry::BaseGeom*> DrawViewPart::getProjFaceByIndex(int /*idx*/) const
+std::vector<TechDrawGeometry::BaseGeom*> DrawViewPart::getProjFaceByIndex(int idx) const
 {
+    (void) idx;
     std::vector<TechDrawGeometry::BaseGeom*> result;
     const std::vector<TechDrawGeometry::Face *>& faces = getFaceGeometry();
     for (auto& f:faces) {
@@ -450,6 +503,29 @@ std::vector<TechDrawGeometry::BaseGeom*> DrawViewPart::getProjFaceByIndex(int /*
     return result;
 }
 
+std::vector<TopoDS_Wire> DrawViewPart::getWireForFace(int idx) const
+{
+//    Base::Console().Message("TRACE - DVP::getWireForFace(%d)\n",idx);
+    std::vector<TopoDS_Wire> result;
+    std::vector<TopoDS_Edge> edges;
+    const std::vector<TechDrawGeometry::Face *>& faces = getFaceGeometry();
+    TechDrawGeometry::Face * ourFace = faces.at(idx);
+    for (auto& w:ourFace->wires) {
+        edges.clear();
+        int i = 0;
+        for (auto& g:w->geoms) {
+            edges.push_back(g->occEdge);
+//            DrawUtil::dumpEdge("DVP Face edge",i,g->occEdge);
+            i++;
+        }
+        TopoDS_Wire occwire = EdgeWalker::makeCleanWire(edges);
+//        BRepLib::BuildCurves3d(occwire);   //probably don't need this
+        result.push_back(occwire);
+    }
+ 
+//    Base::Console().Message("TRACE - DVP::getWireForFace(%d) returns %d wires\n",idx,result.size());
+    return result;
+}
 
 Base::BoundBox3d DrawViewPart::getBoundingBox() const
 {
@@ -487,7 +563,7 @@ Base::Vector3d DrawViewPart::projectPoint(const Base::Vector3d& pt) const
 {
     Base::Vector3d centeredPoint = pt - shapeCentroid;
     Base::Vector3d direction = Direction.getValue();
-    gp_Ax2 viewAxis = TechDrawGeometry::getViewAxis(centeredPoint,direction);
+    gp_Ax2 viewAxis = getViewAxis(centeredPoint,direction);
     HLRAlgo_Projector projector( viewAxis );
     gp_Pnt2d prjPnt;
     projector.Project(gp_Pnt(centeredPoint.x,centeredPoint.y,centeredPoint.z), prjPnt);
@@ -511,10 +587,21 @@ bool DrawViewPart::hasGeometry(void) const
     return result;
 }
 
-void DrawViewPart::saveParamSpace(const Base::Vector3d& direction)
+//boring here. gets more interesting in descendents.
+gp_Ax2 DrawViewPart::getViewAxis(const Base::Vector3d& pt,
+                                 const Base::Vector3d& axis,
+                                 const bool flip)  const
 {
+     gp_Ax2 viewAxis = TechDrawGeometry::getViewAxis(pt,axis,flip);
+     return viewAxis;
+}
+
+void DrawViewPart::saveParamSpace(const Base::Vector3d& direction, const Base::Vector3d& xAxis)
+{
+    //Base::Console().Message("TRACE - DVP::saveParamSpace()\n");
+    (void)xAxis;
     Base::Vector3d origin(0.0,0.0,0.0);
-    gp_Ax2 viewAxis = TechDrawGeometry::getViewAxis(origin,direction);
+    gp_Ax2 viewAxis = getViewAxis(origin,direction);
 
     gp_Dir xdir = viewAxis.XDirection();
     uDir = Base::Vector3d(xdir.X(),xdir.Y(),xdir.Z());
@@ -537,17 +624,41 @@ std::vector<DrawViewSection*> DrawViewPart::getSectionRefs(void) const
     return result;
 }
 
+std::vector<DrawViewDetail*> DrawViewPart::getDetailRefs(void) const
+{
+    std::vector<DrawViewDetail*> result;
+    std::vector<App::DocumentObject*> inObjs = getInList();
+    for (auto& o:inObjs) {
+        if (o->getTypeId().isDerivedFrom(DrawViewDetail::getClassTypeId())) {
+            result.push_back(static_cast<TechDraw::DrawViewDetail*>(o));
+        }
+    }
+    return result;
+}
+
 const std::vector<TechDrawGeometry::BaseGeom  *> DrawViewPart::getVisibleFaceEdges() const
 {
     return geometryObject->getVisibleFaceEdges(SmoothVisible.getValue(),SeamVisible.getValue());
+}
+
+//is this really the projection plane??
+gp_Pln DrawViewPart::getProjPlane() const
+{
+    Base::Vector3d plnPnt(0.0,0.0,0.0);
+    Base::Vector3d plnNorm = Direction.getValue();
+    gp_Ax2 viewAxis = getViewAxis(plnPnt,plnNorm,false);
+    gp_Ax3 viewAxis3(viewAxis);
+
+    return gp_Pln(viewAxis3);
 }
 
 void DrawViewPart::getRunControl()
 {
     Base::Reference<ParameterGrp> hGrp = App::GetApplication().GetUserParameter()
         .GetGroup("BaseApp")->GetGroup("Preferences")->GetGroup("Mod/TechDraw/General");
-    m_sectionEdges = hGrp->GetBool("ShowSectionEdges", 1l);
+    m_sectionEdges = hGrp->GetBool("ShowSectionEdges", 0l);
     m_handleFaces = hGrp->GetBool("HandleFaces", 1l);
+    //Base::Console().Message("TRACE - DVP::getRunControl - handleFaces: %d\n",m_handleFaces);
 }
 
 bool DrawViewPart::handleFaces(void)
@@ -559,6 +670,49 @@ bool DrawViewPart::showSectionEdges(void)
 {
     return m_sectionEdges;
 }
+
+//! remove features that are useless without this DVP
+//! hatches, geomhatches, dimensions,... 
+void DrawViewPart::unsetupObject()
+{
+    nowDeleting = true;
+    App::Document* doc = getDocument();
+    std::string docName = doc->getName();
+
+    // Remove the View's Hatches from document
+    std::vector<TechDraw::DrawHatch*> hatches = getHatches();
+    std::vector<TechDraw::DrawHatch*>::iterator it = hatches.begin();
+    for (; it != hatches.end(); it++) {
+        std::string viewName = (*it)->getNameInDocument();
+        Base::Interpreter().runStringArg("App.getDocument(\"%s\").removeObject(\"%s\")",
+                                          docName.c_str(), viewName.c_str());
+    }
+    
+    // Remove the View's GeomHatches from document
+    std::vector<TechDraw::DrawGeomHatch*> gHatches = getGeomHatches();
+    std::vector<TechDraw::DrawGeomHatch*>::iterator it2 = gHatches.begin();
+    for (; it2 != gHatches.end(); it2++) {
+        std::string viewName = (*it2)->getNameInDocument();
+        Base::Interpreter().runStringArg("App.getDocument(\"%s\").removeObject(\"%s\")",
+                                          docName.c_str(), viewName.c_str());
+    }
+
+    // Remove Dimensions which reference this DVP
+    // must use page->removeObject first
+    TechDraw::DrawPage* page = findParentPage();
+    if (page != nullptr) {
+        std::vector<TechDraw::DrawViewDimension*> dims = getDimensions();
+        std::vector<TechDraw::DrawViewDimension*>::iterator it3 = dims.begin();
+        for (; it3 != dims.end(); it3++) {
+              page->removeView(*it3);
+              std::string viewName = (*it3)->getNameInDocument();
+              Base::Interpreter().runStringArg("App.getDocument(\"%s\").removeObject(\"%s\")",
+                                                docName.c_str(), viewName.c_str());
+        }
+    }
+
+}
+
 
 PyObject *DrawViewPart::getPyObject(void)
 {

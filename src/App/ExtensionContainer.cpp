@@ -35,11 +35,11 @@
  
 using namespace App;
 
-TYPESYSTEM_SOURCE(App::ExtensionContainer, App::PropertyContainer);
+TYPESYSTEM_SOURCE(App::ExtensionContainer, App::PropertyContainer)
 
 ExtensionContainer::ExtensionContainer() {
 
-};
+}
 
 ExtensionContainer::~ExtensionContainer() {
 
@@ -48,12 +48,12 @@ ExtensionContainer::~ExtensionContainer() {
         if(entry.second->isPythonExtension())
             delete entry.second;
     }
-};
+}
 
 void ExtensionContainer::registerExtension(Base::Type extension, Extension* ext) {
 
     if(ext->getExtendedContainer() != this)
-        throw Base::Exception("ExtensionContainer::registerExtension: Extension has not this as base object");
+        throw Base::ValueError("ExtensionContainer::registerExtension: Extension has not this as base object");
        
     //no duplicate extensions (including base classes)
     if(hasExtension(extension)) {
@@ -68,11 +68,11 @@ void ExtensionContainer::registerExtension(Base::Type extension, Extension* ext)
     _extensions[extension] = ext;
 }
 
-bool ExtensionContainer::hasExtension(Base::Type t) const {
+bool ExtensionContainer::hasExtension(Base::Type t, bool derived) const {
 
     //check for the exact type
     bool found = _extensions.find(t) != _extensions.end();
-    if(!found) {
+    if(!found && derived) {
         //and for types derived from it, as they can be cast to the extension
         for(auto entry : _extensions) {            
             if(entry.first.isDerivedFrom(t))
@@ -80,7 +80,7 @@ bool ExtensionContainer::hasExtension(Base::Type t) const {
         }
         return false;
     }
-    return true;
+    return found;
 }
 
 bool ExtensionContainer::hasExtension(const std::string& name) const {
@@ -94,17 +94,17 @@ bool ExtensionContainer::hasExtension(const std::string& name) const {
 }
 
 
-Extension* ExtensionContainer::getExtension(Base::Type t) {
+Extension* ExtensionContainer::getExtension(Base::Type t, bool derived) const {
    
     auto result = _extensions.find(t);
-    if(result == _extensions.end()) {
+    if((result == _extensions.end()) && derived) {
         //we need to check for derived types
         for(auto entry : _extensions) {            
             if(entry.first.isDerivedFrom(t))
                 return entry.second;
         }
         //if we arive hear we don't have anything matching
-        throw Base::Exception("ExtensionContainer::getExtension: No extension of given type available");
+        throw Base::TypeError("ExtensionContainer::getExtension: No extension of given type available");
     }
     
     return result->second;
@@ -115,7 +115,7 @@ bool ExtensionContainer::hasExtensions() const {
     return !_extensions.empty();
 }
 
-Extension* ExtensionContainer::getExtension(const std::string& name) {
+Extension* ExtensionContainer::getExtension(const std::string& name) const {
 
     //and for types derived from it, as they can be cast to the extension
     for(auto entry : _extensions) {            
@@ -283,7 +283,7 @@ void ExtensionContainer::Save(Base::Writer& writer) const {
 
     //Note: save extensions must be called first to ensure that the extension element is always the 
     //      very first inside the object element. That is needed as extension eleent works together with 
-    //      an object attribute, and if annother element would be read first the object attributes would be
+    //      an object attribute, and if another element would be read first the object attributes would be
     //      cleared.
     saveExtensions(writer);
     App::PropertyContainer::Save(writer);
@@ -294,7 +294,7 @@ void ExtensionContainer::Restore(Base::XMLReader& reader) {
     //restore dynamic extensions. 
     //Note 1: The extension element must be read first, before all other object elements. That is 
     //        needed as the element works together with an object element attribute, which would be 
-    //        cleared if annother attribute is read first
+    //        cleared if another attribute is read first
     //Note 2: This must happen before the py object of this container is used, as only in the 
     //        pyobject constructor the extension methods are added to the container.
     restoreExtensions(reader);
@@ -349,7 +349,7 @@ void ExtensionContainer::saveExtensions(Base::Writer& writer) const {
 void ExtensionContainer::restoreExtensions(Base::XMLReader& reader) {
 
     //Dynamic extensions are optional (also because they are introduced late into the document format)
-    //and hence it is possible that the element does not exist. As we cannot check for the existance of 
+    //and hence it is possible that the element does not exist. As we cannot check for the existence of 
     //an element a object attribute is set if extensions are available. Here we check that 
     //attribute, and only if it exists the extensions element will be available.
     if(!reader.hasAttribute("Extensions"))
@@ -361,7 +361,7 @@ void ExtensionContainer::restoreExtensions(Base::XMLReader& reader) {
     for (int i=0 ;i<Cnt ;i++) {
         reader.readElement("Extension");
         const char* Type = reader.getAttribute("type");
-        const char* Name = reader.getAttribute("type");
+        const char* Name = reader.getAttribute("name");
         try {
             App::Extension* ext = getExtension(Name);
             if(!ext) {
@@ -370,7 +370,7 @@ void ExtensionContainer::restoreExtensions(Base::XMLReader& reader) {
                 if (extension.isBad() || !extension.isDerivedFrom(App::Extension::getExtensionClassTypeId())) {
                     std::stringstream str;
                     str << "No extension found of type '" << Type << "'" << std::ends;
-                    throw Base::Exception(str.str());
+                    throw Base::TypeError(str.str());
                 }
 
                 //register the extension
@@ -380,7 +380,7 @@ void ExtensionContainer::restoreExtensions(Base::XMLReader& reader) {
                     delete ext;
                     std::stringstream str;
                     str << "Extension is not a python addable version: '" << Type << "'" << std::ends;
-                    throw Base::Exception(str.str());
+                    throw Base::TypeError(str.str());
                 }
 
                 ext->initExtension(this);

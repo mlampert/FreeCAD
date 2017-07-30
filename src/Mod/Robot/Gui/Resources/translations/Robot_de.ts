@@ -379,7 +379,12 @@
         <translation>Falsche Auswahl</translation>
     </message>
     <message>
-        <location line="-28"/>
+        <location line="-177"/>
+        <source>Select one Robot to set home position</source>
+        <translation>Wählen Sie einen Roboter aus, um die Home Position festzulegen</translation>
+    </message>
+    <message>
+        <location line="+149"/>
         <location line="+29"/>
         <location filename="../../CommandExport.cpp" line="-61"/>
         <location line="+62"/>
@@ -440,12 +445,11 @@
 Siehe Dokumentation für Details.</translation>
     </message>
     <message>
-        <location filename="../../Command.cpp" line="-155"/>
         <source>Select one Robot to set home postion</source>
-        <translation>Wählen Sie einen Roboter um die Ausgangsposition zu setzen</translation>
+        <translation type="obsolete">Wählen Sie einen Roboter um die Ausgangsposition zu setzen</translation>
     </message>
     <message>
-        <location line="+49"/>
+        <location filename="../../Command.cpp" line="-106"/>
         <source>Select one Robot</source>
         <translation>Einen Roboter auswählen</translation>
     </message>

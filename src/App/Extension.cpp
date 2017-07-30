@@ -71,20 +71,20 @@ Extension::~Extension()
     }
 }
 
-void Extension::initExtension(Base::Type type) {
+void Extension::initExtensionType(Base::Type type) {
 
     m_extensionType = type;
     if(m_extensionType.isBad())
-        throw Base::Exception("Extension: Extension type not set");
+        throw Base::RuntimeError("Extension: Extension type not set");
 }
 
 void Extension::initExtension(ExtensionContainer* obj) {
 
     if(m_extensionType.isBad())
-        throw Base::Exception("Extension: Extension type not set");
+        throw Base::RuntimeError("Extension: Extension type not set");
  
     //all properties are initialised without PropertyContainer father. Now that we know it we can
-    //finaly finsih the property initialisation
+    //finally finish the property initialisation
     std::vector<Property*> list;
     extensionGetPropertyData().getPropertyList(this, list);
     for(Property* prop : list)
@@ -108,7 +108,7 @@ PyObject* Extension::getExtensionPyObject(void) {
 std::string Extension::name() const {
     
     if(m_extensionType.isBad())
-        throw Base::Exception("Extension::name: Extension type not set");
+        throw Base::RuntimeError("Extension::name: Extension type not set");
     
     std::string temp(m_extensionType.getName());
     std::string::size_type pos = temp.find_last_of(":");

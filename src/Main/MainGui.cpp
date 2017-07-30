@@ -58,7 +58,7 @@
 
 void PrintInitHelp(void);
 
-const char sBanner[] = "\xc2\xa9 Juergen Riegel, Werner Mayer, Yorik van Havre 2001-2016\n"\
+const char sBanner[] = "\xc2\xa9 Juergen Riegel, Werner Mayer, Yorik van Havre 2001-2017\n"\
 "  #####                 ####  ###   ####  \n" \
 "  #                    #      # #   #   # \n" \
 "  #     ##  #### ####  #     #   #  #   # \n" \
@@ -98,17 +98,18 @@ int main( int argc, char ** argv )
     QFile::setEncodingFunction(myEncoderFunc);
     QFile::setDecodingFunction(myDecoderFunc);
 #endif
-    // Make sure that we use '.' as decimal point. See also
-    // http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=559846
+    // See https://forum.freecadweb.org/viewtopic.php?f=18&t=20600
+    // See Gui::Application::runApplication()
     putenv("LC_NUMERIC=C");
     putenv("PYTHONPATH=");
 #elif defined(FC_OS_MACOSX)
     (void)QLocale::system();
-    putenv("LC_NUMERIC=C");
     putenv("PYTHONPATH=");
 #else
-    setlocale(LC_NUMERIC, "C");
     _putenv("PYTHONPATH=");
+    // https://forum.freecadweb.org/viewtopic.php?f=4&t=18288
+    // https://forum.freecadweb.org/viewtopic.php?f=3&t=20515
+    _putenv("PYTHONHOME=");
 #endif
 
 #if defined (FC_OS_WIN32)
@@ -132,7 +133,7 @@ int main( int argc, char ** argv )
     App::Application::Config()["ExeName"] = "FreeCAD";
     App::Application::Config()["ExeVendor"] = "FreeCAD";
     App::Application::Config()["AppDataSkipVendor"] = "true";
-    App::Application::Config()["MaintainerUrl"] = "http://www.freecadweb.org/wiki/index.php?title=Main_Page";
+    App::Application::Config()["MaintainerUrl"] = "http://www.freecadweb.org/wiki/Main_Page";
 
     // set the banner (for logging and console)
     App::Application::Config()["CopyrightInfo"] = sBanner;
@@ -200,7 +201,15 @@ int main( int argc, char ** argv )
                           "Python is searching for its files in the following directories:\n%3\n\n"
                           "Python version information:\n%4\n")
                           .arg(appName).arg(QString::fromUtf8(e.what()))
+#if PY_MAJOR_VERSION >= 3
+#if PY_MINOR_VERSION >= 5
+                          .arg(QString::fromUtf8(Py_EncodeLocale(Py_GetPath(),NULL))).arg(QString::fromLatin1(Py_GetVersion()));
+#else
+                          .arg(QString::fromUtf8(_Py_wchar2char(Py_GetPath(),NULL))).arg(QString::fromLatin1(Py_GetVersion()));
+#endif
+#else
                           .arg(QString::fromUtf8(Py_GetPath())).arg(QString::fromLatin1(Py_GetVersion()));
+#endif
         const char* pythonhome = getenv("PYTHONHOME");
         if (pythonhome) {
             msg += QObject::tr("\nThe environment variable PYTHONHOME is set to '%1'.")
@@ -344,7 +353,7 @@ static LONG __stdcall MyCrashHandlerExceptionFilter(EXCEPTION_POINTERS* pEx)
       NULL 
       )) 
     { 
-      bFailed = false;  // suceeded 
+      bFailed = false;  // succeeded 
     } 
     CloseHandle(hFile); 
   } 
@@ -371,7 +380,7 @@ void InitMiniDumpWriter(const std::string& filename)
     return;
   s_szMiniDumpFileName = filename;
 
-  // Initialize the member, so we do not load the dll after the exception has occured
+  // Initialize the member, so we do not load the dll after the exception has occurred
   // which might be not possible anymore...
   s_hDbgHelpMod = LoadLibrary(("dbghelp.dll"));
   if (s_hDbgHelpMod != NULL)

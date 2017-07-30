@@ -114,8 +114,7 @@ class TaskPanel:
                 "ship_weight",
                 "Weight objects can only be created on top of its geometry"
                 " (no objects selected)",
-                None,
-                QtGui.QApplication.UnicodeUTF8)
+                None)
             App.Console.PrintError(msg + '\n')
             return True
         for obj in selObjs:
@@ -127,13 +126,12 @@ class TaskPanel:
             msg = QtGui.QApplication.translate(
                 "ship_weight",
                 "No geometrical shapes found in the selected objects",
-                None,
-                QtGui.QApplication.UnicodeUTF8)
+                None)
             App.Console.PrintError(msg + '\n')
             return True
 
         # Get the element type
-        # 0 = unknow, 1 = vertex, 2 = line, 3 = face, 4 = solids
+        # 0 = unknown, 1 = vertex, 2 = line, 3 = face, 4 = solids
         self.elem_type = 0
         for shape in self.shapes:
             # Doing it in this way we are protected under strange entities,
@@ -163,9 +161,8 @@ class TaskPanel:
         if self.elem_type == 0:
             msg = QtGui.QApplication.translate(
                 "ship_weight",
-                "Unknow object shapes selected",
-                None,
-                QtGui.QApplication.UnicodeUTF8)
+                "Unknown object shapes selected",
+                None)
             App.Console.PrintError(msg + '\n')
             return True
 
@@ -182,8 +179,7 @@ class TaskPanel:
             msg = QtGui.QApplication.translate(
                 "ship_weight",
                 "There are not ship objects to create weights into them",
-                None,
-                QtGui.QApplication.UnicodeUTF8)
+                None)
             App.Console.PrintError(msg + '\n')
             return True
 
@@ -217,42 +213,36 @@ class TaskPanel:
         self.form.setWindowTitle(QtGui.QApplication.translate(
             "ship_weight",
             "Create a new weight",
-            None,
-            QtGui.QApplication.UnicodeUTF8))
+            None))
         self.widget(QtGui.QLabel, "ShipLabel").setText(
             QtGui.QApplication.translate(
                 "ship_weight",
                 "Ship",
-                None,
-                QtGui.QApplication.UnicodeUTF8))
+                None))
         if self.elem_type == 1:
             self.widget(QtGui.QLabel, "WeightLabel").setText(
                 QtGui.QApplication.translate(
                     "ship_weight",
                     "Mass",
-                    None,
-                    QtGui.QApplication.UnicodeUTF8))
+                    None))
         elif self.elem_type == 2:
             self.widget(QtGui.QLabel, "WeightLabel").setText(
                 QtGui.QApplication.translate(
                     "ship_weight",
                     "Linear density",
-                    None,
-                    QtGui.QApplication.UnicodeUTF8))
+                    None))
         elif self.elem_type == 3:
             self.widget(QtGui.QLabel, "WeightLabel").setText(
                 QtGui.QApplication.translate(
                     "ship_weight",
                     "Area density",
-                    None,
-                    QtGui.QApplication.UnicodeUTF8))
+                    None))
         elif self.elem_type == 4:
             self.widget(QtGui.QLabel, "WeightLabel").setText(
                 QtGui.QApplication.translate(
                     "ship_weight",
                     "Density",
-                    None,
-                    QtGui.QApplication.UnicodeUTF8))
+                    None))
 
 
 def createTask():

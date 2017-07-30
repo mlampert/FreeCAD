@@ -93,7 +93,7 @@ TYPESYSTEM_SOURCE(Fem::FemMesh , Base::Persistence);
 FemMesh::FemMesh()
 {
     //Base::Console().Log("FemMesh::FemMesh():%p (id=%i)\n",this,StatCount);
-    // create a mesh allways with new StudyId to avoid overlapping destruction
+    // create a mesh always with new StudyId to avoid overlapping destruction
     myMesh = getGenerator()->CreateMesh(StatCount++,false);
 }
 
@@ -107,11 +107,15 @@ FemMesh::~FemMesh()
 {
     //Base::Console().Log("FemMesh::~FemMesh():%p\n",this);
 
-    TopoDS_Shape aNull;
-    myMesh->ShapeToMesh(aNull);
-    myMesh->Clear();
-    //myMesh->ClearLog();
-    delete myMesh;
+    try {
+        TopoDS_Shape aNull;
+        myMesh->ShapeToMesh(aNull);
+        myMesh->Clear();
+        //myMesh->ClearLog();
+        delete myMesh;
+    }
+    catch (...) {
+    }
 }
 
 FemMesh &FemMesh::operator=(const FemMesh& mesh)
@@ -1078,7 +1082,7 @@ void FemMesh::writeABAQUS(const std::string &Filename) const
     static std::map<int, std::string> faceTypeMap;
     static std::map<int, std::string> volTypeMap;
     if (elemOrderMap.empty()) {
-        // node order fits with node order in ccxFrdReader.py module to import CalculiX result meshes
+        // node order fits with node order in importCcxFrdResults.py module to import CalculiX result meshes
 
         // dimension 1
         //
@@ -1126,7 +1130,7 @@ void FemMesh::writeABAQUS(const std::string &Filename) const
         //
         // tetras
         // master 0.14 release
-        // changed to this in August 2013, commited by juergen (jriedel)
+        // changed to this in August 2013, committed by juergen (jriedel)
         // https://github.com/FreeCAD/FreeCAD/commit/af56b324b9566b20f3b6e7880c29354c1dbe7a99
         //std::vector<int> c3d4  = boost::assign::list_of(0)(3)(1)(2);
         //std::vector<int> c3d10 = boost::assign::list_of(0)(2)(1)(3)(6)(5)(4)(7)(9)(8);
@@ -1184,9 +1188,13 @@ void FemMesh::writeABAQUS(const std::string &Filename) const
 
     std::ofstream anABAQUS_Output;
     anABAQUS_Output.open(Filename.c_str());
+    anABAQUS_Output.precision(13);  // https://forum.freecadweb.org/viewtopic.php?f=18&t=22759#p176669
+    // add some text
+    anABAQUS_Output << "** written by FreeCAD inp file writer for CalculiX,Abaqus meshes" << std::endl << std::endl;
 
     // add nodes
     //
+    anABAQUS_Output << "** Nodes" << std::endl;
     anABAQUS_Output << "*Node, NSET=Nall" << std::endl;
     typedef std::map<int, Base::Vector3d> VertexMap;
     VertexMap vertexMap;
@@ -1210,6 +1218,7 @@ void FemMesh::writeABAQUS(const std::string &Filename) const
             << it->second.y << ", "
             << it->second.z << std::endl;
     }
+    anABAQUS_Output << std::endl << std::endl;;
 
     typedef std::map<int, std::vector<int> > NodesMap;
     typedef std::map<std::string, NodesMap> ElementsMap;
@@ -1234,7 +1243,8 @@ void FemMesh::writeABAQUS(const std::string &Filename) const
     }
 
     for (ElementsMap::iterator it = elementsMap.begin(); it != elementsMap.end(); ++it) {
-        anABAQUS_Output << "*Element, TYPE=" << it->first << ", ELSET=Eall" << std::endl;
+        anABAQUS_Output << "** Volume elements" << std::endl;
+        anABAQUS_Output << "*Element, TYPE=" << it->first << ", ELSET=Evolumes" << std::endl;
         for (NodesMap::iterator jt = it->second.begin(); jt != it->second.end(); ++jt) {
             anABAQUS_Output << jt->first;
             // Calculix allows max 16 enntries in one line, an hexa20 has more !
@@ -1254,9 +1264,13 @@ void FemMesh::writeABAQUS(const std::string &Filename) const
             }
             anABAQUS_Output << std::endl;
         }
+    anABAQUS_Output << std::endl;
     }
 
     if (!elementsMap.empty()) {
+        anABAQUS_Output << "** Define element set Eall" << std::endl;
+        anABAQUS_Output << "*ELSET, ELSET=Eall" << std::endl;
+        anABAQUS_Output << "Evolumes" << std::endl;
         anABAQUS_Output.close();
         return; // done
     }
@@ -1281,7 +1295,8 @@ void FemMesh::writeABAQUS(const std::string &Filename) const
     }
 
     for (ElementsMap::iterator it = elementsMap.begin(); it != elementsMap.end(); ++it) {
-        anABAQUS_Output << "*Element, TYPE=" << it->first << ", ELSET=Eall" << std::endl;
+        anABAQUS_Output << "** Face elements" << std::endl;
+        anABAQUS_Output << "*Element, TYPE=" << it->first << ", ELSET=Efaces" << std::endl;
         for (NodesMap::iterator jt = it->second.begin(); jt != it->second.end(); ++jt) {
             anABAQUS_Output << jt->first;
             for (std::vector<int>::iterator kt = jt->second.begin(); kt != jt->second.end(); ++kt) {
@@ -1289,9 +1304,13 @@ void FemMesh::writeABAQUS(const std::string &Filename) const
             }
             anABAQUS_Output << std::endl;
         }
+    anABAQUS_Output << std::endl;
     }
 
     if (!elementsMap.empty()) {
+        anABAQUS_Output << "** Define element set Eall" << std::endl;
+        anABAQUS_Output << "*ELSET, ELSET=Eall" << std::endl;
+        anABAQUS_Output << "Efaces" << std::endl;
         anABAQUS_Output.close();
         return; // done
     }
@@ -1316,7 +1335,8 @@ void FemMesh::writeABAQUS(const std::string &Filename) const
     }
 
     for (ElementsMap::iterator it = elementsMap.begin(); it != elementsMap.end(); ++it) {
-        anABAQUS_Output << "*Element, TYPE=" << it->first << ", ELSET=Eall" << std::endl;
+        anABAQUS_Output << "** Edge elements" << std::endl;
+        anABAQUS_Output << "*Element, TYPE=" << it->first << ", ELSET=Eedges" << std::endl;
         for (NodesMap::iterator jt = it->second.begin(); jt != it->second.end(); ++jt) {
             anABAQUS_Output << jt->first;
             for (std::vector<int>::iterator kt = jt->second.begin(); kt != jt->second.end(); ++kt) {
@@ -1324,9 +1344,13 @@ void FemMesh::writeABAQUS(const std::string &Filename) const
             }
             anABAQUS_Output << std::endl;
         }
+    anABAQUS_Output << std::endl;
     }
     elementsMap.clear();
 
+    anABAQUS_Output << "** Define element set Eall" << std::endl;
+    anABAQUS_Output << "*ELSET, ELSET=Eall" << std::endl;
+    anABAQUS_Output << "Eedges" << std::endl;
     anABAQUS_Output.close();
 }
 

@@ -455,17 +455,6 @@ std::string OperatorExpression::toString() const
     bool needsParens;
     Operator leftOperator(NONE), rightOperator(NONE);
 
-    switch (op) {
-    case NEG:
-        s << "-" << left->toString();
-        return s.str();
-    case POS:
-        s << "+" << left->toString();
-        return s.str();
-    default:
-        break;
-    }
-
     needsParens = false;
     if (freecad_dynamic_cast<OperatorExpression>(left))
         leftOperator = static_cast<OperatorExpression*>(left)->op;
@@ -476,6 +465,17 @@ std::string OperatorExpression::toString() const
             needsParens = true;
         //else if (!isCommutative())
         //    needsParens = true;
+    }
+
+    switch (op) {
+    case NEG:
+        s << "-" << (needsParens ? "(" : "") << left->toString() << (needsParens ? ")" : "");
+        return s.str();
+    case POS:
+        s << "+" << (needsParens ? "(" : "") << left->toString() << (needsParens ? ")" : "");
+        return s.str();
+    default:
+        break;
     }
 
     if (needsParens)
@@ -678,7 +678,12 @@ FunctionExpression::FunctionExpression(const DocumentObject *_owner, Function _f
     case ATAN2:
     case POW:
         if (args.size() != 2)
-            throw ExpressionError("Invalid number of arguments: eaxctly two required.");
+            throw ExpressionError("Invalid number of arguments: exactly two required.");
+        break;
+    case HYPOT:
+    case CATH:
+        if (args.size() < 2 || args.size() > 3)
+            throw ExpressionError("Invalid number of arguments: exactly two, or three required.");
         break;
     case STDDEV:
     case SUM:
@@ -908,7 +913,7 @@ Expression * FunctionExpression::evalAggregate() const
 }
 
 /**
-  * Evaluate function. Returns a NumberExpression if evaluation is successfuly.
+  * Evaluate function. Returns a NumberExpression if evaluation is successful.
   * Throws an ExpressionError exception if something fails.
   *
   * @returns A NumberExpression with the result.
@@ -922,8 +927,10 @@ Expression * FunctionExpression::eval() const
 
     std::unique_ptr<Expression> e1(args[0]->eval());
     std::unique_ptr<Expression> e2(args.size() > 1 ? args[1]->eval() : 0);
+    std::unique_ptr<Expression> e3(args.size() > 2 ? args[2]->eval() : 0);
     NumberExpression * v1 = freecad_dynamic_cast<NumberExpression>(e1.get());
     NumberExpression * v2 = freecad_dynamic_cast<NumberExpression>(e2.get());
+    NumberExpression * v3 = freecad_dynamic_cast<NumberExpression>(e3.get());
     double output;
     Unit unit;
     double scaler = 1;
@@ -1007,9 +1014,7 @@ Expression * FunctionExpression::eval() const
     case MOD:
         if (v2 == 0)
             throw ExpressionError("Invalid second argument.");
-        if (!v2->getUnit().isEmpty())
-            throw ExpressionError("Second argument must have empty unit.");
-        unit = v1->getUnit();
+        unit = v1->getUnit() / v2->getUnit();
         break;
     case POW: {
         if (v2 == 0)
@@ -1028,6 +1033,16 @@ Expression * FunctionExpression::eval() const
         }
         break;
     }
+    case HYPOT:
+    case CATH:
+        if (v1->getUnit() != v2->getUnit())
+            throw ExpressionError("Units must be equal");
+        if (args.size() > 2) {
+            if (v2->getUnit() != v3->getUnit())
+                throw ExpressionError("Units must be equal");
+        }
+        unit = v1->getUnit();
+        break;
     default:
         assert(0);
     }
@@ -1088,6 +1103,14 @@ Expression * FunctionExpression::eval() const
         output = pow(value, v2->getValue());
         break;
     }
+    case HYPOT: {
+        output = sqrt(pow(v1->getValue(), 2) + pow(v2->getValue(), 2) + (v3 ? pow(v3->getValue(), 2) : 0));
+        break;
+    }
+    case CATH: {
+        output = sqrt(pow(v1->getValue(), 2) - pow(v2->getValue(), 2) - (v3 ? pow(v3->getValue(), 2) : 0));
+        break;
+    }
     case ROUND:
         output = boost::math::round(value);
         break;
@@ -1116,39 +1139,29 @@ Expression * FunctionExpression::eval() const
 
 Expression *FunctionExpression::simplify() const
 {
-    Expression * v1 = args[0]->simplify();
+    size_t numerics = 0;
+    std::vector<Expression*> a;
 
-    // Argument simplified to numeric expression? Then return evaluate and return
-    if (freecad_dynamic_cast<NumberExpression>(v1)) {
-        switch (f) {
-        case ATAN2:
-        case MOD:
-        case POW: {
-            Expression * v2 = args[1]->simplify();
+    // Try to simplify each argument to function
+    for (auto it = args.begin(); it != args.end(); ++it) {
+        Expression * v = (*it)->simplify();
 
-            if (freecad_dynamic_cast<NumberExpression>(v2)) {
-                delete v1;
-                delete v2;
-                return eval();
-            }
-            else {
-                std::vector<Expression*> a;
-                a.push_back(v1);
-                a.push_back(v2);
-                return new FunctionExpression(owner, f, a);
-            }
-        }
-        default:
-            break;
-        }
-        delete v1;
+        if (freecad_dynamic_cast<NumberExpression>(v))
+            ++numerics;
+        a.push_back(v);
+    }
+
+    if (numerics == args.size()) {
+        // All constants, then evaluation must also be constant
+
+        // Clean-up
+        for (auto it = args.begin(); it != args.end(); ++it)
+            delete *it;
+
         return eval();
     }
-    else {
-        std::vector<Expression*> a;
-        a.push_back(v1);
+    else
         return new FunctionExpression(owner, f, a);
-    }
 }
 
 /**
@@ -1202,6 +1215,10 @@ std::string FunctionExpression::toString() const
         return "atan2(" + ss.str() + ")";
     case POW:
         return "pow(" + ss.str() + ")";
+    case HYPOT:
+        return "hypot(" + ss.str() + ")";
+    case CATH:
+        return "cath(" + ss.str() + ")";
     case ROUND:
         return "round(" + ss.str() + ")";
     case TRUNC:
@@ -1725,9 +1742,9 @@ double num_change(char* yytext,char dez_delim,char grp_delim)
     errno = 0;
     ret_val = strtod( temp, NULL );
     if (ret_val == 0 && errno == ERANGE)
-        throw Base::Exception("Number underflow.");
+        throw Base::UnderflowError("Number underflow.");
     if (ret_val == HUGE_VAL || ret_val == -HUGE_VAL)
-        throw Base::Exception("Number overflow.");
+        throw Base::OverflowError("Number overflow.");
 
     return ret_val;
 }
@@ -1751,7 +1768,20 @@ int ExpressionParserlex(void);
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 // Scanner, defined in ExpressionParser.l
+#if defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wsign-compare"
+# pragma clang diagnostic ignored "-Wunneeded-internal-declaration"
+#elif defined (__GNUC__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wsign-compare"
+#endif
 #include "lex.ExpressionParser.c"
+#if defined(__clang__)
+# pragma clang diagnostic pop
+#elif defined (__GNUC__)
+# pragma GCC diagnostic pop
+#endif
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 #ifdef _MSC_VER
 # define strdup _strdup
@@ -1791,6 +1821,8 @@ static void initParser(const App::DocumentObject *owner)
         registered_functions["trunc"] = FunctionExpression::TRUNC;
         registered_functions["ceil"] = FunctionExpression::CEIL;
         registered_functions["floor"] = FunctionExpression::FLOOR;
+        registered_functions["hypot"] = FunctionExpression::HYPOT;
+        registered_functions["cath"] = FunctionExpression::CATH;
 
         // Aggregates
         registered_functions["sum"] = FunctionExpression::SUM;
@@ -1927,6 +1959,19 @@ bool ExpressionParser::isTokenAnIndentifier(const std::string & str)
     ExpressionParser_delete_buffer(buf);
 
     if (status == 0 && (token == IDENTIFIER || token == CELLADDRESS ))
+        return true;
+    else
+        return false;
+}
+
+bool ExpressionParser::isTokenAUnit(const std::string & str)
+{
+    ExpressionParser::YY_BUFFER_STATE buf = ExpressionParser_scan_string(str.c_str());
+    int token = ExpressionParserlex();
+    int status = ExpressionParserlex();
+    ExpressionParser_delete_buffer(buf);
+
+    if (status == 0 && token == UNIT)
         return true;
     else
         return false;

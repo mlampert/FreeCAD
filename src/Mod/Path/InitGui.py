@@ -31,8 +31,9 @@ class PathWorkbench (Workbench):
 
     def Initialize(self):
         # Add preferences pages - before loading PathGui to properly order pages of Path group
-        from PathScripts import PathPreferencesPathJob
-        FreeCADGui.addPreferencePage(PathPreferencesPathJob.Page, "Path")
+        from PathScripts import PathPreferencesPathJob, PathPreferencesPathDressup
+        FreeCADGui.addPreferencePage(PathPreferencesPathJob.JobPreferencesPage, "Path")
+        FreeCADGui.addPreferencePage(PathPreferencesPathDressup.DressupPreferencesPage, "Path")
 
         # load the builtin modules
         import Path
@@ -41,49 +42,52 @@ class PathWorkbench (Workbench):
         FreeCADGui.addLanguagePath(":/translations")
         FreeCADGui.addIconPath(":/icons")
         # load python modules
-        from PathScripts import PathProfile
-        from PathScripts import PathPocket
-        from PathScripts import PathDrilling
-        from PathScripts import PathDressup
-        from PathScripts import PathHop
-        from PathScripts import PathCopy
-        from PathScripts import PathFixture
-        from PathScripts import PathCompoundExtended
-        from PathScripts import PathJob
-        from PathScripts import PathToolLibraryManager
-        from PathScripts import PathStock
-        from PathScripts import PathPlane
-        from PathScripts import PathPost
-        from PathScripts import PathToolLenOffset
-        from PathScripts import PathLoadTool
-        from PathScripts import PathComment
-        from PathScripts import PathStop
-        from PathScripts import PathFromShape
         from PathScripts import PathArray
-        from PathScripts import PathFaceProfile
-        from PathScripts import PathFacePocket
-        from PathScripts import PathCustom
-        from PathScripts import PathInspect
-        from PathScripts import PathSimpleCopy
-        from PathScripts import PathEngrave
-        from PathScripts import PathSurface
-        from PathScripts import PathSanity
-        from PathScripts import PathDressupDragknife
+        from PathScripts import PathComment
+        from PathScripts import PathCompoundExtended
         from PathScripts import PathContour
-        from PathScripts import PathProfileEdges
+        from PathScripts import PathCopy
+        from PathScripts import PathCustom
+        from PathScripts import PathDressup
         from PathScripts import PathDressupDogbone
+        from PathScripts import PathDressupDragknife
+        from PathScripts import PathDressupRampEntry
+        from PathScripts import PathDressupTagGui
+        from PathScripts import PathDrilling
+        from PathScripts import PathEngrave
+        from PathScripts import PathFacePocket
+        from PathScripts import PathFaceProfile
+        from PathScripts import PathFixture
+        from PathScripts import PathFromShape
+        from PathScripts import PathHelix
+        from PathScripts import PathHop
+        from PathScripts import PathInspect
+        from PathScripts import PathJob
         from PathScripts import PathMillFace
+        from PathScripts import PathPlane
+        from PathScripts import PathPocket
+        from PathScripts import PathPost
+        from PathScripts import PathProfile
+        from PathScripts import PathProfileEdges
+        from PathScripts import PathSanity
+        from PathScripts import PathSimpleCopy
+        from PathScripts import PathStock
+        from PathScripts import PathStop
+        from PathScripts import PathSurface
+        from PathScripts import PathToolController
+        from PathScripts import PathToolLenOffset
+        from PathScripts import PathToolLibraryManager
         import PathCommands
 
         # build commands list
         projcmdlist = ["Path_Job", "Path_Post", "Path_Inspect", "Path_Sanity"]
-        toolcmdlist = ["Path_ToolLibraryEdit", "Path_LoadTool"]
-        prepcmdlist = ["Path_Plane", "Path_Fixture", "Path_ToolLenOffset", "Path_Comment", "Path_Stop", "Path_FaceProfile", "Path_FacePocket", "Path_Custom", "Path_FromShape"]
-        twodopcmdlist = ["Path_Contour", "Path_Profile", "Path_Profile_Edges", "Path_Pocket", "Path_Drilling", "Path_Engrave", "Path_MillFace"]
+        toolcmdlist = ["Path_ToolLibraryEdit"]
+        prepcmdlist = ["Path_Plane", "Path_Fixture", "Path_ToolLenOffset", "Path_Comment", "Path_Stop", "Path_FaceProfile", "Path_FacePocket", "Path_Custom", "Path_Shape"]
+        twodopcmdlist = ["Path_Contour", "Path_Profile", "Path_Profile_Edges", "Path_Pocket", "Path_Drilling", "Path_Engrave", "Path_MillFace", "Path_Helix"]
         threedopcmdlist = ["Path_Surfacing"]
         modcmdlist = ["Path_Copy", "Path_CompoundExtended", "Path_Array", "Path_SimpleCopy" ]
-        dressupcmdlist = ["PathDressup_Dogbone", "PathDressup_DragKnife"]
-        extracmdlist = ["Path_SelectLoop"]
+        dressupcmdlist = ["PathDressup_Dogbone", "PathDressup_DragKnife", "PathDressup_Tag", "PathDressup_RampEntry"]
+        extracmdlist = ["Path_SelectLoop", "Path_Shape", "Path_Area", "Path_Area_Workplane", "Path_Stock"]
         #modcmdmore = ["Path_Hop",]
         #remotecmdlist = ["Path_Remote"]
 
@@ -117,6 +121,8 @@ class PathWorkbench (Workbench):
         #     "Path", "Remote Operations")], remotecmdlist)
         self.appendMenu([QT_TRANSLATE_NOOP("Path", "&Path")], extracmdlist)
 
+        self.dressupcmds = dressupcmdlist
+
         Log('Loading Path workbench... done\n')
 
     def GetClassName(self):
@@ -134,11 +140,15 @@ class PathWorkbench (Workbench):
         if len(FreeCADGui.Selection.getSelection()) == 1:
             if FreeCADGui.Selection.getSelection()[0].isDerivedFrom("Path::Feature"):
                 self.appendContextMenu("", ["Path_Inspect"])
-                if FreeCADGui.Selection.getSelection()[0].Name in ["Profile", "Contour"]:
-                    self.appendContextMenu("", ["Add_Tag"])
-                    self.appendContextMenu("", ["Set_StartPoint"])
-                    self.appendContextMenu("", ["Set_EndPoint"])
-                if "Remote" in FreeCADGui.Selection.getSelection()[0].Name:
+                selectedName = FreeCADGui.Selection.getSelection()[0].Name
+                if "Job" in selectedName:
+                    self.appendContextMenu("", ["Path_ExportTemplate"])
+                if "Profile" in selectedName or "Contour" in selectedName or "Dressup" in selectedName:
+                    #self.appendContextMenu("", ["Set_StartPoint"])
+                    #self.appendContextMenu("", ["Set_EndPoint"])
+                    for cmd in self.dressupcmds:
+                        self.appendContextMenu("", [cmd])
+                if "Remote" in selectedName:
                     self.appendContextMenu("", ["Refresh_Path"])
 
 Gui.addWorkbench(PathWorkbench())

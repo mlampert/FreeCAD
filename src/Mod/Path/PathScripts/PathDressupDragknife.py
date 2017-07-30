@@ -22,6 +22,7 @@
 # *                                                                         *
 # ***************************************************************************
 
+from __future__ import print_function
 import FreeCAD
 import FreeCADGui
 import Path
@@ -29,19 +30,13 @@ import Path
 from PySide import QtCore, QtGui
 import math
 import DraftVecUtils as D
-import PathScripts.PathUtils as P
+import PathScripts.PathUtils as PathUtils
 
 """Dragknife Dressup object and FreeCAD command"""
 
 # Qt tanslation handling
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-
-    def translate(context, text, disambig=None):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def translate(context, text, disambig=None):
-        return QtGui.QApplication.translate(context, text, disambig)
+def translate(context, text, disambig=None):
+    return QtCore.QCoreApplication.translate(context, text, disambig)
 
 movecommands = ['G1', 'G01', 'G2', 'G02', 'G3', 'G03']
 rapidcommands = ['G0', 'G00']
@@ -451,7 +446,7 @@ class ViewProviderDressup:
                     if g.Name == self.Object.Base.Name:
                         group.remove(g)
                 i.Group = group
-                print i.Group
+                print(i.Group)
         #FreeCADGui.ActiveDocument.getObject(obj.Base.Name).Visibility = False
         return [self.Object.Base]
 
@@ -463,7 +458,8 @@ class ViewProviderDressup:
 
     def onDelete(self, arg1=None, arg2=None):
         FreeCADGui.ActiveDocument.getObject(arg1.Object.Base.Name).Visibility = True
-        P.addToProject(arg1.Object.Base)
+        PathUtils.addToProject(arg1.Object.Base)
+        arg1.Object.Base = None
         return True
 
 

@@ -42,7 +42,7 @@ class FemToolsCcx(FemTools.FemTools):
 
     ## The constructor
     #  @param analysis - analysis object to be used as the core object.
-    #  @param test_mode - True indicates that no real calculations will take place, so ccx bianry is not required. Used by test module.
+    #  @param test_mode - True indicates that no real calculations will take place, so ccx binary is not required. Used by test module.
     #  "__init__" tries to use current active analysis in analysis is left empty.
     #  Rises exception if analysis is not set and there is no active analysis
     def __init__(self, analysis=None, solver=None, test_mode=False):
@@ -96,14 +96,14 @@ class FemToolsCcx(FemTools.FemTools):
                 self.contact_constraints, self.planerotation_constraints, self.transform_constraints,
                 self.selfweight_constraints, self.force_constraints, self.pressure_constraints,
                 self.temperature_constraints, self.heatflux_constraints, self.initialtemperature_constraints,
-                self.beam_sections, self.shell_thicknesses,
+                self.beam_sections, self.shell_thicknesses, self.fluid_sections,
                 self.analysis_type, self.working_dir)
             self.inp_file_name = inp_writer.write_calculix_input_file()
         except:
             print("Unexpected error when writing CalculiX input file:", sys.exc_info()[0])
             raise
 
-    ## Sets CalculiX ccx binary path and velidates if the binary can be executed
+    ## Sets CalculiX ccx binary path and validates if the binary can be executed
     #  @param self The python object self
     #  @ccx_binary path to ccx binary, default is guessed: "bin/ccx" windows, "ccx" for other systems
     #  @ccx_binary_sig expected output form ccx when run empty. Default value is "CalculiX.exe -i jobname"
@@ -222,7 +222,40 @@ class FemToolsCcx(FemTools.FemTools):
             print("--------end of stderr---------")
             print("--------start of stdout-------")
             print(self.ccx_stdout)
+            self.has_for_nonpositive_jacobians()
             print("--------end of stdout---------")
+
+    def has_for_nonpositive_jacobians(self):
+        if '*ERROR in e_c3d: nonpositive jacobian' in self.ccx_stdout:
+            print('CalculiX returned an error due to nonpositive jacobian elements.')
+            nonpositive_jacobian_elements = []
+            nonpositive_jacobian_elenodes = []
+            for line in self.ccx_stdout.splitlines():
+                if 'determinant in element' in line:
+                    # print line
+                    # print line.split()
+                    non_posjac_ele = int(line.split()[3])
+                    # print(non_posjac_ele)
+                    if non_posjac_ele not in nonpositive_jacobian_elements:
+                        nonpositive_jacobian_elements.append(non_posjac_ele)
+            for e in nonpositive_jacobian_elements:
+                for n in self.mesh.FemMesh.getElementNodes(e):
+                    nonpositive_jacobian_elenodes.append(n)
+            nonpositive_jacobian_elements = sorted(nonpositive_jacobian_elements)
+            nonpositive_jacobian_elenodes = sorted(nonpositive_jacobian_elenodes)
+            command_for_nonposjacnodes = 'nonpositive_jacobian_elenodes = ' + str(nonpositive_jacobian_elenodes)
+            command_to_highlight = "Gui.ActiveDocument." + self.mesh.Name + ".HighlightedNodes = nonpositive_jacobian_elenodes"
+            print('nonpositive_jacobian_elements = ' + str(nonpositive_jacobian_elements))
+            print(command_for_nonposjacnodes)
+            print(command_to_highlight)
+            print('Gui.ActiveDocument.Extrude_Mesh.HighlightedNodes = []\n')  # command to reset the Highlighted Nodes
+            if FreeCAD.GuiUp:
+                import FreeCADGui
+                FreeCADGui.doCommand(command_for_nonposjacnodes)
+                FreeCADGui.doCommand(command_to_highlight)
+            return True
+        else:
+            return False
 
     def load_results(self):
         self.results_present = False
@@ -233,11 +266,11 @@ class FemToolsCcx(FemTools.FemTools):
     #  @param self The python object self
     def load_results_ccxfrd(self):
         import os
-        import ccxFrdReader
+        import importCcxFrdResults
         frd_result_file = os.path.splitext(self.inp_file_name)[0] + '.frd'
         if os.path.isfile(frd_result_file):
             result_name_prefix = 'CalculiX_' + self.solver.AnalysisType + '_'
-            ccxFrdReader.importFrd(frd_result_file, self.analysis, result_name_prefix)
+            importCcxFrdResults.importFrd(frd_result_file, self.analysis, result_name_prefix)
             for m in self.analysis.Member:
                 if m.isDerivedFrom("Fem::FemResultObject"):
                     self.results_present = True
@@ -251,10 +284,10 @@ class FemToolsCcx(FemTools.FemTools):
     #  @param self The python object self
     def load_results_ccxdat(self):
         import os
-        import ccxDatReader
+        import importCcxDatResults
         dat_result_file = os.path.splitext(self.inp_file_name)[0] + '.dat'
         if os.path.isfile(dat_result_file):
-            mode_frequencies = ccxDatReader.import_dat(dat_result_file, self.analysis)
+            mode_frequencies = importCcxDatResults.import_dat(dat_result_file, self.analysis)
         else:
             raise Exception('FEM: No .dat results found at {}!'.format(dat_result_file))
         if mode_frequencies:
@@ -265,4 +298,4 @@ class FemToolsCcx(FemTools.FemTools):
                         if m.Eigenmode == mf['eigenmode']:
                             m.EigenmodeFrequency = mf['frequency']
 
-#  @}
+##  @}

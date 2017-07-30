@@ -31,7 +31,7 @@
     <message>
       <location filename="openscadprefs-base.ui" line="93"/>
       <source>Use ViewProvider in Tree View</source>
-      <translation type="unfinished">Use ViewProvider in Tree View</translation>
+      <translation>Χρήση ViewProvider σε προβολή δέντρου</translation>
     </message>
     <message>
       <location filename="openscadprefs-base.ui" line="110"/>
@@ -41,12 +41,12 @@
     <message>
       <location filename="openscadprefs-base.ui" line="113"/>
       <source>Use Multmatrix Feature</source>
-      <translation type="unfinished">Use Multmatrix Feature</translation>
+      <translation>Χρησιμοποιήστε το χαρακτηριστικό Multmatrix</translation>
     </message>
     <message>
       <location filename="openscadprefs-base.ui" line="153"/>
       <source>The maximum number of faces of a polygon, prism or frustum. If fn is greater than this value the object is considered to be a circular. Set to 0 for no limit</source>
-      <translation type="unfinished">The maximum number of faces of a polygon, prism or frustum. If fn is greater than this value the object is considered to be a circular. Set to 0 for no limit</translation>
+      <translation>Ο μέγιστος αριθμός του πρόσωπα ενός πολυγώνου, πρίσμα ή frustum. Εάν η fn είναι μεγαλύτερη από την τιμή αυτή, το αντικείμενο θεωρείται να είναι ένα κυκλικό. Ορίζεται στο 0 για δεν υπάρχει όριο</translation>
     </message>
     <message>
       <location filename="openscadprefs-base.ui" line="133"/>
@@ -101,17 +101,17 @@
     <message>
       <location filename="openscadprefs-base.ui" line="341"/>
       <source>Mesh fallback</source>
-      <translation type="unfinished">Mesh fallback</translation>
+      <translation>Πλέγμα επιστροφή</translation>
     </message>
     <message>
       <location filename="openscadprefs-base.ui" line="383"/>
       <source>Deflection</source>
-      <translation type="unfinished">Deflection</translation>
+      <translation>Εκτροπή</translation>
     </message>
     <message>
       <location filename="openscadprefs-base.ui" line="386"/>
       <source>deflection</source>
-      <translation type="unfinished">deflection</translation>
+      <translation>εκτροπή</translation>
     </message>
     <message>
       <location filename="openscadprefs-base.ui" line="393"/>
@@ -132,62 +132,62 @@
   <context>
     <name>OpenSCAD</name>
     <message>
-      <location filename="OpenSCADCommands.py" line="141"/>
+      <location filename="OpenSCADCommands.py" line="148"/>
       <source>Convert Edges to Faces</source>
       <translation type="unfinished">Convert Edges to Faces</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="220"/>
+      <location filename="OpenSCADCommands.py" line="227"/>
       <source>Please select 3 objects first</source>
       <translation>Παρακαλώ επιλέξτε πρώτα 3 αντικείμενα</translation>
     </message>
     <message>
-      <location filename="importCSG.py" line="1118"/>
+      <location filename="importCSG.py" line="1167"/>
       <source>Unsupported Function</source>
       <translation>Μη υποστηριζόμενη λειτουργία</translation>
     </message>
     <message>
-      <location filename="importCSG.py" line="1118"/>
+      <location filename="importCSG.py" line="1167"/>
       <source>Press OK</source>
       <translation>Πατήστε OK</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="264"/>
+      <location filename="OpenSCADCommands.py" line="271"/>
       <source>Add</source>
       <translation>Προσθήκη</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="265"/>
+      <location filename="OpenSCADCommands.py" line="272"/>
       <source>Clear</source>
       <translation>Καθαρισμός</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="266"/>
+      <location filename="OpenSCADCommands.py" line="273"/>
       <source>as Mesh</source>
       <translation type="unfinished">as Mesh</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="267"/>
+      <location filename="OpenSCADCommands.py" line="274"/>
       <source>Add OpenSCAD Element</source>
       <translation>Προσθήκη στοιχείου OpenSCAD</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="340"/>
+      <location filename="OpenSCADCommands.py" line="347"/>
       <source>Perform</source>
       <translation type="unfinished">Perform</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="341"/>
+      <location filename="OpenSCADCommands.py" line="348"/>
       <source>Mesh Boolean</source>
       <translation type="unfinished">Mesh Boolean</translation>
     </message>
     <message>
-      <location filename="OpenSCADUtils.py" line="560"/>
+      <location filename="OpenSCADUtils.py" line="566"/>
       <source>Error all shapes must be either 2D or both must be 3D</source>
       <translation type="unfinished">Error all shapes must be either 2D or both must be 3D</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="91"/>
+      <location filename="OpenSCADCommands.py" line="98"/>
       <source>Unable to explode %s</source>
       <translation>Αδυναμία κατακερματισμού %s</translation>
     </message>
@@ -195,12 +195,12 @@
   <context>
     <name>OpenSCAD_AddOpenSCADElement</name>
     <message>
-      <location filename="OpenSCADCommands.py" line="382"/>
+      <location filename="OpenSCADCommands.py" line="389"/>
       <source>Add OpenSCAD Element...</source>
       <translation>Προσθήκη στοιχείου OpenSCAD...</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="384"/>
+      <location filename="OpenSCADCommands.py" line="391"/>
       <source>Add an OpenSCAD element by entering OpenSCAD code and executing the OpenSCAD binary</source>
       <translation>Προσθέστε ένα στοιχείο OpenSCAD εισάγοντας κώδικα OpenSCAD και εκτελώντας το OpenSCAD</translation>
     </message>
@@ -208,12 +208,12 @@
   <context>
     <name>OpenSCAD_ColorCodeShape</name>
     <message>
-      <location filename="OpenSCADCommands.py" line="118"/>
+      <location filename="OpenSCADCommands.py" line="125"/>
       <source>Color Shapes</source>
       <translation type="unfinished">Color Shapes</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="120"/>
+      <location filename="OpenSCADCommands.py" line="127"/>
       <source>Color Shapes by validity and type</source>
       <translation type="unfinished">Color Shapes by validity and type</translation>
     </message>
@@ -221,7 +221,7 @@
   <context>
     <name>OpenSCAD_Edgestofaces</name>
     <message>
-      <location filename="OpenSCADCommands.py" line="139"/>
+      <location filename="OpenSCADCommands.py" line="146"/>
       <source>Convert Edges To Faces</source>
       <translation type="unfinished">Convert Edges To Faces</translation>
     </message>
@@ -229,12 +229,12 @@
   <context>
     <name>OpenSCAD_ExpandPlacements</name>
     <message>
-      <location filename="OpenSCADCommands.py" line="200"/>
+      <location filename="OpenSCADCommands.py" line="207"/>
       <source>Expand Placements</source>
       <translation type="unfinished">Expand Placements</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="202"/>
+      <location filename="OpenSCADCommands.py" line="209"/>
       <source>Expand all placements downwards the FeatureTree</source>
       <translation type="unfinished">Expand all placements downwards the FeatureTree</translation>
     </message>
@@ -242,12 +242,12 @@
   <context>
     <name>OpenSCAD_ExplodeGroup</name>
     <message>
-      <location filename="OpenSCADCommands.py" line="100"/>
+      <location filename="OpenSCADCommands.py" line="107"/>
       <source>Explode Group</source>
       <translation>Ομάδα Κατακερματισμού</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="102"/>
+      <location filename="OpenSCADCommands.py" line="109"/>
       <source>remove fusion, apply placement to children and color randomly</source>
       <translation>απομάκρυνση της σύμπτυξης, εφαρμογή τοποθέτησης στα τέκνα και στο χρώμα στην τύχη</translation>
     </message>
@@ -255,12 +255,12 @@
   <context>
     <name>OpenSCAD_Hull</name>
     <message>
-      <location filename="OpenSCADCommands.py" line="417"/>
+      <location filename="OpenSCADCommands.py" line="424"/>
       <source>Hull</source>
       <translation>Κύτος</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="419"/>
+      <location filename="OpenSCADCommands.py" line="426"/>
       <source>Perform Hull</source>
       <translation type="unfinished">Perform Hull</translation>
     </message>
@@ -268,12 +268,12 @@
   <context>
     <name>OpenSCAD_IncreaseToleranceFeature</name>
     <message>
-      <location filename="OpenSCADCommands.py" line="181"/>
+      <location filename="OpenSCADCommands.py" line="188"/>
       <source>Increase Tolerance Feature</source>
       <translation type="unfinished">Increase Tolerance Feature</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="183"/>
+      <location filename="OpenSCADCommands.py" line="190"/>
       <source>Create Feature that allows to increase the tolerance</source>
       <translation type="unfinished">Create Feature that allows to increase the tolerance</translation>
     </message>
@@ -281,12 +281,12 @@
   <context>
     <name>OpenSCAD_MeshBoolean</name>
     <message>
-      <location filename="OpenSCADCommands.py" line="396"/>
+      <location filename="OpenSCADCommands.py" line="403"/>
       <source>Mesh Boolean...</source>
       <translation type="unfinished">Mesh Boolean...</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="398"/>
+      <location filename="OpenSCADCommands.py" line="405"/>
       <source>Export objects as meshes and use OpenSCAD to perform a boolean operation.</source>
       <translation type="unfinished">Export objects as meshes and use OpenSCAD to perform a boolean operation.</translation>
     </message>
@@ -294,12 +294,12 @@
   <context>
     <name>OpenSCAD_Minkowski</name>
     <message>
-      <location filename="OpenSCADCommands.py" line="438"/>
+      <location filename="OpenSCADCommands.py" line="445"/>
       <source>Minkowski</source>
       <translation type="unfinished">Minkowski</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="440"/>
+      <location filename="OpenSCADCommands.py" line="447"/>
       <source>Perform Minkowski</source>
       <translation type="unfinished">Perform Minkowski</translation>
     </message>
@@ -307,12 +307,12 @@
   <context>
     <name>OpenSCAD_RefineShapeFeature</name>
     <message>
-      <location filename="OpenSCADCommands.py" line="160"/>
+      <location filename="OpenSCADCommands.py" line="167"/>
       <source>Refine Shape Feature</source>
       <translation type="unfinished">Refine Shape Feature</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="162"/>
+      <location filename="OpenSCADCommands.py" line="169"/>
       <source>Create Refine Shape Feature</source>
       <translation type="unfinished">Create Refine Shape Feature</translation>
     </message>
@@ -320,12 +320,12 @@
   <context>
     <name>OpenSCAD_RemoveSubtree</name>
     <message>
-      <location filename="OpenSCADCommands.py" line="239"/>
+      <location filename="OpenSCADCommands.py" line="246"/>
       <source>Remove Objects and their Children</source>
       <translation type="unfinished">Remove Objects and their Children</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="241"/>
+      <location filename="OpenSCADCommands.py" line="248"/>
       <source>Removes the selected objects and all children that are not referenced from other objects</source>
       <translation type="unfinished">Removes the selected objects and all children that are not referenced from other objects</translation>
     </message>
@@ -333,12 +333,12 @@
   <context>
     <name>OpenSCAD_ReplaceObject</name>
     <message>
-      <location filename="OpenSCADCommands.py" line="224"/>
+      <location filename="OpenSCADCommands.py" line="231"/>
       <source>Replace Object</source>
       <translation>Αντικατάσταση αντικειμένου</translation>
     </message>
     <message>
-      <location filename="OpenSCADCommands.py" line="226"/>
+      <location filename="OpenSCADCommands.py" line="233"/>
       <source>Replace an object in the Feature Tree. Please select old, new and parent object</source>
       <translation type="unfinished">Replace an object in the Feature Tree. Please select old, new and parent object</translation>
     </message>

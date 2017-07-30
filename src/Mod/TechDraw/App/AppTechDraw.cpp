@@ -15,6 +15,7 @@
 #endif
 
 #include <Base/Console.h>
+#include <Base/PyObjectBase.h>
 #include <Base/Interpreter.h>
 
 #include "DrawPage.h"
@@ -31,6 +32,7 @@
 #include "DrawViewSymbol.h"
 #include "DrawViewClip.h"
 #include "DrawHatch.h"
+#include "DrawGeomHatch.h"
 #include "DrawViewDraft.h"
 #include "DrawViewArch.h"
 #include "DrawViewSpreadsheet.h"
@@ -39,11 +41,11 @@
 #include "DrawViewDetail.h"
 
 namespace TechDraw {
-extern PyObject* initModule();
+    extern PyObject* initModule();
 }
 
 /* Python entry */
-PyMODINIT_FUNC initTechDraw()
+PyMOD_INIT_FUNC(TechDraw)
 {
     // load dependent module
     try {
@@ -52,9 +54,9 @@ PyMODINIT_FUNC initTechDraw()
     }
     catch(const Base::Exception& e) {
         PyErr_SetString(PyExc_ImportError, e.what());
-        return;
+        PyMOD_Return(0);
     }
-    (void)TechDraw::initModule();
+    PyObject* mod = TechDraw::initModule();
     Base::Console().Log("Loading TechDraw module... done\n");
 
 
@@ -84,6 +86,7 @@ PyMODINIT_FUNC initTechDraw()
 
     TechDraw::DrawViewClip        ::init();
     TechDraw::DrawHatch           ::init();
+    TechDraw::DrawGeomHatch      ::init();
     TechDraw::DrawViewDraft       ::init();
     TechDraw::DrawViewArch        ::init();
     TechDraw::DrawViewImage       ::init();
@@ -94,4 +97,5 @@ PyMODINIT_FUNC initTechDraw()
     TechDraw::DrawViewMultiPython  ::init();
     TechDraw::DrawTemplatePython  ::init();
     TechDraw::DrawViewSymbolPython::init();
+    PyMOD_Return(mod);
 }

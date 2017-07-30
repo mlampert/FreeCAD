@@ -65,7 +65,7 @@ public:
     void attachTemplate(TechDraw::DrawTemplate *obj);
     void updateTemplate(bool force = false);
     void updateDrawing(bool force = false);
-
+    
     bool onMsg(const char* pMsg,const char** ppReturn);
     bool onHasMsg(const char* pMsg) const;
     void onRelabel(Gui::Document *pDoc);
@@ -73,7 +73,11 @@ public:
     void print();
     void print(QPrinter* printer);
     void printPdf();
+    void printPdf(std::string file);
     void printPreview();
+
+    void saveSVG(std::string file);
+
     void setFrameState(bool state);
     bool getFrameState(void) {return m_frameState;};
 
@@ -110,6 +114,11 @@ protected:
     QPrinter::PaperSize getPaperSize(int w, int h) const;
     void setDimensionGroups(void);
     void showStatusMsg(const char* s1, const char* s2, const char* s3) const;
+    
+    void onDeleteObject(const App::DocumentObject& obj);
+
+    typedef boost::BOOST_SIGNALS_NAMESPACE::connection Connection;
+    Connection connectDeletedObject;
 
 private:
     QAction *m_nativeAction;

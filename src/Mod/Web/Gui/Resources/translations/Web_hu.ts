@@ -48,7 +48,7 @@
         <location filename="../../Command.cpp" line="135"/>
         <location filename="../../Command.cpp" line="136"/>
         <source>Refresh web page</source>
-        <translation>Weblap frissítése</translation>
+        <translation>Weboldal frissítése</translation>
     </message>
 </context>
 <context>
@@ -66,7 +66,7 @@
     <message>
         <location filename="../../Command.cpp" line="164"/>
         <source>Stop the current loading</source>
-        <translation>Leállítja a jelenlegi betöltést</translation>
+        <translation>A jelenlegi betöltés leállítása</translation>
     </message>
 </context>
 <context>
@@ -84,7 +84,7 @@
     <message>
         <location filename="../../Command.cpp" line="194"/>
         <source>Zoom into the page</source>
-        <translation>Közelítsen az oldalra</translation>
+        <translation>Közelítés az oldalra</translation>
     </message>
 </context>
 <context>
@@ -102,7 +102,7 @@
     <message>
         <location filename="../../Command.cpp" line="223"/>
         <source>Zoom out of the page</source>
-        <translation>Nagyítás ki az oldalt</translation>
+        <translation>Eltávolodás az oldalról</translation>
     </message>
 </context>
 <context>
@@ -115,24 +115,132 @@
     <message>
         <location filename="../../Command.cpp" line="51"/>
         <source>Open website...</source>
-        <translation>Weboldal megnyitása...</translation>
+        <translation>Weboldal megnyitása…</translation>
     </message>
     <message>
         <location filename="../../Command.cpp" line="52"/>
         <source>Opens a website in FreeCAD</source>
-        <translation>Egy weboldal megnyitása a FreeCAD-on belül</translation>
+        <translation>Megnyit egy weboldalt a FreeCAD programban</translation>
+    </message>
+</context>
+<context>
+    <name>Form</name>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="14"/>
+        <source>Sketchfab exporter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="39"/>
+        <source>What to upload?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="46"/>
+        <source>Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="56"/>
+        <source>All visible objects</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="81"/>
+        <source>Model name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="88"/>
+        <source>Private</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="100"/>
+        <source>Description</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="110"/>
+        <source>Tags (separated by commas)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="119"/>
+        <source>freecad,</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="135"/>
+        <source>Format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="143"/>
+        <source>OBJ + MTL (Arch exporter)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="148"/>
+        <source>OBJ (standard Mesh exporter)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="153"/>
+        <source>DAE (Collada)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="158"/>
+        <source>STL</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="163"/>
+        <source>IGES (shapes only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="168"/>
+        <source>IV</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="176"/>
+        <source>Sketchfab API token</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="192"/>
+        <source>Obtain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="201"/>
+        <source>Upload</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="211"/>
+        <source>uploading</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/TaskDlgSketchfab.ui" line="218"/>
+        <source>Success! View uploaded online</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
         <location filename="../../AppWebGui.cpp" line="78"/>
-        <location filename="../../BrowserView.cpp" line="353"/>
+        <location filename="../../BrowserView.cpp" line="354"/>
         <source>Browser</source>
         <translation>Böngésző</translation>
     </message>
     <message>
-        <location filename="../../BrowserView.cpp" line="249"/>
+        <location filename="../../BrowserView.cpp" line="250"/>
         <source>File does not exist!</source>
         <translation>A fájl nem létezik!</translation>
     </message>
@@ -140,14 +248,14 @@
 <context>
     <name>WebGui::BrowserView</name>
     <message>
-        <location filename="../../BrowserView.cpp" line="244"/>
+        <location filename="../../BrowserView.cpp" line="245"/>
         <source>Error</source>
         <translation>Hiba</translation>
     </message>
     <message>
-        <location filename="../../BrowserView.cpp" line="324"/>
+        <location filename="../../BrowserView.cpp" line="325"/>
         <source>Loading %1...</source>
-        <translation>%1 betöltése...</translation>
+        <translation>%1 betöltve...</translation>
     </message>
 </context>
 <context>

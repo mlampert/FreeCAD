@@ -131,7 +131,7 @@ QString UnitsSchemaMKS::schemaTranslate(const Quantity &quant, double &factor, Q
     else if (unit == Unit::ThermalConductivity) {
         if (UnitValue < 1000) {
             unitString = QString::fromLatin1("W/mm/K");
-            factor = 1.0;
+            factor = 1000000.0;
         }
         else {
             unitString = QString::fromLatin1("W/m/K");
@@ -162,6 +162,10 @@ QString UnitsSchemaMKS::schemaTranslate(const Quantity &quant, double &factor, Q
     }
     else if (unit == Unit::HeatFlux) {
         unitString = QString::fromLatin1("W/m^2");
+        factor = 1.0;
+    }
+    else if (unit == Unit::Velocity) {
+        unitString = QString::fromLatin1("mm/s");
         factor = 1.0;
     }
     else {

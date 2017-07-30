@@ -504,4 +504,219 @@ ArcOfHyperbola* ArcOfHyperbola::Copy()
     return crv;
 }
 
+//---------------parabola
+
+DeriVector2 Parabola::CalculateNormal(Point &p, double* derivparam)
+{
+    //fill some vectors in
+    DeriVector2 cv (vertex, derivparam);
+    DeriVector2 f1v (focus1, derivparam);
+    DeriVector2 pv (p, derivparam);
+    
+    // the normal is the vector from the focus to the intersection of ano thru the point p and direction
+    // of the symmetry axis of the parabola with the directrix.
+    // As both point to directrix and point to focus are of equal magnitude, we can work with unitary vectors
+    // to calculate the normal, substraction of those vectors.
+    
+    DeriVector2 ret = cv.subtr(f1v).getNormalized().subtr(f1v.subtr(pv).getNormalized());
+    
+    return ret;
+}
+
+DeriVector2 Parabola::Value(double u, double du, double* derivparam)
+{
+
+    //In local coordinate system, value() of parabola is:
+    //P(U) = O + U*U/(4.*F)*XDir + U*YDir 
+
+    DeriVector2 c(this->vertex, derivparam);
+    DeriVector2 f1(this->focus1, derivparam);
+    
+    DeriVector2 fv = f1.subtr(c);
+    
+    double f,df;
+    
+    f = fv.length(df);
+    
+    DeriVector2 xdir = fv.getNormalized();
+    DeriVector2 ydir = xdir.rotate90ccw();
+    
+    DeriVector2 dirx = xdir.multD(u,du).multD(u,du).divD(4*f,4*df);
+    DeriVector2 diry = ydir.multD(u,du); 
+    
+    DeriVector2 dir = dirx.sum(diry);
+    
+    DeriVector2 ret; //point of parabola at parameter value of u, in global coordinates
+    
+    ret = c.sum( dir );
+
+    return ret;
+}
+
+int Parabola::PushOwnParams(VEC_pD &pvec)
+{
+    int cnt=0;
+    pvec.push_back(vertex.x); cnt++;
+    pvec.push_back(vertex.y); cnt++;
+    pvec.push_back(focus1.x); cnt++;
+    pvec.push_back(focus1.y); cnt++;
+    return cnt;
+}
+
+void Parabola::ReconstructOnNewPvec(VEC_pD &pvec, int &cnt)
+{
+    vertex.x=pvec[cnt]; cnt++;
+    vertex.y=pvec[cnt]; cnt++;
+    focus1.x=pvec[cnt]; cnt++;
+    focus1.y=pvec[cnt]; cnt++;
+}
+
+Parabola* Parabola::Copy()
+{
+    Parabola* crv = new Parabola(*this);
+    return crv;
+}
+
+//--------------- arc of hyperbola
+int ArcOfParabola::PushOwnParams(VEC_pD &pvec)
+{
+    int cnt=0;
+    cnt += Parabola::PushOwnParams(pvec);
+    pvec.push_back(start.x); cnt++;
+    pvec.push_back(start.y); cnt++;
+    pvec.push_back(end.x); cnt++;
+    pvec.push_back(end.y); cnt++;
+    pvec.push_back(startAngle); cnt++;
+    pvec.push_back(endAngle); cnt++;
+    return cnt;
+    
+}
+void ArcOfParabola::ReconstructOnNewPvec(VEC_pD &pvec, int &cnt)
+{
+    Parabola::ReconstructOnNewPvec(pvec,cnt);
+    start.x=pvec[cnt]; cnt++;
+    start.y=pvec[cnt]; cnt++;
+    end.x=pvec[cnt]; cnt++;
+    end.y=pvec[cnt]; cnt++;
+    startAngle=pvec[cnt]; cnt++;
+    endAngle=pvec[cnt]; cnt++;
+}
+ArcOfParabola* ArcOfParabola::Copy()
+{
+    ArcOfParabola* crv = new ArcOfParabola(*this);
+    return crv;
+}
+
+// bspline
+DeriVector2 BSpline::CalculateNormal(Point& p, double* derivparam)
+{
+    // place holder
+    DeriVector2 ret;
+    
+    if (mult[0] > degree && mult[mult.size()-1] > degree) {
+    // if endpoints through end poles    
+        if(*p.x == *start.x && *p.y == *start.y) {
+            // and you are asking about the normal at start point
+            // then tangency is defined by first to second poles
+            DeriVector2 endpt(this->poles[1], derivparam);
+            DeriVector2 spt(this->poles[0], derivparam);
+            DeriVector2 npt(this->poles[2], derivparam); // next pole to decide normal direction
+            
+            DeriVector2 tg = endpt.subtr(spt);
+            DeriVector2 nv = npt.subtr(spt);
+            
+            if ( tg.scalarProd(nv) > 0 )
+                ret = tg.rotate90cw();
+            else
+                ret = tg.rotate90ccw();
+        }
+        else if(*p.x == *end.x && *p.y == *end.y) {
+            // and you are asking about the normal at end point
+            // then tangency is defined by last to last but one poles
+            DeriVector2 endpt(this->poles[poles.size()-1], derivparam);
+            DeriVector2 spt(this->poles[poles.size()-2], derivparam);
+            DeriVector2 npt(this->poles[poles.size()-3], derivparam); // next pole to decide normal direction
+            
+            DeriVector2 tg = endpt.subtr(spt);
+            DeriVector2 nv = npt.subtr(spt);
+            
+            if ( tg.scalarProd(nv) > 0 )
+                ret = tg.rotate90ccw();
+            else
+                ret = tg.rotate90cw();
+        } else {
+           // another point and we have no clue until we implement De Boor
+            ret = DeriVector2();
+        }
+    }
+    else {
+      // either periodic or abnormal endpoint multiplicity, we have no clue so currently unsupported
+        ret = DeriVector2();
+    }
+
+
+    return ret;
+}
+
+DeriVector2 BSpline::Value(double /*u*/, double /*du*/, double* /*derivparam*/)
+{
+    // place holder
+    DeriVector2 ret = DeriVector2();
+
+    return ret;
+}
+
+int BSpline::PushOwnParams(VEC_pD &pvec)
+{
+    std::size_t cnt=0;
+
+    for(VEC_P::const_iterator it = poles.begin(); it != poles.end(); ++it) {
+        pvec.push_back( (*it).x );
+        pvec.push_back( (*it).y );
+    }
+
+    cnt = cnt + poles.size() * 2;
+
+    pvec.insert(pvec.end(), weights.begin(), weights.end());
+    cnt = cnt + weights.size();
+
+    pvec.insert(pvec.end(), knots.begin(), knots.end());
+    cnt = cnt + knots.size();
+    
+    pvec.push_back(start.x); cnt++;
+    pvec.push_back(start.y); cnt++;
+    pvec.push_back(end.x); cnt++;
+    pvec.push_back(end.y); cnt++;
+
+    return static_cast<int>(cnt);
+}
+
+void BSpline::ReconstructOnNewPvec(VEC_pD &pvec, int &cnt)
+{
+    for(VEC_P::iterator it = poles.begin(); it != poles.end(); ++it) {
+        (*it).x = pvec[cnt]; cnt++;
+        (*it).y = pvec[cnt]; cnt++;
+    }
+
+    for(VEC_pD::iterator it = weights.begin(); it != weights.end(); ++it) {
+        (*it) = pvec[cnt]; cnt++;
+    }
+
+    for(VEC_pD::iterator it = knots.begin(); it != knots.end(); ++it) {
+        (*it) = pvec[cnt]; cnt++;
+    }
+    
+    start.x=pvec[cnt]; cnt++;
+    start.y=pvec[cnt]; cnt++;
+    end.x=pvec[cnt]; cnt++;
+    end.y=pvec[cnt]; cnt++;
+
+}
+
+BSpline* BSpline::Copy()
+{
+    BSpline* crv = new BSpline(*this);
+    return crv;
+}
+
 }//namespace GCS

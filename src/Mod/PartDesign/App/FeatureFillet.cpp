@@ -29,9 +29,11 @@
 # include <TopoDS.hxx>
 # include <TopoDS_Edge.hxx>
 # include <TopTools_ListOfShape.hxx>
-#include <TopTools_IndexedMapOfShape.hxx>
-#include <TopExp.hxx>
-#include <BRep_Tool.hxx>
+# include <TopTools_IndexedMapOfShape.hxx>
+# include <TopExp.hxx>
+# include <BRep_Tool.hxx>
+# include <ShapeFix_Shape.hxx>
+# include <ShapeFix_ShapeTolerance.hxx>
 #endif
 
 #include <Base/Console.h>
@@ -78,6 +80,9 @@ App::DocumentObjectExecReturn *Fillet::execute(void)
         return new App::DocumentObjectExecReturn("Fillet not possible on selected shapes");
     
     double radius = Radius.getValue();
+    
+    if(radius <= 0)
+        return new App::DocumentObjectExecReturn("Fillet radius must be greater than zero");
 
     this->positionByBaseFeature();
 
@@ -103,14 +108,21 @@ App::DocumentObjectExecReturn *Fillet::execute(void)
         TopTools_ListOfShape aLarg;
         aLarg.Append(baseShape.getShape());
         if (!BRepAlgo::IsValid(aLarg, shape, Standard_False, Standard_False)) {
-            return new App::DocumentObjectExecReturn("Resulting shape is invalid");
+            ShapeFix_ShapeTolerance aSFT;
+            aSFT.LimitTolerance(shape, Precision::Confusion(), Precision::Confusion(), TopAbs_SHAPE);
+            Handle(ShapeFix_Shape) aSfs = new ShapeFix_Shape(shape);
+            aSfs->Perform();
+            shape = aSfs->Shape();
+            if (!BRepAlgo::IsValid(aLarg, shape, Standard_False, Standard_False)) {
+                return new App::DocumentObjectExecReturn("Resulting shape is invalid");
+            }
         }
 
         this->Shape.setValue(getSolid(shape));
         return App::DocumentObject::StdReturn;
     }
     catch (Standard_Failure) {
-        Handle_Standard_Failure e = Standard_Failure::Caught();
+        Handle(Standard_Failure) e = Standard_Failure::Caught();
         return new App::DocumentObjectExecReturn(e->GetMessageString());
     }
 }

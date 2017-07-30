@@ -63,7 +63,11 @@ def makeSite(objectslist=None,baseobj=None,name="Site"):
     if objectslist:
         obj.Group = objectslist
     if baseobj:
-        obj.Terrain = baseobj
+        import Part
+        if isinstance(baseobj,Part.Shape):
+            obj.Shape = baseobj
+        else:
+            obj.Terrain = baseobj
     return obj
 
 
@@ -290,7 +294,9 @@ Site creation aborted." )
             ss += "]"
             FreeCAD.ActiveDocument.openTransaction(translate("Arch","Create Site"))
             FreeCADGui.addModule("Arch")
-            FreeCADGui.doCommand("Arch.makeSite("+ss+")")
+            FreeCADGui.doCommand("obj = Arch.makeSite("+ss+")")
+            FreeCADGui.addModule("Draft")
+            FreeCADGui.doCommand("Draft.autogroup(obj)")
             FreeCAD.ActiveDocument.commitTransaction()
             FreeCAD.ActiveDocument.recompute()
 
@@ -406,7 +412,7 @@ class _Site(ArchFloor._Floor):
                 except Part.OCCError:
                     # error in computing the area. Better set it to zero than show a wrong value
                     if obj.ProjectedArea.Value != 0:
-                        print "Error computing areas for ",obj.Label
+                        print("Error computing areas for ",obj.Label)
                         obj.ProjectedArea = 0
                 else:
                     pset.append(pf)
@@ -429,7 +435,10 @@ class _Site(ArchFloor._Floor):
                 if obj.Perimeter.Value != l:
                     obj.Perimeter = l
         # compute volumes
-        shapesolid = obj.Terrain.Shape.extrude(obj.ExtrusionVector)
+        if obj.Terrain.Shape.Solids:
+            shapesolid = obj.Terrain.Shape.copy()
+        else:
+            shapesolid = obj.Terrain.Shape.extrude(obj.ExtrusionVector)
         addvol = 0
         subvol = 0
         for sub in obj.Subtractions:

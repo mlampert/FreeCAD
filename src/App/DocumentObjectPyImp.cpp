@@ -25,6 +25,8 @@
 #include "DocumentObject.h"
 #include "Document.h"
 #include "Expression.h"
+#include "GroupExtension.h"
+#include "GeoFeatureGroupExtension.h"
 
 // inclusion of the generated files (generated out of DocumentObjectPy.xml)
 #include <App/DocumentObjectPy.h>
@@ -162,6 +164,9 @@ Py::List DocumentObjectPy::getState(void) const
         uptodate = false;
         list.append(Py::String("Restore"));
     }
+    if (object->testStatus(App::Expand)){
+        list.append(Py::String("Expanded"));
+    }
     if (uptodate) {
         list.append(Py::String("Up-to-date"));
     }
@@ -207,6 +212,22 @@ Py::List DocumentObjectPy::getInList(void) const
     return ret;
 }
 
+Py::List DocumentObjectPy::getInListRecursive(void) const
+{
+    Py::List ret;
+    try {
+        std::vector<DocumentObject*> list = getDocumentObjectPtr()->getInListRecursive();
+
+        for (std::vector<DocumentObject*>::iterator It = list.begin(); It != list.end(); ++It)
+            ret.append(Py::Object((*It)->getPyObject(), true));
+ 
+    }
+    catch (const Base::Exception& e) {
+        throw Py::IndexError(e.what());
+    }
+    return ret;    
+}
+
 Py::List DocumentObjectPy::getOutList(void) const
 {
     Py::List ret;
@@ -214,6 +235,23 @@ Py::List DocumentObjectPy::getOutList(void) const
 
     for (std::vector<DocumentObject*>::iterator It=list.begin();It!=list.end();++It)
         ret.append(Py::Object((*It)->getPyObject(), true));
+
+    return ret;
+}
+
+Py::List DocumentObjectPy::getOutListRecursive(void) const
+{
+    Py::List ret;
+    try {
+        std::vector<DocumentObject*> list = getDocumentObjectPtr()->getOutListRecursive();
+
+        // creat the python list for the output
+        for (std::vector<DocumentObject*>::iterator It = list.begin(); It != list.end(); ++It)
+            ret.append(Py::Object((*It)->getPyObject(), true));
+    }
+    catch (const Base::Exception& e) {
+        throw Py::IndexError(e.what());
+    }
 
     return ret;
 }
@@ -231,13 +269,21 @@ PyObject*  DocumentObjectPy::setExpression(PyObject * args)
 
     if (Py::Object(expr).isNone())
         getDocumentObjectPtr()->setExpression(p, boost::shared_ptr<Expression>());
+#if PY_MAJOR_VERSION >= 3
+    else if (PyUnicode_Check(expr)) {
+        const char * exprStr = PyUnicode_AsUTF8(expr);
+#else
     else if (PyString_Check(expr)) {
         const char * exprStr = PyString_AsString(expr);
+#endif
         boost::shared_ptr<Expression> shared_expr(ExpressionParser::parse(getDocumentObjectPtr(), exprStr));
 
         getDocumentObjectPtr()->setExpression(p, shared_expr, comment);
     }
     else if (PyUnicode_Check(expr)) {
+#if PY_MAJOR_VERSION >= 3
+        std::string exprStr = PyUnicode_AsUTF8(expr);
+#else
         PyObject* unicode = PyUnicode_AsEncodedString(expr, "utf-8", 0);
         if (unicode) {
             std::string exprStr = PyString_AsString(unicode);
@@ -250,6 +296,7 @@ PyObject*  DocumentObjectPy::setExpression(PyObject * args)
             // utf-8 encoding failed
             return 0;
         }
+#endif
     }
     else
         throw Py::TypeError("String or None expected.");
@@ -264,6 +311,42 @@ PyObject*  DocumentObjectPy::recompute(PyObject *args)
     try {
         bool ok = getDocumentObjectPtr()->recomputeFeature();
         return Py_BuildValue("O", (ok ? Py_True : Py_False));
+    }
+    catch (const Base::Exception& e) {
+        throw Py::RuntimeError(e.what());
+    }
+}
+
+PyObject*  DocumentObjectPy::getParentGroup(PyObject *args)
+{
+    if (!PyArg_ParseTuple(args, ""))
+        return NULL;
+
+    try {
+        auto grp = GroupExtension::getGroupOfObject(getDocumentObjectPtr());
+        if(!grp) {
+            Py_INCREF(Py_None);
+            return Py_None;
+        }
+        return grp->getPyObject();
+    }
+    catch (const Base::Exception& e) {
+        throw Py::RuntimeError(e.what());
+    }
+}
+
+PyObject*  DocumentObjectPy::getParentGeoFeatureGroup(PyObject *args)
+{
+    if (!PyArg_ParseTuple(args, ""))
+        return NULL;
+
+    try {
+        auto grp = GeoFeatureGroupExtension::getGroupOfObject(getDocumentObjectPtr());
+        if(!grp) {
+            Py_INCREF(Py_None);
+            return Py_None;
+        }
+        return grp->getPyObject();
     }
     catch (const Base::Exception& e) {
         throw Py::RuntimeError(e.what());

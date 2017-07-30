@@ -115,7 +115,8 @@ std::vector<TopoDS_Edge> DrawProjectSplit::getEdgesForWalker(TopoDS_Shape shape,
     TopoDS_Shape scaledShape;
     scaledShape = TechDrawGeometry::scaleShape(copyShape,
                                                scale);
-    TechDrawGeometry::GeometryObject* go = buildGeometryObject(scaledShape,inputCenter,direction);
+    gp_Ax2 viewAxis = TechDrawGeometry::getViewAxis(Base::Vector3d(0.0,0.0,0.0),direction);
+    TechDrawGeometry::GeometryObject* go = buildGeometryObject(scaledShape,viewAxis);
     result = getEdges(go);
 
     delete go;
@@ -123,16 +124,13 @@ std::vector<TopoDS_Edge> DrawProjectSplit::getEdgesForWalker(TopoDS_Shape shape,
 }
 
 
-TechDrawGeometry::GeometryObject* DrawProjectSplit::buildGeometryObject(
-                                           TopoDS_Shape shape, 
-                                           gp_Pnt& inputCenter, 
-                                           Base::Vector3d direction)
+TechDrawGeometry::GeometryObject* DrawProjectSplit::buildGeometryObject(TopoDS_Shape shape,
+                                                                        const gp_Ax2& viewAxis)
 {
-    TechDrawGeometry::GeometryObject* geometryObject = new TechDrawGeometry::GeometryObject("DrawProjectSplit");
+    TechDrawGeometry::GeometryObject* geometryObject = new TechDrawGeometry::GeometryObject("DrawProjectSplit",nullptr);
 
     geometryObject->projectShape(shape,
-                            inputCenter,
-                            direction);
+                                 viewAxis);
     geometryObject->extractGeometry(TechDrawGeometry::ecHARD,                   //always show the hard&outline visible lines
                                     true);
     geometryObject->extractGeometry(TechDrawGeometry::ecOUTLINE,
@@ -263,7 +261,7 @@ bool DrawProjectSplit::isOnEdge(TopoDS_Edge e, TopoDS_Vertex v, double& param, b
             } else if (dist < Precision::Confusion()) {
                 const gp_Pnt pt = BRep_Tool::Pnt(v);                         //have to duplicate method 3 to get param
                 BRepAdaptor_Curve adapt(e);
-                const Handle_Geom_Curve c = adapt.Curve().Curve();
+                const Handle(Geom_Curve) c = adapt.Curve().Curve();
                 double maxDist = 0.000001;     //magic number.  less than this gives false positives.
                 //bool found =
                 (void) GeomLib_Tool::Parameter(c,pt,maxDist,param);  //already know point it on curve
@@ -336,7 +334,7 @@ std::vector<TopoDS_Edge> DrawProjectSplit::split1Edge(TopoDS_Edge e, std::vector
     }
 
     BRepAdaptor_Curve adapt(e);
-    Handle_Geom_Curve c = adapt.Curve().Curve();
+    Handle(Geom_Curve) c = adapt.Curve().Curve();
     double first = BRepLProp_CurveTool::FirstParameter(adapt);
     double last = BRepLProp_CurveTool::LastParameter(adapt);
     if (first > last) {
@@ -407,7 +405,6 @@ std::vector<splitPoint> DrawProjectSplit::sortSplits(std::vector<splitPoint>& s,
     return result;
 }
 
-
 std::vector<TopoDS_Edge> DrawProjectSplit::removeDuplicateEdges(std::vector<TopoDS_Edge>& inEdges)
 {
     std::vector<TopoDS_Edge> result;
@@ -423,7 +420,7 @@ std::vector<TopoDS_Edge> DrawProjectSplit::removeDuplicateEdges(std::vector<Topo
         item.startAngle = DrawUtil::angleWithX(e,v1);
         item.endAngle = DrawUtil::angleWithX(e,v2);
         //catch reverse-duplicates
-        if (DrawUtil::vectorCompare(item.start,item.end) > 0) {
+        if (DrawUtil::vectorLess(item.end,item.start)) {
              Base::Vector3d vTemp = item.start;
              item.start  = item.end;
              item.end    = vTemp;
@@ -440,17 +437,21 @@ std::vector<TopoDS_Edge> DrawProjectSplit::removeDuplicateEdges(std::vector<Topo
     auto last = std::unique(sorted.begin(), sorted.end(), edgeSortItem::edgeEqual);  //duplicates to back
     sorted.erase(last, sorted.end());                         //remove dupls
 
-    for (auto& e: sorted) {
-        result.push_back(inEdges.at(e.idx));
+    //TODO: "sorted" turns to garbage if pagescale set to "0.1"!!!!???? ***
+    for (auto e: sorted) {
+        if (e.idx < inEdges.size()) {
+            result.push_back(inEdges.at(e.idx));                  //<<< ***here
+        } else {
+            Base::Console().Message("ERROR - DPS::removeDuplicateEdges - access: %d inEdges: %d\n",e.idx,inEdges.size());
+        }
     }
-
     return result;
 }
 
 std::vector<edgeSortItem> DrawProjectSplit::sortEdges(std::vector<edgeSortItem>& e, bool ascend)
 {
     std::vector<edgeSortItem> sorted = e;
-    std::sort(sorted.begin(), sorted.end(), edgeSortItem::edgeCompare);
+    std::sort(sorted.begin(), sorted.end(), edgeSortItem::edgeLess);
     if (ascend) {
         std::reverse(sorted.begin(),sorted.end());
     }
@@ -473,24 +474,23 @@ std::string edgeSortItem::dump(void)
 
 
 //true if "e1 < e2" - for sorting
-/*static*/bool edgeSortItem::edgeCompare(const edgeSortItem& e1, const edgeSortItem& e2)
+/*static*/bool edgeSortItem::edgeLess(const edgeSortItem& e1, const edgeSortItem& e2)
 {
     bool result = false;
-    int vCompare = DrawUtil::vectorCompare(e1.start, e2.start);
-    if ( vCompare == -1) {
-        result = true;
-    } else if (vCompare == 0) {
-        if (e1.startAngle < e2.startAngle) {
-                result = true;
-        } else if (DrawUtil::fpCompare(e1.startAngle, e2.startAngle)) {
-            if (e1.endAngle < e2.startAngle) {
-                result = true;
-            } else if (DrawUtil::fpCompare(e1.endAngle, e2.endAngle)) {
-                if (e1.idx < e2.idx) {
-                    result = true;
-                }
-            }
+    if (!((e1.start - e2.start).Length() < Precision::Confusion())) {  //e1 != e2
+        if ( DrawUtil::vectorLess(e1.start, e2.start)) {
+            result = true;
         }
+    } else if (!DrawUtil::fpCompare(e1.startAngle, e2.startAngle)) {
+        if (e1.startAngle < e2.startAngle) {
+            result = true;
+        }
+    } else if (!DrawUtil::fpCompare(e1.endAngle, e2.endAngle)) {
+        if (e1.endAngle < e2.startAngle) {
+            result = true;
+        } 
+    } else if (e1.idx < e2.idx) {
+        result = true;
     }
     return result;
 }
@@ -499,8 +499,10 @@ std::string edgeSortItem::dump(void)
 /*static*/bool edgeSortItem::edgeEqual(const edgeSortItem& e1, const edgeSortItem& e2)
 {
     bool result = false;
-    if ( (e1.start == e2.start) &&
-         (e1.end   == e2.end)   &&
+    double startDif = (e1.start - e2.start).Length();
+    double endDif   = (e1.end   - e2.end).Length();
+    if ( (startDif < Precision::Confusion()) &&
+         (endDif   < Precision::Confusion()) &&
          (DrawUtil::fpCompare(e1.startAngle,e2.startAngle)) &&
          (DrawUtil::fpCompare(e1.endAngle,e2.endAngle)) ) {
         result = true;

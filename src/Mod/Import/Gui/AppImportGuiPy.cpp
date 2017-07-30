@@ -52,9 +52,11 @@
 # include <IGESControl_Controller.hxx>
 # include <IGESData_GlobalSection.hxx>
 # include <IGESData_IGESModel.hxx>
+# include <IGESToBRep_Actor.hxx>
 # include <Interface_Static.hxx>
 # include <Transfer_TransientProcess.hxx>
 # include <XSControl_WorkSession.hxx>
+# include <XSControl_TransferReader.hxx>
 # include <TopTools_IndexedMapOfShape.hxx>
 # include <TopTools_MapOfShape.hxx>
 # include <TopExp_Explorer.hxx>
@@ -112,10 +114,14 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
+#include <Gui/Application.h>
+#include <Gui/Document.h>
+#include <Gui/ViewProvider.h>
+
 class OCAFBrowser
 {
 public:
-    OCAFBrowser(Handle_TDocStd_Document h)
+    OCAFBrowser(Handle(TDocStd_Document) h)
         : pDoc(h)
     {
         myGroupIcon = QApplication::style()->standardIcon(QStyle::SP_DirIcon);
@@ -150,7 +156,7 @@ private:
 private:
     QIcon myGroupIcon;
     TDF_IDList myList;
-    Handle_TDocStd_Document pDoc;
+    Handle(TDocStd_Document) pDoc;
 };
 
 void OCAFBrowser::load(QTreeWidget* theTree)
@@ -182,25 +188,25 @@ void OCAFBrowser::load(const TDF_Label& label, QTreeWidgetItem* item, const QStr
                 QString text;
                 QTextStream str(&text);
                 str << attr->DynamicType()->Name();
-                str << " = " << toString(Handle_TDataStd_Name::DownCast(attr)->Get()).c_str();
+                str << " = " << toString(Handle(TDataStd_Name)::DownCast(attr)->Get()).c_str();
                 child->setText(0, text);
             }
             else if (it.Value() == TDF_TagSource::GetID()) {
                 QString text;
                 QTextStream str(&text);
                 str << attr->DynamicType()->Name();
-                str << " = " << Handle_TDF_TagSource::DownCast(attr)->Get();
+                str << " = " << Handle(TDF_TagSource)::DownCast(attr)->Get();
                 child->setText(0, text);
             }
             else if (it.Value() == TDataStd_Integer::GetID()) {
                 QString text;
                 QTextStream str(&text);
                 str << attr->DynamicType()->Name();
-                str << " = " << Handle_TDataStd_Integer::DownCast(attr)->Get();
+                str << " = " << Handle(TDataStd_Integer)::DownCast(attr)->Get();
                 child->setText(0, text);
             }
             else if (it.Value() == TNaming_NamedShape::GetID()) {
-                TopoDS_Shape shape = Handle_TNaming_NamedShape::DownCast(attr)->Get();
+                TopoDS_Shape shape = Handle(TNaming_NamedShape)::DownCast(attr)->Get();
                 QString text;
                 QTextStream str(&text);
                 str << attr->DynamicType()->Name() << " = ";
@@ -267,7 +273,7 @@ void OCAFBrowser::load(const TDF_Label& label, QTreeWidgetItem* item, const QStr
 class ImportOCAFExt : public Import::ImportOCAF
 {
 public:
-    ImportOCAFExt(Handle_TDocStd_Document h, App::Document* d, const std::string& name)
+    ImportOCAFExt(Handle(TDocStd_Document) h, App::Document* d, const std::string& name)
         : ImportOCAF(h, d, name)
     {
     }
@@ -336,7 +342,10 @@ private:
 
             Handle(XCAFApp_Application) hApp = XCAFApp_Application::GetApplication();
             Handle(TDocStd_Document) hDoc;
+            bool optionReadShapeCompoundMode_status;
             hApp->NewDocument(TCollection_ExtendedString("MDTV-CAF"), hDoc);
+            ParameterGrp::handle hGrp = App::GetApplication().GetParameterGroupByPath("User parameter:BaseApp/Preferences/Mod/Import/hSTEP");
+            optionReadShapeCompoundMode_status = hGrp->GetBool("ReadShapeCompoundMode",false);
 
             if (file.hasExtension("stp") || file.hasExtension("step")) {
                 try {
@@ -348,7 +357,7 @@ private:
                         throw Py::Exception(PyExc_IOError, "cannot read STEP file");
                     }
 
-                    Handle_Message_ProgressIndicator pi = new Part::ProgressIndicator(100);
+                    Handle(Message_ProgressIndicator) pi = new Part::ProgressIndicator(100);
                     aReader.Reader().WS()->MapReader()->SetProgress(pi);
                     pi->NewScope(100, "Reading STEP file...");
                     pi->Show();
@@ -356,7 +365,7 @@ private:
                     pi->EndScope();
                 }
                 catch (OSD_Exception) {
-                    Handle_Standard_Failure e = Standard_Failure::Caught();
+                    Handle(Standard_Failure) e = Standard_Failure::Caught();
                     Base::Console().Error("%s\n", e->GetMessageString());
                     Base::Console().Message("Try to load STEP file without colors...\n");
 
@@ -381,15 +390,18 @@ private:
                         throw Py::Exception(Base::BaseExceptionFreeCADError, "cannot read IGES file");
                     }
 
-                    Handle_Message_ProgressIndicator pi = new Part::ProgressIndicator(100);
+                    Handle(Message_ProgressIndicator) pi = new Part::ProgressIndicator(100);
                     aReader.WS()->MapReader()->SetProgress(pi);
                     pi->NewScope(100, "Reading IGES file...");
                     pi->Show();
                     aReader.Transfer(hDoc);
                     pi->EndScope();
+                    // http://opencascade.blogspot.de/2009/03/unnoticeable-memory-leaks-part-2.html
+                    Handle(IGESToBRep_Actor)::DownCast(aReader.WS()->TransferReader()->Actor())
+                            ->SetModel(new IGESData_IGESModel);
                 }
                 catch (OSD_Exception) {
-                    Handle_Standard_Failure e = Standard_Failure::Caught();
+                    Handle(Standard_Failure) e = Standard_Failure::Caught();
                     Base::Console().Error("%s\n", e->GetMessageString());
                     Base::Console().Message("Try to load IGES file without colors...\n");
 
@@ -402,11 +414,20 @@ private:
             }
 
             ImportOCAFExt ocaf(hDoc, pcDoc, file.fileNamePure());
-            ocaf.loadShapes();
+            // We must recompute the doc before loading shapes as they are going to be
+            // inserted into the document and computed at the same time so we are going to
+            // purge the document before recomputing it to clear it and settle it in the proper
+            // way. This is drastically improving STEP rendering time on complex STEP files.
             pcDoc->recompute();
+            if (file.hasExtension("stp") || file.hasExtension("step"))
+                ocaf.setMerge(optionReadShapeCompoundMode_status);
+            ocaf.loadShapes();
+            pcDoc->purgeTouched();
+            pcDoc->recompute();
+            hApp->Close(hDoc);
         }
         catch (Standard_Failure) {
-            Handle_Standard_Failure e = Standard_Failure::Caught();
+            Handle(Standard_Failure) e = Standard_Failure::Caught();
             throw Py::Exception(Base::BaseExceptionFreeCADError, e->GetMessageString());
         }
         catch (const Base::Exception& e) {
@@ -415,6 +436,52 @@ private:
 
         return Py::None();
     }
+    int export_app_object(App::DocumentObject* obj, Import::ExportOCAF ocaf, 
+                          std::vector <TDF_Label>& hierarchical_label,
+                          std::vector <TopLoc_Location>& hierarchical_loc)
+    {
+        std::vector <int> local_label;
+        int root_id;
+        int return_label = -1;
+
+
+        if (obj->getTypeId().isDerivedFrom(App::Part::getClassTypeId())) {
+            App::Part* part = static_cast<App::Part*>(obj);
+            // I shall recusrively select the elements and call back
+            std::vector<App::DocumentObject*> entries = part->Group.getValues();
+            std::vector<App::DocumentObject*>::iterator it;
+
+            for ( it = entries.begin(); it != entries.end(); it++ ) {
+                int new_label=0;
+                new_label=export_app_object((*it),ocaf,hierarchical_label,hierarchical_loc);
+                local_label.push_back(new_label);
+            }
+
+            ocaf.createNode(part,root_id,hierarchical_label,hierarchical_loc);
+            std::vector<int>::iterator label_it;
+            for (label_it = local_label.begin(); label_it != local_label.end(); ++label_it) {
+                ocaf.pushNode(root_id,(*label_it), hierarchical_label,hierarchical_loc);
+            }
+
+            return_label=root_id;
+        }
+
+        if (obj->getTypeId().isDerivedFrom(Part::Feature::getClassTypeId())) {
+            Part::Feature* part = static_cast<Part::Feature*>(obj);
+            std::vector<App::Color> colors;
+            Gui::ViewProvider* vp = Gui::Application::Instance->getViewProvider(part);
+            if (vp && vp->isDerivedFrom(PartGui::ViewProviderPartExt::getClassTypeId())) {
+                colors = static_cast<PartGui::ViewProviderPartExt*>(vp)->DiffuseColor.getValues();
+                if (colors.empty())
+                    colors.push_back(static_cast<PartGui::ViewProviderPart*>(vp)->ShapeColor.getValue());
+            }
+
+            return_label=ocaf.saveShape(part, colors,hierarchical_label,hierarchical_loc);
+        }
+
+        return(return_label);
+    }
+
     Py::Object exporter(const Py::Tuple& args)
     {
         PyObject* object;
@@ -427,36 +494,39 @@ private:
         std::string name8bit = Part::encodeFilename(Utf8Name);
 
         try {
+            Py::Sequence list(object);
             Handle(XCAFApp_Application) hApp = XCAFApp_Application::GetApplication();
             Handle(TDocStd_Document) hDoc;
             hApp->NewDocument(TCollection_ExtendedString("MDTV-CAF"), hDoc);
-            Import::ExportOCAF ocaf(hDoc);
 
-            Py::Sequence list(object);
+            bool keepExplicitPlacement = list.size() > 1;
+            keepExplicitPlacement = Standard_True;
+            Import::ExportOCAF ocaf(hDoc, keepExplicitPlacement);
+
+            // That stuff is exporting a list of selected oject into FreeCAD Tree
+
             for (Py::Sequence::iterator it = list.begin(); it != list.end(); ++it) {
                 PyObject* item = (*it).ptr();
                 if (PyObject_TypeCheck(item, &(App::DocumentObjectPy::Type))) {
                     App::DocumentObject* obj = static_cast<App::DocumentObjectPy*>(item)->getDocumentObjectPtr();
-                    if (obj->getTypeId().isDerivedFrom(Part::Feature::getClassTypeId())) {
-                        Part::Feature* part = static_cast<Part::Feature*>(obj);
-                        std::vector<App::Color> colors;
-                        Gui::ViewProvider* vp = Gui::Application::Instance->getViewProvider(part);
-                        if (vp && vp->isDerivedFrom(PartGui::ViewProviderPartExt::getClassTypeId())) {
-                            colors = static_cast<PartGui::ViewProviderPartExt*>(vp)->DiffuseColor.getValues();
-                            if (colors.empty())
-                                colors.push_back(static_cast<PartGui::ViewProviderPart*>(vp)->ShapeColor.getValue());
-                        }
-                        ocaf.saveShape(part, colors);
-                    }
-                    else {
-                        Base::Console().Message("'%s' is not a shape, export will be ignored.\n", obj->Label.getValue());
-                    }
+                    std::vector <TDF_Label> hierarchical_label;
+                    std::vector <TopLoc_Location> hierarchical_loc;
+                    export_app_object(obj,ocaf, hierarchical_label, hierarchical_loc);
                 }
             }
 
             Base::FileInfo file(Utf8Name.c_str());
             if (file.hasExtension("stp") || file.hasExtension("step")) {
                 //Interface_Static::SetCVal("write.step.schema", "AP214IS");
+                bool optionScheme_214;
+                bool optionScheme_203;
+                ParameterGrp::handle hGrp_stp = App::GetApplication().GetParameterGroupByPath("User parameter:BaseApp/Preferences/Mod/Import/hSTEP");
+                optionScheme_214 = hGrp_stp->GetBool("Scheme_214",true);
+                optionScheme_203 = hGrp_stp->GetBool("Scheme_203",false);
+                if (optionScheme_214)
+                    Interface_Static::SetCVal("write.step.schema", "AP214CD");
+                if (optionScheme_203)
+                    Interface_Static::SetCVal("write.step.schema", "AP203");
                 STEPCAFControl_Writer writer;
                 writer.Transfer(hDoc, STEPControl_AsIs);
 
@@ -495,9 +565,11 @@ private:
                     throw Py::Exception();
                 }
             }
+
+            hApp->Close(hDoc);
         }
         catch (Standard_Failure) {
-            Handle_Standard_Failure e = Standard_Failure::Caught();
+            Handle(Standard_Failure) e = Standard_Failure::Caught();
             throw Py::Exception(Base::BaseExceptionFreeCADError, e->GetMessageString());
         }
         catch (const Base::Exception& e) {
@@ -528,7 +600,7 @@ private:
                     throw Py::Exception(PyExc_IOError, "cannot read STEP file");
                 }
 
-                Handle_Message_ProgressIndicator pi = new Part::ProgressIndicator(100);
+                Handle(Message_ProgressIndicator) pi = new Part::ProgressIndicator(100);
                 aReader.Reader().WS()->MapReader()->SetProgress(pi);
                 pi->NewScope(100, "Reading STEP file...");
                 pi->Show();
@@ -550,12 +622,15 @@ private:
                     throw Py::Exception(PyExc_IOError, "cannot read IGES file");
                 }
 
-                Handle_Message_ProgressIndicator pi = new Part::ProgressIndicator(100);
+                Handle(Message_ProgressIndicator) pi = new Part::ProgressIndicator(100);
                 aReader.WS()->MapReader()->SetProgress(pi);
                 pi->NewScope(100, "Reading IGES file...");
                 pi->Show();
                 aReader.Transfer(hDoc);
                 pi->EndScope();
+                // http://opencascade.blogspot.de/2009/03/unnoticeable-memory-leaks-part-2.html
+                Handle(IGESToBRep_Actor)::DownCast(aReader.WS()->TransferReader()->Actor())
+                        ->SetModel(new IGESData_IGESModel);
             }
             else {
                 throw Py::Exception(Base::BaseExceptionFreeCADError, "no supported file format");
@@ -585,9 +660,10 @@ private:
 
             OCAFBrowser browse(hDoc);
             browse.load(dlg->findChild<QTreeWidget*>());
+            hApp->Close(hDoc);
         }
         catch (Standard_Failure) {
-            Handle_Standard_Failure e = Standard_Failure::Caught();
+            Handle(Standard_Failure) e = Standard_Failure::Caught();
             throw Py::Exception(Base::BaseExceptionFreeCADError, e->GetMessageString());
         }
         catch (const Base::Exception& e) {

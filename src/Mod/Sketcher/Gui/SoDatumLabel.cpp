@@ -289,7 +289,7 @@ void SoDatumLabel::generatePrimitives(SoAction * action)
         // Only the angle intersection point is needed
         SbVec3f p0 = pnts[0];
 
-        // Load the Paramaters
+        // Load the Parameters
         float length     = this->param1.getValue();
         float startangle = this->param2.getValue();
         float range      = this->param3.getValue();
@@ -337,11 +337,11 @@ void SoDatumLabel::generatePrimitives(SoAction * action)
     } else if (this->datumtype.getValue() == SYMMETRIC) {
 
         // Get the Scale. See GLRender function for details on the viewport width calculation
-        SoState *state = action->getState();
-        const SbViewVolume & vv = SoViewVolumeElement::get(state);
-        float scale = vv.getWorldToScreenScale(SbVec3f(0.f,0.f,0.f), 1.0f);
-        SbVec2s vp_size = SoViewportRegionElement::get(state).getViewportSizePixels();
-        scale /= float(vp_size[0]);
+        //SoState *state = action->getState();
+        //const SbViewVolume & vv = SoViewVolumeElement::get(state);
+        //float scale = vv.getWorldToScreenScale(SbVec3f(0.f,0.f,0.f), 1.0f);
+        //SbVec2s vp_size = SoViewportRegionElement::get(state).getViewportSizePixels();
+        //scale /= float(vp_size[0]);
 
         SbVec3f dir = (p2-p1);
         dir.normalize();
@@ -429,12 +429,18 @@ void SoDatumLabel::GLRender(SoGLRenderAction * action)
     * The scale calculation is based on knowledge of SbViewVolume::getWorldToScreenScale
     * implementation internals. The factor returned from this function is calculated from the view frustums
     * nearplane width, height is not taken into account, and hence we divide it with the viewport width
-    * to get the exact pixel scale faktor.
+    * to get the exact pixel scale factor.
     * This is not documented and therefore may change on later coin versions!
     */
     const SbViewVolume & vv = SoViewVolumeElement::get(state);
-    float scale = vv.getWorldToScreenScale(SbVec3f(0.f,0.f,0.f), 1.f);
-    SbVec2s vp_size = action->getViewportRegion().getViewportSizePixels();
+    // As reference use the center point the camera is looking at on the near plane
+    // because then independent of the camera we get a constant scale factor when panning.
+    // If we used (0,0,0) instead then the scale factor would change heavily in perspective
+    // rendering mode. See #0002921 and #0002922.
+    SbVec3f center = vv.getSightPoint(vv.getNearDist());
+    float scale = vv.getWorldToScreenScale(center, 1.f);
+    const SbViewportRegion & vp = SoViewportRegionElement::get(state);
+    SbVec2s vp_size = vp.getViewportSizePixels();
     scale /= float(vp_size[0]);
 
     const SbString* s = string.getValues(0);
@@ -562,7 +568,7 @@ void SoDatumLabel::GLRender(SoGLRenderAction * action)
         bool flipTriang = false;
 
         if ((par3-par1).dot(dir) > (par4 - par1).length()) {
-            // Increase Margin to improve visability
+            // Increase Margin to improve visibility
             float tmpMargin = this->imgHeight /0.75;
             par3 = par4;
             if((par2-par1).dot(dir) > (par4 - par1).length()) {
@@ -710,7 +716,7 @@ void SoDatumLabel::GLRender(SoGLRenderAction * action)
         // Only the angle intersection point is needed
         SbVec3f p0 = pnts[0];
 
-        // Load the Paramaters
+        // Load the Parameters
         float length     = this->param1.getValue();
         float startangle = this->param2.getValue();
         float range      = this->param3.getValue();

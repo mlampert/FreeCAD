@@ -32,6 +32,7 @@
 #include <Mod/PartDesign/App/Body.h>
 
 #include "TaskFeatureParameters.h"
+#include "TaskSketchBasedParameters.h"
 
 using namespace PartDesignGui;
 using namespace Gui;
@@ -44,7 +45,17 @@ TaskFeatureParameters::TaskFeatureParameters(PartDesignGui::ViewProvider *vp, QW
                                                      const std::string& pixmapname, const QString& parname)
     : TaskBox(Gui::BitmapFactory().pixmap(pixmapname.c_str()),parname,true, parent),
       vp(vp), blockUpdate(false)
-{ }
+{
+    Gui::Document* doc = vp->getDocument();
+    this->attachDocument(doc);
+    this->enableNotifications(DocumentObserver::Delete);
+}
+
+void TaskFeatureParameters::slotDeletedObject(const Gui::ViewProviderDocumentObject& Obj)
+{
+    if (this->vp == &Obj)
+        this->vp = nullptr;
+}
 
 void TaskFeatureParameters::onUpdateView(bool on)
 {
@@ -107,6 +118,15 @@ bool TaskDlgFeatureParameters::accept() {
             throw Base::Exception(vp->getObject()->getStatusString());
         }
 
+        // detach the task panel from the selection to avoid to invoke
+        // eventually onAddSelection when the selection changes
+        std::vector<QWidget*> subwidgets = getDialogContent();
+        for (auto it : subwidgets) {
+            TaskSketchBasedParameters* param = qobject_cast<TaskSketchBasedParameters*>(it);
+            if (param)
+                param->detachSelection();
+        }
+
         Gui::Command::doCommand(Gui::Command::Gui,"Gui.activeDocument().resetEdit()");
         Gui::Command::commitCommand();
     } catch (const Base::Exception& e) {
@@ -127,6 +147,15 @@ bool TaskDlgFeatureParameters::reject()
     // Find out previous feature we won't be able to do it after abort
     // (at least in the body case)
     App::DocumentObject* previous = feature->getBaseObject(/* silent = */ true );
+
+    // detach the task panel from the selection to avoid to invoke
+    // eventually onAddSelection when the selection changes
+    std::vector<QWidget*> subwidgets = getDialogContent();
+    for (auto it : subwidgets) {
+        TaskSketchBasedParameters* param = qobject_cast<TaskSketchBasedParameters*>(it);
+        if (param)
+            param->detachSelection();
+    }
 
     // roll back the done things
     Gui::Command::abortCommand();

@@ -57,6 +57,9 @@ public:
 
     /// Set a new filter string 
     void setFilter(const char* filter);
+    const std::string& getFilter() const {
+        return Filter;
+    }
     /** Test to current selection
      *  This method tests the current selection set
      *  against the filter and returns true if the 
@@ -92,7 +95,7 @@ protected:
  * This object is a link between the selection 
  * filter class and the selection singleton. Created with a 
  * filter string and registered in the selection it will only 
- * allow the descibed object types to be selected.
+ * allow the described object types to be selected.
  * @see SelectionFilter
  * @see SelectionSingleton
  */

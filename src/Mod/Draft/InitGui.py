@@ -71,19 +71,19 @@ class DraftWorkbench (Workbench):
         self.cmdList = ["Draft_Line","Draft_Wire","Draft_Circle","Draft_Arc","Draft_Ellipse",
                         "Draft_Polygon","Draft_Rectangle", "Draft_Text",
                         "Draft_Dimension", "Draft_BSpline","Draft_Point",
-                        "Draft_ShapeString","Draft_Facebinder","Draft_BezCurve"]
+                        "Draft_ShapeString","Draft_Facebinder","Draft_BezCurve","Draft_Label"]
         self.modList = ["Draft_Move","Draft_Rotate","Draft_Offset",
                         "Draft_Trimex", "Draft_Upgrade", "Draft_Downgrade", "Draft_Scale",
                         "Draft_Edit","Draft_WireToBSpline","Draft_AddPoint",
                         "Draft_DelPoint","Draft_Shape2DView","Draft_Draft2Sketch","Draft_Array",
-                        "Draft_PathArray","Draft_Clone","Draft_Drawing","Draft_Mirror"]
+                        "Draft_PathArray","Draft_Clone","Draft_Drawing","Draft_Mirror","Draft_Stretch"]
         self.treecmdList = ["Draft_ApplyStyle","Draft_ToggleDisplayMode","Draft_AddToGroup",
                             "Draft_SelectGroup","Draft_SelectPlane",
-                            "Draft_ShowSnapBar","Draft_ToggleGrid"]
+                            "Draft_ShowSnapBar","Draft_ToggleGrid","Draft_AutoGroup"]
         self.lineList = ["Draft_UndoLine","Draft_FinishLine","Draft_CloseLine"]
         self.utils = ["Draft_VisGroup","Draft_Heal","Draft_FlipDimension",
                       "Draft_ToggleConstructionMode","Draft_ToggleContinueMode","Draft_Edit",
-                      "Draft_Slope"]
+                      "Draft_Slope","Draft_SetWorkingPlaneProxy"]
         self.snapList = ['Draft_Snap_Lock','Draft_Snap_Midpoint','Draft_Snap_Perpendicular',
                          'Draft_Snap_Grid','Draft_Snap_Intersection','Draft_Snap_Parallel',
                          'Draft_Snap_Endpoint','Draft_Snap_Angle','Draft_Snap_Center',

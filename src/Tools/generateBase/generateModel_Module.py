@@ -1,8 +1,13 @@
 #!/usr/bin/env python
 
 #
-# Generated Sat Dec 03 11:48:45 2016 by generateDS.py.
+# Generated Thu Apr 27 21:48:12 2017 by generateDS.py.
+# Update it with: python generateDS.py -o generateModel_Module.py generateMetaModel_Module.xsd
 #
+# WARNING! All changes made in this file will be lost!
+#
+
+from __future__ import print_function # this allows py2 to print(str1,str2) correctly
 
 import sys
 import getopt
@@ -216,8 +221,9 @@ class GenerateModel:
 
 class PythonExport:
     subclass = None
-    def __init__(self, FatherNamespace='', RichCompare=0, Name='', Reference=0, FatherInclude='', Namespace='', Initialization=0, Father='', PythonName='', Twin='', Constructor=0, TwinPointer='', Include='', NumberProtocol=0, Delete=0, Documentation=None, Methode=None, Attribute=None, Sequence=None, CustomAttributes='', ClassDeclarations=''):
+    def __init__(self, FatherNamespace='', DisableNotify=0, RichCompare=0, Name='', Reference=0, FatherInclude='', Namespace='', Initialization=0, Father='', PythonName='', Twin='', Constructor=0, TwinPointer='', Include='', NumberProtocol=0, Delete=0, Documentation=None, Methode=None, Attribute=None, Sequence=None, CustomAttributes='', ClassDeclarations=''):
         self.FatherNamespace = FatherNamespace
+        self.DisableNotify = DisableNotify
         self.RichCompare = RichCompare
         self.Name = Name
         self.Reference = Reference
@@ -268,6 +274,8 @@ class PythonExport:
     def setClassdeclarations(self, ClassDeclarations): self.ClassDeclarations = ClassDeclarations
     def getFathernamespace(self): return self.FatherNamespace
     def setFathernamespace(self, FatherNamespace): self.FatherNamespace = FatherNamespace
+    def getDisablenotify(self): return self.DisableNotify
+    def setDisablenotify(self, DisableNotify): self.DisableNotify = DisableNotify
     def getRichcompare(self): return self.RichCompare
     def setRichcompare(self, RichCompare): self.RichCompare = RichCompare
     def getName(self): return self.Name
@@ -306,6 +314,8 @@ class PythonExport:
         outfile.write('</%s>\n' % name_)
     def exportAttributes(self, outfile, level, name_='PythonExport'):
         outfile.write(' FatherNamespace="%s"' % (self.getFathernamespace(), ))
+        if self.getDisablenotify() is not None:
+            outfile.write(' DisableNotify="%s"' % (self.getDisablenotify(), ))
         if self.getRichcompare() is not None:
             outfile.write(' RichCompare="%s"' % (self.getRichcompare(), ))
         outfile.write(' Name="%s"' % (self.getName(), ))
@@ -347,6 +357,8 @@ class PythonExport:
     def exportLiteralAttributes(self, outfile, level, name_):
         showIndent(outfile, level)
         outfile.write('FatherNamespace = "%s",\n' % (self.getFathernamespace(),))
+        showIndent(outfile, level)
+        outfile.write('DisableNotify = "%s",\n' % (self.getDisablenotify(),))
         showIndent(outfile, level)
         outfile.write('RichCompare = "%s",\n' % (self.getRichcompare(),))
         showIndent(outfile, level)
@@ -425,6 +437,13 @@ class PythonExport:
     def buildAttributes(self, attrs):
         if attrs.get('FatherNamespace'):
             self.FatherNamespace = attrs.get('FatherNamespace').value
+        if attrs.get('DisableNotify'):
+            if attrs.get('DisableNotify').value in ('true', '1'):
+                self.DisableNotify = 1
+            elif attrs.get('DisableNotify').value in ('false', '0'):
+                self.DisableNotify = 0
+            else:
+                raise ValueError('Bad boolean attribute (DisableNotify)')
         if attrs.get('RichCompare'):
             if attrs.get('RichCompare').value in ('true', '1'):
                 self.RichCompare = 1
@@ -1791,7 +1810,7 @@ class SaxGeneratemodelHandler(handler.ContentHandler):
         self.locator = locator
     
     def showError(self, msg):
-        print '*** (showError):', msg
+        print('*** (showError):', msg)
         sys.exit(-1)
 
     def startElement(self, name, attrs):
@@ -1811,6 +1830,14 @@ class SaxGeneratemodelHandler(handler.ContentHandler):
             val = attrs.get('FatherNamespace', None)
             if val is not None:
                 obj.setFathernamespace(val)
+            val = attrs.get('DisableNotify', None)
+            if val is not None:
+                if val in ('true', '1'):
+                    obj.setDisablenotify(1)
+                elif val in ('false', '0'):
+                    obj.setDisablenotify(0)
+                else:
+                    self.reportError('"DisableNotify" attribute must be boolean ("true", "1", "false", "0")')
             val = attrs.get('RichCompare', None)
             if val is not None:
                 if val in ('true', '1'):
@@ -2241,7 +2268,7 @@ Options:
 """
 
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(-1)
 
 
@@ -2270,10 +2297,10 @@ def parseSelect(inFileName):
         except StopIteration:
             topElementName = documentHandler.getTopElementName()
         if topElementName is None:
-            raise RuntimeError, 'no top level element'
+            raise RuntimeError('no top level element')
         topElementName = topElementName.replace('-', '_').replace(':', '_')
         if topElementName not in globals():
-            raise RuntimeError, 'no class for top element: %s' % topElementName
+            raise RuntimeError('no class for top element: %s' % topElementName)
         topElement = globals()[topElementName]
         infile.seek(0)
         doc = minidom.parse(infile)

@@ -19,28 +19,31 @@
 #   USA                                                                   *
 #**************************************************************************
 
-import FreeCAD, os, sys, unittest, Sketcher, PartDesign, TestSketcherApp
-App = FreeCAD
-
 #---------------------------------------------------------------------------
-# define the test cases to test the FreeCAD Sketcher module
+# define the test cases to test the FreeCAD PartDesign module
 #---------------------------------------------------------------------------
 
+# datum tools
+from PartDesignTests.TestDatum import TestDatumPoint, TestDatumLine, TestDatumPlane
+from PartDesignTests.TestShapeBinder import TestShapeBinder
 
-class PartDesignPadTestCases(unittest.TestCase):
-	def setUp(self):
-		self.Doc = FreeCAD.newDocument("PartDesignTest")
+# additive/subtractive features & primitives
+from PartDesignTests.TestPad import TestPad
+from PartDesignTests.TestPocket import TestPocket
+from PartDesignTests.TestRevolve import TestRevolve
+from PartDesignTests.TestPipe import TestPipe
+from PartDesignTests.TestLoft import TestLoft
+from PartDesignTests.TestPrimitive import TestPrimitive
 
-	def testBoxCase(self):
-		self.PadSketch = self.Doc.addObject('Sketcher::SketchObject','SketchPad')
-		TestSketcherApp.CreateSlotPlateSet(self.PadSketch)
-		self.Doc.recompute()
-		self.Pad = self.Doc.addObject("PartDesign::Pad","Pad")
-		self.Pad.Profile = self.PadSketch
-		self.Doc.recompute()
-		self.failUnless(len(self.Pad.Shape.Faces) == 6)
-		
-	def tearDown(self):
-		#closing doc
-		FreeCAD.closeDocument("PartDesignTest")
-		#print ("omit clos document for debuging")
+# transformations and boolean
+from PartDesignTests.TestMirrored import TestMirrored
+from PartDesignTests.TestLinearPattern import TestLinearPattern
+from PartDesignTests.TestPolarPattern import TestPolarPattern
+from PartDesignTests.TestMultiTransform import TestMultiTransform
+from PartDesignTests.TestBoolean import TestBoolean
+
+# dressup features
+from PartDesignTests.TestFillet import TestFillet
+from PartDesignTests.TestChamfer import TestChamfer
+from PartDesignTests.TestDraft import TestDraft
+from PartDesignTests.TestThickness import TestThickness

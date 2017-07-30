@@ -289,7 +289,7 @@
     </message>
     <message>
         <source>Merges selected meshes into one</source>
-        <translation type="unfinished">Merges selected meshes into one</translation>
+        <translation>Объединить выбранные сетки в одну</translation>
     </message>
 </context>
 <context>
@@ -395,6 +395,21 @@
     <message>
         <source>Remove topologic independent components from the mesh</source>
         <translation>Удалить топологически-независимые компоненты из сетки</translation>
+    </message>
+</context>
+<context>
+    <name>CmdMeshSectionByPlane</name>
+    <message>
+        <source>Mesh</source>
+        <translation>Сеть</translation>
+    </message>
+    <message>
+        <source>Create section from mesh and plane</source>
+        <translation>Создать секцию из сетки и плоскости</translation>
+    </message>
+    <message>
+        <source>Section from mesh and plane</source>
+        <translation>Секция из сетки и плоскости</translation>
     </message>
 </context>
 <context>
@@ -737,30 +752,30 @@ Please run the command to repair folds first</source>
     </message>
     <message>
         <source>Settings...</source>
-        <translation type="unfinished"></translation>
+        <translation>Настройки...</translation>
     </message>
 </context>
 <context>
     <name>MeshGui::DlgEvaluateSettings</name>
     <message>
         <source>Evaluation settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Параметры вычислений</translation>
     </message>
     <message>
         <source>Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Настройки</translation>
     </message>
     <message>
         <source>Check for non-manifold points</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Check for non-manifold points</translation>
     </message>
     <message>
         <source>Enable check for folds on surface</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Enable check for folds on surface</translation>
     </message>
     <message>
         <source>Only consider zero area faces as degenerated</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Only consider zero area faces as degenerated</translation>
     </message>
 </context>
 <context>
@@ -775,7 +790,7 @@ Please run the command to repair folds first</source>
     </message>
     <message>
         <source>Alt+C</source>
-        <translation>Alt+C</translation>
+        <translation>ALT + C</translation>
     </message>
     <message>
         <source>Cl&amp;ose</source>
@@ -886,6 +901,10 @@ Please run the command to repair folds first</source>
     <message>
         <source>mm</source>
         <translation type="obsolete">мм</translation>
+    </message>
+    <message>
+        <source>Export AMF files using compression</source>
+        <translation>Экспорт AMF файлов со сжатием</translation>
     </message>
 </context>
 <context>
@@ -1099,7 +1118,7 @@ Please run the command to repair folds first</source>
     </message>
     <message>
         <source>Minumum number of faces</source>
-        <translation>Минимальное значение количество граней</translation>
+        <translation type="obsolete">Минимальное значение количество граней</translation>
     </message>
     <message>
         <source>Cylinder</source>
@@ -1172,11 +1191,11 @@ Please run the command to repair folds first</source>
     <name>Mesh_TrimByPlane</name>
     <message>
         <source>Select plane</source>
-        <translation>Выберите плоскость</translation>
+        <translation type="obsolete">Выберите плоскость</translation>
     </message>
     <message>
         <source>Please select a plane at which you trim the mesh.</source>
-        <translation>Выберите плоскость, которая подрежет сетку.</translation>
+        <translation type="obsolete">Выберите плоскость, которая подрежет сетку.</translation>
     </message>
 </context>
 <context>
@@ -1187,13 +1206,17 @@ Please run the command to repair folds first</source>
     </message>
     <message>
         <source>Unknwon error occured while running OpenSCAD.</source>
-        <translation>Произошла неизвестная ошибка при выполнении OpenSCAD.</translation>
+        <translation type="obsolete">Произошла неизвестная ошибка при выполнении OpenSCAD.</translation>
     </message>
     <message>
         <source>OpenSCAD cannot be found on your system.
 Please visit http://www.openscad.org/index.html to install it.</source>
         <translation>Приложение OpenSCAD не обнаружено в системе.
 Скачайте его на сайте http://www.openscad.org и установите.</translation>
+    </message>
+    <message>
+        <source>Unknown error occurred while running OpenSCAD.</source>
+        <translation>Произошла неизвестная ошибка при выполнении OpenSCAD.</translation>
     </message>
 </context>
 <context>
@@ -1359,7 +1382,7 @@ Max=&lt;%4,%5,%6&gt;</translation>
     </message>
     <message>
         <source>All Mesh Files</source>
-        <translation type="unfinished">All Mesh Files</translation>
+        <translation>Все файлы сеток</translation>
     </message>
     <message>
         <source>Binary STL</source>
@@ -1371,23 +1394,23 @@ Max=&lt;%4,%5,%6&gt;</translation>
     </message>
     <message>
         <source>Binary Mesh</source>
-        <translation type="unfinished">Binary Mesh</translation>
+        <translation>Двоичная сетка</translation>
     </message>
     <message>
         <source>Alias Mesh</source>
-        <translation type="unfinished">Alias Mesh</translation>
+        <translation>Псевдоним сетки</translation>
     </message>
     <message>
         <source>Object File Format</source>
-        <translation type="unfinished">Object File Format</translation>
+        <translation>Формат файла объекта</translation>
     </message>
     <message>
         <source>Inventor V2.1 ascii</source>
-        <translation type="unfinished">Inventor V2.1 ascii</translation>
+        <translation>Inventor V2.1 ascii</translation>
     </message>
     <message>
         <source>Stanford Polygon</source>
-        <translation type="unfinished">Stanford Polygon</translation>
+        <translation>Stanford полигон</translation>
     </message>
     <message>
         <source>All Files</source>
@@ -1407,11 +1430,11 @@ Max=&lt;%4,%5,%6&gt;</translation>
     </message>
     <message>
         <source>Nastran</source>
-        <translation type="unfinished">Nastran</translation>
+        <translation>Nastran</translation>
     </message>
     <message>
         <source>Python module def</source>
-        <translation type="unfinished">Python module def</translation>
+        <translation>Python модуль</translation>
     </message>
     <message>
         <source>[Points: %1, Edges: %2, Faces: %3]</source>

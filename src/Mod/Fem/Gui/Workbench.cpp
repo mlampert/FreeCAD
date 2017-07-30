@@ -53,71 +53,83 @@ Workbench::~Workbench()
 void Workbench::setupContextMenu(const char* recipient, Gui::MenuItem* item) const
 {
      StdWorkbench::setupContextMenu( recipient, item );
-     *item << "Separator" 
-           << "Fem_ClearMesh"
-           << "Fem_PrintMeshInfo";
+     *item << "Separator"
+           << "FEM_MeshClear"
+           << "FEM_MeshPrintInfo";
 }
 
 Gui::ToolBarItem* Workbench::setupToolBars() const
 {
     Gui::ToolBarItem* root = StdWorkbench::setupToolBars();
-    Gui::ToolBarItem* fem = new Gui::ToolBarItem(root);
-    fem->setCommand("FEM");
-    *fem << "Fem_FemMesh2Mesh"
-         << "Fem_Analysis"
-         << "Fem_SolverCalculix"
-         // << "Fem_SolverZ88"
-         << "Separator"
-         << "Fem_MeshNetgenFromShape"
-         << "Fem_MeshGmshFromShape"
-         << "Fem_MeshRegion"
-         << "Separator"
-         << "Fem_MechanicalMaterial"
-         << "Fem_MaterialMechanicalNonlinear"
-         << "Fem_BeamSection"
-         << "Fem_ShellThickness"
-         << "Separator"
-         //<< "Fem_CreateNodesSet"
-         << "Separator"
-         << "Fem_ConstraintFixed"
-         << "Fem_ConstraintDisplacement"
-         << "Fem_ConstraintPlaneRotation"
-         << "Fem_ConstraintContact"
-         << "Fem_ConstraintTransform"
-         << "Separator"
-         << "Fem_ConstraintSelfWeight"
-         << "Fem_ConstraintForce"
-         << "Fem_ConstraintPressure"
-         //<< "Separator"
-         //<< "Fem_ConstraintBearing"
-         //<< "Fem_ConstraintGear"
-         //<< "Fem_ConstraintPulley"
-         //<< "Fem_ConstraintFluidBoundary"
-         << "Separator"
-         << "Fem_ConstraintTemperature"
-         << "Fem_ConstraintHeatflux"
-         << "Fem_ConstraintInitialTemperature"
-         << "Separator"
-         << "Fem_ControlSolver"
-         << "Fem_RunSolver"
-         << "Separator"
-         << "Fem_PurgeResults"
-         << "Fem_ShowResult";
+    Gui::ToolBarItem* model = new Gui::ToolBarItem(root);
+    model->setCommand("Model");
+    *model << "FEM_Analysis"
+           << "Separator"
+           << "FEM_MaterialSolid"
+           << "FEM_MaterialFluid"
+           << "FEM_MaterialMechanicalNonlinear"
+           << "FEM_ElementGeometry1D"
+           << "FEM_ElementGeometry2D"
+           << "FEM_ElementFluid1D";
+
+    Gui::ToolBarItem* mech = new Gui::ToolBarItem(root);
+    mech->setCommand("Mechanical Constraints");
+    *mech << "FEM_ConstraintFixed"
+          << "FEM_ConstraintDisplacement"
+          << "FEM_ConstraintPlaneRotation"
+          << "FEM_ConstraintContact"
+          << "FEM_ConstraintTransform"
+          << "Separator"
+          << "FEM_ConstraintForce"
+          << "FEM_ConstraintPressure"
+          << "FEM_ConstraintSelfWeight";
+
+    Gui::ToolBarItem* thermal = new Gui::ToolBarItem(root);
+    thermal->setCommand("Thermal Constraints");
+    *thermal << "FEM_ConstraintInitialTemperature"
+             << "Separator"
+             << "FEM_ConstraintTemperature"
+             << "FEM_ConstraintHeatflux";
+
+     Gui::ToolBarItem* mesh = new Gui::ToolBarItem(root);
+     mesh->setCommand("Mesh");
+     *mesh << "FEM_MeshNetgenFromShape"
+           << "FEM_MeshGmshFromShape"
+           << "Separator"
+           << "FEM_MeshRegion"
+           << "FEM_MeshGroup"
+           << "Separator"
+           << "FEM_FEMMesh2Mesh";
+
+    Gui::ToolBarItem* fluid = new Gui::ToolBarItem(root);
+    fluid->setCommand("Fluid Constraints");
+    *fluid << "FEM_ConstraintFluidBoundary";
+
+     Gui::ToolBarItem* solve = new Gui::ToolBarItem(root);
+     solve->setCommand("Solve");
+     *solve << "FEM_SolverCalculix"
+           << "Separator"
+           << "FEM_SolverControl"
+           << "FEM_SolverRun";
+
+     Gui::ToolBarItem* results = new Gui::ToolBarItem(root);
+     results->setCommand("Results");
+     *results << "FEM_ResultsPurge"
+              << "FEM_ResultShow";
 
 #ifdef FC_USE_VTK
-     Gui::ToolBarItem* post = new Gui::ToolBarItem(root);
-     post->setCommand("Post Processing");
-     *post  << "Fem_PostApplyChanges"
-            << "Fem_PostPipelineFromResult"
-            << "Separator"
-            << "Fem_PostCreateClipFilter"
-            << "Fem_PostCreateScalarClipFilter"
-            << "Fem_PostCreateCutFilter"
-            << "Fem_PostCreateWarpVectorFilter"
-            << "Fem_PostCreateDataAlongLineFilter"
-            << "Fem_PostCreateLinearizedStressesFilter"
-            << "Separator"
-            << "Fem_PostCreateFunctions";
+     *results << "Separator"
+              << "FEM_PostApplyChanges"
+              << "FEM_PostPipelineFromResult"
+              << "Separator"
+              << "FEM_PostCreateClipFilter"
+              << "FEM_PostCreateScalarClipFilter"
+              << "FEM_PostCreateCutFilter"
+              << "FEM_PostCreateWarpVectorFilter"
+              << "FEM_PostCreateDataAlongLineFilter"
+              << "FEM_PostCreateLinearizedStressesFilter"
+              << "Separator"
+              << "FEM_PostCreateFunctions";
 #endif
 
     return root;
@@ -128,55 +140,87 @@ Gui::MenuItem* Workbench::setupMenuBar() const
     Gui::MenuItem* root = StdWorkbench::setupMenuBar();
     Gui::MenuItem* item = root->findItem("&Windows");
 
-    Gui::MenuItem* util = new Gui::MenuItem;
-    util->setCommand("&Utilities");
-    *util << "Fem_FemMesh2Mesh";
+    Gui::MenuItem* mech = new Gui::MenuItem;
+    mech->setCommand("&Mechanical Constraints");
+    *mech << "FEM_ConstraintFixed"
+          << "FEM_ConstraintDisplacement"
+          << "FEM_ConstraintPlaneRotation"
+          << "FEM_ConstraintContact"
+          << "FEM_ConstraintTransform"
+          << "Separator"
+          << "FEM_ConstraintForce"
+          << "FEM_ConstraintPressure"
+          << "FEM_ConstraintSelfWeight"
+          << "Separator"
+          << "FEM_ConstraintBearing"
+          << "FEM_ConstraintGear"
+          << "FEM_ConstraintPulley";
 
-    Gui::MenuItem* fem = new Gui::MenuItem;
-    root->insertItem(item, fem);
-    fem->setCommand("&FEM");
-    *fem << util
-         << "Separator"
-         << "Fem_Analysis"
-         << "Fem_SolverCalculix"
-         << "Fem_SolverZ88"
-         << "Separator"
-         << "Fem_MeshNetgenFromShape"
-         << "Fem_MeshGmshFromShape"
-         << "Fem_MeshRegion"
-         << "Separator"
-         << "Fem_MechanicalMaterial"
-         << "Fem_MaterialMechanicalNonlinear"
-         << "Fem_BeamSection"
-         << "Fem_ShellThickness"
-         << "Separator"
-         << "Fem_CreateNodesSet"
-         << "Separator"
-         << "Fem_ConstraintFixed"
-         << "Fem_ConstraintDisplacement"
-         << "Fem_ConstraintPlaneRotation"
-         << "Fem_ConstraintContact"
-         << "Fem_ConstraintTransform"
-         << "Separator"
-         << "Fem_ConstraintSelfWeight"
-         << "Fem_ConstraintForce"
-         << "Fem_ConstraintPressure"
-         << "Separator"
-         << "Fem_ConstraintBearing"
-         << "Fem_ConstraintGear"
-         << "Fem_ConstraintPulley"
-         << "Separator"
-         << "Fem_ConstraintFluidBoundary"
-         << "Separator"
-         << "Fem_ConstraintTemperature"
-         << "Fem_ConstraintHeatflux"
-         << "Fem_ConstraintInitialTemperature"
-         << "Separator"
-         << "Fem_ControlSolver"
-         << "Fem_RunSolver"
-         << "Separator"
-         << "Fem_PurgeResults"
-         << "Fem_ShowResult";
+    Gui::MenuItem* thermal = new Gui::MenuItem;
+    thermal->setCommand("&Thermal Constraints");
+    *thermal << "FEM_ConstraintInitialTemperature"
+             << "Separator"
+             << "FEM_ConstraintHeatflux"
+             << "FEM_ConstraintTemperature";
+
+    Gui::MenuItem* fluid = new Gui::MenuItem;
+    fluid->setCommand("&Fluid Constraints");
+    *fluid << "FEM_ConstraintFluidBoundary";
+
+    Gui::MenuItem* model = new Gui::MenuItem;
+    root->insertItem(item, model);
+    model->setCommand("M&odel");
+    *model << "FEM_Analysis"
+           << "Separator"
+           << "FEM_MaterialSolid"
+           << "FEM_MaterialFluid"
+           << "FEM_MaterialMechanicalNonlinear"
+           << "FEM_ElementGeometry1D"
+           << "FEM_ElementGeometry2D"
+           << "FEM_ElementFluid1D"
+           << "Separator"
+           << mech
+           << thermal
+           << fluid;
+
+    Gui::MenuItem* mesh = new Gui::MenuItem;
+    root->insertItem(item, mesh);
+    mesh->setCommand("M&esh");
+    *mesh << "FEM_MeshNetgenFromShape"
+          << "FEM_MeshGmshFromShape"
+          << "Separator"
+          << "FEM_MeshRegion"
+          << "FEM_MeshGroup"
+          << "Separator"
+          << "FEM_CreateNodesSet"
+          << "FEM_FEMMesh2Mesh";
+
+    Gui::MenuItem* solve = new Gui::MenuItem;
+    root->insertItem(item, solve);
+    solve->setCommand("&Solve");
+    *solve << "FEM_SolverCalculix"
+           << "FEM_SolverZ88"
+           << "Separator"
+           << "FEM_SolverControl"
+           << "FEM_SolverRun";
+
+    Gui::MenuItem* results = new Gui::MenuItem;
+    root->insertItem(item, results);
+    results->setCommand("&Results");
+    *results << "FEM_ResultsPurge"
+             << "FEM_ResultShow"
+             << "Separator"
+             << "FEM_PostApplyChanges"
+             << "FEM_PostPipelineFromResult"
+             << "Separator"
+             << "FEM_PostCreateClipFilter"
+             << "FEM_PostCreateScalarClipFilter"
+             << "FEM_PostCreateCutFilter"
+             << "FEM_PostCreateWarpVectorFilter"
+             << "FEM_PostCreateDataAlongLineFilter"
+             << "FEM_PostCreateLinearizedStressesFilter"
+             << "Separator"
+             << "FEM_PostCreateFunctions";
 
     return root;
 }

@@ -35,6 +35,7 @@
 #include "DockWindowManager.h"
 #include "MainWindow.h"
 #include "PrefWidgets.h"
+#include "PythonConsole.h"
 #include "Language/Translator.h"
 
 using namespace Gui::Dialog;
@@ -126,6 +127,18 @@ void DlgGeneralImp::saveSettings()
     AutoloadTabCombo->onSave();
     RecentFiles->onSave();
     SplashScreen->onSave();
+    PythonWordWrap->onSave();
+  
+    QWidget* pc = DockWindowManager::instance()->getDockWindow("Python console");
+    PythonConsole *pcPython = static_cast<PythonConsole*>(pc);
+    bool pythonWordWrap = App::GetApplication().GetUserParameter().
+        GetGroup("BaseApp")->GetGroup("Preferences")->GetGroup("General")->GetBool("PythonWordWrap", true);
+
+    if (pythonWordWrap) {
+      pcPython->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+    } else {
+      pcPython->setWordWrapMode(QTextOption::NoWrap);
+    }
 
     // set new user defined style
     //(void)QApplication::setStyle(WindowStyle->currentText());
@@ -182,6 +195,22 @@ void DlgGeneralImp::saveSettings()
             qApp->sendEvent(getMainWindow(), &e);
             mdi->setBackground(QBrush(QColor(160,160,160)));
         }
+
+#if QT_VERSION == 0x050600 && defined(Q_OS_WIN32)
+        // Under Windows the tree indicator branch gets corrupted after a while.
+        // For more details see also https://bugreports.qt.io/browse/QTBUG-52230
+        // and https://codereview.qt-project.org/#/c/154357/2//ALL,unified
+        // A workaround for Qt 5.6.0 is to set a minimal style sheet.
+        QString qss = QString::fromLatin1(
+               "QTreeView::branch:closed:has-children  {\n"
+               "    image: url(:/icons/style/windows_branch_closed.png);\n"
+               "}\n"
+               "\n"
+               "QTreeView::branch:open:has-children  {\n"
+               "    image: url(:/icons/style/windows_branch_open.png);\n"
+               "}\n");
+        qApp->setStyleSheet(qss);
+#endif
     }
 
     if (mdi->style())
@@ -199,6 +228,7 @@ void DlgGeneralImp::loadSettings()
     AutoloadTabCombo->onRestore();
     RecentFiles->onRestore();
     SplashScreen->onRestore();
+    PythonWordWrap->onRestore();
 
     // fill up styles
     //
@@ -238,14 +268,17 @@ void DlgGeneralImp::loadSettings()
         }
     }
 
-    int size = QApplication::style()->pixelMetric(QStyle::PM_ToolBarIconSize);
     int current = getMainWindow()->iconSize().width();
-    this->toolbarIconSize->addItem(tr("Default (%1 x %1)").arg(size), QVariant((int)size));
-    this->toolbarIconSize->addItem(tr("Small (%1 x %1)").arg(16), QVariant((int)16));
-    this->toolbarIconSize->addItem(tr("Large (%1 x %1)").arg(32), QVariant((int)32));
-    this->toolbarIconSize->addItem(tr("Extra large (%1 x %1)").arg(48), QVariant((int)48));
+    this->toolbarIconSize->addItem(tr("Small (%1px)").arg(16), QVariant((int)16));
+    this->toolbarIconSize->addItem(tr("Medium (%1px)").arg(24), QVariant((int)24));
+    this->toolbarIconSize->addItem(tr("Large (%1px)").arg(32), QVariant((int)32));
+    this->toolbarIconSize->addItem(tr("Extra large (%1px)").arg(48), QVariant((int)48));
     index = this->toolbarIconSize->findData(QVariant(current));
-    if (index > -1) this->toolbarIconSize->setCurrentIndex(index);
+    if (index < 0) {
+        this->toolbarIconSize->addItem(tr("Custom (%1px)").arg(current), QVariant((int)current));
+        index = this->toolbarIconSize->findData(QVariant(current));
+    } 
+    this->toolbarIconSize->setCurrentIndex(index);
 
     hGrp = App::GetApplication().GetParameterGroupByPath("User parameter:BaseApp/Preferences/MainWindow");
     this->tiledBackground->setChecked(hGrp->GetBool("TiledBackground", false));

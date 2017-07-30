@@ -29,7 +29,11 @@
 #endif
 
 #include "ViewProviderGeoFeatureGroupExtension.h"
+#include "Command.h"
+#include "Application.h"
+#include "Document.h"
 #include <App/GeoFeatureGroupExtension.h>
+#include <Base/Console.h>
 #include <Inventor/nodes/SoGroup.h>
 
 using namespace Gui;
@@ -38,7 +42,7 @@ EXTENSION_PROPERTY_SOURCE(Gui::ViewProviderGeoFeatureGroupExtension, Gui::ViewPr
 
 ViewProviderGeoFeatureGroupExtension::ViewProviderGeoFeatureGroupExtension()
 {
-    initExtension(ViewProviderGeoFeatureGroupExtension::getExtensionClassTypeId());
+    initExtensionType(ViewProviderGeoFeatureGroupExtension::getExtensionClassTypeId());
     
     pcGroupChildren = new SoGroup();
     pcGroupChildren->ref();
@@ -52,8 +56,33 @@ ViewProviderGeoFeatureGroupExtension::~ViewProviderGeoFeatureGroupExtension()
 
 
 std::vector<App::DocumentObject*> ViewProviderGeoFeatureGroupExtension::extensionClaimChildren3D(void) const {
+    
+    //all object in the group must be claimed in 3D, as we are a coordinate system for all of them
     auto* ext = getExtendedViewProvider()->getObject()->getExtensionByType<App::GeoFeatureGroupExtension>();
-    return ext ? ext->getGeoSubObjects() : std::vector<App::DocumentObject*>();
+    if(ext) {        
+        auto objs = ext->Group.getValues();
+        return objs;
+    }
+    return std::vector<App::DocumentObject*>();
+}
+
+std::vector<App::DocumentObject*> ViewProviderGeoFeatureGroupExtension::extensionClaimChildren(void) const {
+ 
+    //we must be careful which objects to claim, as there might be stacked relations inside the coordinate system,
+    //like pad/sketch
+    auto* ext = getExtendedViewProvider()->getObject()->getExtensionByType<App::GeoFeatureGroupExtension>();
+    if(ext) {   
+        //filter out all objects with more than one inlink, as they are most likely hold by another
+        //object in the tree
+        std::vector<App::DocumentObject*> claim;
+        auto objs = ext->Group.getValues();
+        for(auto obj : objs) {            
+            if(obj->getInList().size()<=1)
+                claim.push_back(obj);
+        }
+        return claim;
+    }
+    return std::vector<App::DocumentObject*>();
 }
 
 void ViewProviderGeoFeatureGroupExtension::extensionAttach(App::DocumentObject* pcObject)
@@ -84,13 +113,12 @@ std::vector<std::string> ViewProviderGeoFeatureGroupExtension::extensionGetDispl
 void ViewProviderGeoFeatureGroupExtension::extensionUpdateData(const App::Property* prop)
 {
     auto obj = getExtendedViewProvider()->getObject()->getExtensionByType<App::GeoFeatureGroupExtension>();
-    if (obj && prop == &obj->Placement) {
-        getExtendedViewProvider()->setTransformation ( obj->Placement.getValue().toMatrix() );
+    if (obj && prop == &obj->placement()) {
+        getExtendedViewProvider()->setTransformation ( obj->placement().getValue().toMatrix() );
     } else {
         ViewProviderGroupExtension::extensionUpdateData ( prop );
     }
 }
-
 
 namespace Gui {
 EXTENSION_PROPERTY_SOURCE_TEMPLATE(Gui::ViewProviderGeoFeatureGroupExtensionPython, Gui::ViewProviderGeoFeatureGroupExtension)

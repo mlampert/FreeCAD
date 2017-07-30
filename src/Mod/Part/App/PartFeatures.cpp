@@ -127,8 +127,8 @@ App::DocumentObjectExecReturn *RuledSurface::execute(void)
 
         if (Orientation.getValue() == 0) {
             // Automatic
-            Handle_Adaptor3d_HCurve a1;
-            Handle_Adaptor3d_HCurve a2;
+            Handle(Adaptor3d_HCurve) a1;
+            Handle(Adaptor3d_HCurve) a2;
             if (curve1.ShapeType() == TopAbs_EDGE && curve2.ShapeType() == TopAbs_EDGE) {
                 BRepAdaptor_Curve adapt1(TopoDS::Edge(curve1));
                 BRepAdaptor_Curve adapt2(TopoDS::Edge(curve2));
@@ -192,7 +192,7 @@ App::DocumentObjectExecReturn *RuledSurface::execute(void)
         return App::DocumentObject::StdReturn;
     }
     catch (Standard_Failure) {
-        Handle_Standard_Failure e = Standard_Failure::Caught();
+        Handle(Standard_Failure) e = Standard_Failure::Caught();
         return new App::DocumentObjectExecReturn(e->GetMessageString());
     }
     catch (...) {
@@ -286,7 +286,7 @@ App::DocumentObjectExecReturn *Loft::execute(void)
         return App::DocumentObject::StdReturn;
     }
     catch (Standard_Failure) {
-        Handle_Standard_Failure e = Standard_Failure::Caught();
+        Handle(Standard_Failure) e = Standard_Failure::Caught();
         return new App::DocumentObjectExecReturn(e->GetMessageString());
     }
 }
@@ -466,7 +466,7 @@ App::DocumentObjectExecReturn *Sweep::execute(void)
         return App::DocumentObject::StdReturn;
     }
     catch (Standard_Failure) {
-        Handle_Standard_Failure e = Standard_Failure::Caught();
+        Handle(Standard_Failure) e = Standard_Failure::Caught();
         return new App::DocumentObjectExecReturn(e->GetMessageString());
     }
     catch (...) {
@@ -491,6 +491,9 @@ Thickness::Thickness()
     Join.setEnums(JoinEnums);
     ADD_PROPERTY_TYPE(Intersection,(false),"Thickness",App::Prop_None,"Intersection");
     ADD_PROPERTY_TYPE(SelfIntersection,(false),"Thickness",App::Prop_None,"Self Intersection");
+
+    // Value should have length as unit
+    Value.setUnit(Base::Unit::Length);
 }
 
 short Thickness::mustExecute() const
@@ -508,6 +511,17 @@ short Thickness::mustExecute() const
     if (SelfIntersection.isTouched())
         return 1;
     return 0;
+}
+
+void Thickness::handleChangedPropertyType(Base::XMLReader &reader, const char *TypeName, App::Property *prop)
+{
+    if (prop == &Value && strcmp(TypeName, "App::PropertyFloat") == 0) {
+        App::PropertyFloat v;
+
+        v.Restore(reader);
+
+        Value.setValue(v.getValue());
+    }
 }
 
 App::DocumentObjectExecReturn *Thickness::execute(void)

@@ -2,16 +2,271 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="sl" sourcelanguage="en">
   <context>
-    <name>Fem_BeamSection</name>
+    <name>FEM_Analysis</name>
+    <message>
+      <location filename="_CommandFemAnalysis.py" line="41"/>
+      <source>Analysis container</source>
+      <translation type="unfinished">Analysis container</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemAnalysis.py" line="43"/>
+      <source>Creates a analysis container with standard solver CalculiX</source>
+      <translation type="unfinished">Creates a analysis container with standard solver CalculiX</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_BeamSection</name>
     <message>
       <location filename="_CommandFemBeamSection.py" line="41"/>
-      <source>FEM Beam Cross Section Definition ...</source>
-      <translation>Določilo prečnega prereza nosilca za MKE …</translation>
+      <source>Beam cross section</source>
+      <translation>Prečni prerez nosilca</translation>
     </message>
     <message>
       <location filename="_CommandFemBeamSection.py" line="43"/>
-      <source>Creates a FEM Beam Cross Section</source>
+      <source>Creates a FEM beam cross section</source>
       <translation>Ustvari prečni prerez nosilca za MKE</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_ConstraintSelfWeight</name>
+    <message>
+      <location filename="_CommandFemConstraintSelfWeight.py" line="41"/>
+      <source>Constraint self weigt</source>
+      <translation type="unfinished">Constraint self weigt</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemConstraintSelfWeight.py" line="43"/>
+      <source>Creates a FEM constraint self weigt</source>
+      <translation type="unfinished">Creates a FEM constraint self weigt</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_FEMMesh2Mesh</name>
+    <message>
+      <location filename="_CommandFemMesh2Mesh.py" line="42"/>
+      <source>FEM mesh to mesh</source>
+      <translation>MKE mreža v mrežo</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemMesh2Mesh.py" line="43"/>
+      <source>Convert the surface of a FEM mesh to a mesh</source>
+      <translation type="unfinished">Convert the surface of a FEM mesh to a mesh</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_FluidSection</name>
+    <message>
+      <location filename="_CommandFemFluidSection.py" line="42"/>
+      <source>Fluid section for 1D flow</source>
+      <translation type="unfinished">Fluid section for 1D flow</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemFluidSection.py" line="44"/>
+      <source>Creates a FEM Fluid section for 1D flow</source>
+      <translation type="unfinished">Creates a FEM Fluid section for 1D flow</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_MaterialFluid</name>
+    <message>
+      <location filename="_CommandFemMaterialFluid.py" line="42"/>
+      <source>FEM material for Fluid</source>
+      <translation>MKE material za tekočino</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemMaterialFluid.py" line="44"/>
+      <source>Creates a FEM material for Fluid</source>
+      <translation>Ustvari MKE material za tekočino</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_MaterialMechanicalNonlinear</name>
+    <message>
+      <location filename="_CommandFemMaterialMechanicalNonlinear.py" line="42"/>
+      <source>Nonlinear mechanical material</source>
+      <translation type="unfinished">Nonlinear mechanical material</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemMaterialMechanicalNonlinear.py" line="44"/>
+      <source>Creates a nonlinear mechanical material</source>
+      <translation type="unfinished">Creates a nonlinear mechanical material</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_MaterialSolid</name>
+    <message>
+      <location filename="_CommandFemMaterialSolid.py" line="42"/>
+      <source>FEM material for solid</source>
+      <translation>MKE material za telo</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemMaterialSolid.py" line="44"/>
+      <source>Creates a FEM material for solid</source>
+      <translation>Ustvari MKE material za telo</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_MeshClear</name>
+    <message>
+      <location filename="_CommandFemMeshClear.py" line="41"/>
+      <source>Clear FEM mesh</source>
+      <translation>Odstrani MKE mrežo</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemMeshClear.py" line="43"/>
+      <source>Clear the Mesh of a FEM mesh object</source>
+      <translation>Odstrani mrežo iz MKE mrežnega objekta</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_MeshFromShape</name>
+    <message>
+      <location filename="_CommandFemMeshNetgenFromShape.py" line="42"/>
+      <source>FEM mesh from shape by Netgen</source>
+      <translation type="unfinished">FEM mesh from shape by Netgen</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemMeshNetgenFromShape.py" line="43"/>
+      <source>Create a FEM volume mesh from a solid or face shape by Netgen internal mesher</source>
+      <translation type="unfinished">Create a FEM volume mesh from a solid or face shape by Netgen internal mesher</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_MeshGmshFromShape</name>
+    <message>
+      <location filename="_CommandFemMeshGmshFromShape.py" line="42"/>
+      <source>FEM mesh from shape by GMSH</source>
+      <translation type="unfinished">FEM mesh from shape by GMSH</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemMeshGmshFromShape.py" line="43"/>
+      <source>Create a FEM mesh from a shape by GMSH mesher</source>
+      <translation type="unfinished">Create a FEM mesh from a shape by GMSH mesher</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_MeshGroup</name>
+    <message>
+      <location filename="_CommandFemMeshGroup.py" line="41"/>
+      <source>FEM mesh group</source>
+      <translation type="unfinished">FEM mesh group</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemMeshGroup.py" line="43"/>
+      <source>Creates a FEM mesh group</source>
+      <translation type="unfinished">Creates a FEM mesh group</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_MeshPrintInfo</name>
+    <message>
+      <location filename="_CommandFemMeshPrintInfo.py" line="43"/>
+      <source>Print FEM mesh info</source>
+      <translation type="unfinished">Print FEM mesh info</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_MeshRegion</name>
+    <message>
+      <location filename="_CommandFemMeshRegion.py" line="41"/>
+      <source>FEM mesh region</source>
+      <translation type="unfinished">FEM mesh region</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemMeshRegion.py" line="43"/>
+      <source>Creates a FEM mesh region</source>
+      <translation type="unfinished">Creates a FEM mesh region</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_ResultShow</name>
+    <message>
+      <location filename="_CommandFemResultShow.py" line="41"/>
+      <source>Show result</source>
+      <translation>Prikaži rezultat</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemResultShow.py" line="43"/>
+      <source>Shows and visualizes selected result data</source>
+      <translation type="unfinished">Shows and visualizes selected result data</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_ResultsPurge</name>
+    <message>
+      <location filename="_CommandFemResultsPurge.py" line="41"/>
+      <source>Purge results</source>
+      <translation>Počisti rezultate</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemResultsPurge.py" line="43"/>
+      <source>Purges all results from active analysis</source>
+      <translation type="unfinished">Purges all results from active analysis</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_ShellThickness</name>
+    <message>
+      <location filename="_CommandFemShellThickness.py" line="41"/>
+      <source>Shell plate thickness</source>
+      <translation type="unfinished">Shell plate thickness</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemShellThickness.py" line="43"/>
+      <source>Creates a FEM shell plate thickness</source>
+      <translation type="unfinished">Creates a FEM shell plate thickness</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_SolverCalculix</name>
+    <message>
+      <location filename="_CommandFemSolverCalculix.py" line="42"/>
+      <source>Solver CalculiX</source>
+      <translation type="unfinished">Solver CalculiX</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemSolverCalculix.py" line="44"/>
+      <source>Creates a FEM solver CalculiX</source>
+      <translation type="unfinished">Creates a FEM solver CalculiX</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_SolverControl</name>
+    <message>
+      <location filename="_CommandFemSolverControl.py" line="40"/>
+      <source>Solver job control</source>
+      <translation type="unfinished">Solver job control</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemSolverControl.py" line="42"/>
+      <source>Changes solver attributes and runs the calculations for the selected solver</source>
+      <translation type="unfinished">Changes solver attributes and runs the calculations for the selected solver</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_SolverRun</name>
+    <message>
+      <location filename="_CommandFemSolverRun.py" line="40"/>
+      <source>Run solver calculations</source>
+      <translation type="unfinished">Run solver calculations</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemSolverRun.py" line="42"/>
+      <source>Runs the calculations for the selected solver</source>
+      <translation type="unfinished">Runs the calculations for the selected solver</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_SolverZ88</name>
+    <message>
+      <location filename="_CommandFemSolverZ88.py" line="41"/>
+      <source>Solver Z88</source>
+      <translation type="unfinished">Solver Z88</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemSolverZ88.py" line="43"/>
+      <source>Creates a FEM solver Z88</source>
+      <translation type="unfinished">Creates a FEM solver Z88</translation>
     </message>
   </context>
   <context>
@@ -28,33 +283,17 @@
     </message>
   </context>
   <context>
-    <name>Fem_CreateFromShape</name>
+    <name>Fem_Analysis</name>
     <message>
-      <location filename="_CommandFemFromShape.py" line="39"/>
-      <source>Create FEM mesh</source>
-      <translation>Ustvari MKE mrežo</translation>
+      <location filename="_CommandAnalysis.py" line="41"/>
+      <source>Analysis container</source>
+      <translation type="unfinished">Analysis container</translation>
     </message>
     <message>
-      <location filename="_CommandFemFromShape.py" line="40"/>
-      <source>Create FEM mesh from shape</source>
-      <translation>Ustvari MKE mrežo iz oblike</translation>
+      <location filename="_CommandAnalysis.py" line="43"/>
+      <source>Creates a analysis container with standard solver CalculiX</source>
+      <translation type="unfinished">Creates a analysis container with standard solver CalculiX</translation>
     </message>
-  </context>
-  <context>
-    <name>Fem_MechanicalMaterial</name>
-    <message>
-      <location filename="_CommandMechanicalMaterial.py" line="42"/>
-      <source>Mechanical material...</source>
-      <translation>Mehanski material …</translation>
-    </message>
-    <message>
-      <location filename="_CommandMechanicalMaterial.py" line="44"/>
-      <source>Creates or edit the mechanical material definition.</source>
-      <translation>Ustvari in uredi določilo mehanskega materiala.</translation>
-    </message>
-  </context>
-  <context>
-    <name>Fem_NewMechanicalAnalysis</name>
     <message>
       <location filename="_CommandNewMechanicalAnalysis.py" line="40"/>
       <source>New mechanical analysis</source>
@@ -64,6 +303,164 @@
       <location filename="_CommandNewMechanicalAnalysis.py" line="42"/>
       <source>Create a new mechanical analysis</source>
       <translation>Ustvari novo mehansko analizo</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_BeamSection</name>
+    <message>
+      <location filename="_CommandBeamSection.py" line="41"/>
+      <source>Beam cross section</source>
+      <translation>Prečni prerez nosilca</translation>
+    </message>
+    <message>
+      <location filename="_CommandBeamSection.py" line="43"/>
+      <source>Creates a FEM beam cross section</source>
+      <translation>Ustvari prečni prerez nosilca za MKE</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemBeamSection.py" line="41"/>
+      <source>FEM Beam Cross Section Definition ...</source>
+      <translation>Določilo prečnega prereza nosilca za MKE …</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemBeamSection.py" line="43"/>
+      <source>Creates a FEM Beam Cross Section</source>
+      <translation>Ustvari prečni prerez nosilca za MKE</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_ClearMesh</name>
+    <message>
+      <location filename="_CommandClearMesh.py" line="41"/>
+      <source>Clear FEM mesh</source>
+      <translation>Odstrani MKE mrežo</translation>
+    </message>
+    <message>
+      <location filename="_CommandClearMesh.py" line="43"/>
+      <source>Clear the Mesh of a FEM mesh object</source>
+      <translation>Odstrani mrežo iz MKE mrežnega objekta</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_ConstraintSelfWeight</name>
+    <message>
+      <location filename="_CommandConstraintSelfWeight.py" line="41"/>
+      <source>Constraint self weigt</source>
+      <translation type="unfinished">Constraint self weigt</translation>
+    </message>
+    <message>
+      <location filename="_CommandConstraintSelfWeight.py" line="43"/>
+      <source>Creates a FEM constraint self weigt</source>
+      <translation type="unfinished">Creates a FEM constraint self weigt</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_ControlSolver</name>
+    <message>
+      <location filename="_CommandControlSolver.py" line="40"/>
+      <source>Solver job control</source>
+      <translation type="unfinished">Solver job control</translation>
+    </message>
+    <message>
+      <location filename="_CommandControlSolver.py" line="42"/>
+      <source>Changes solver attributes and runs the calculations for the selected solver</source>
+      <translation type="unfinished">Changes solver attributes and runs the calculations for the selected solver</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_FemMesh2Mesh</name>
+    <message>
+      <location filename="_CommandFEMMesh2Mesh.py" line="42"/>
+      <source>FEM mesh to mesh</source>
+      <translation>MKE mreža v mrežo</translation>
+    </message>
+    <message>
+      <location filename="_CommandFEMMesh2Mesh.py" line="43"/>
+      <source>Convert the surface of a FEM mesh to a mesh</source>
+      <translation type="unfinished">Convert the surface of a FEM mesh to a mesh</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_MaterialMechanicalNonlinear</name>
+    <message>
+      <location filename="_CommandMaterialMechanicalNonlinear.py" line="42"/>
+      <source>Nonlinear mechanical material</source>
+      <translation type="unfinished">Nonlinear mechanical material</translation>
+    </message>
+    <message>
+      <location filename="_CommandMaterialMechanicalNonlinear.py" line="44"/>
+      <source>Creates a nonlinear mechanical material</source>
+      <translation type="unfinished">Creates a nonlinear mechanical material</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_MechanicalMaterial</name>
+    <message>
+      <location filename="_CommandMechanicalMaterial.py" line="42"/>
+      <source>Mechanical material</source>
+      <translation>Mehanski material</translation>
+    </message>
+    <message>
+      <location filename="_CommandMechanicalMaterial.py" line="42"/>
+      <source>Mechanical material...</source>
+      <translation>Mehanski material …</translation>
+    </message>
+    <message>
+      <location filename="_CommandMechanicalMaterial.py" line="44"/>
+      <source>Creates a mechanical material</source>
+      <translation type="unfinished">Creates a mechanical material</translation>
+    </message>
+    <message>
+      <location filename="_CommandMechanicalMaterial.py" line="44"/>
+      <source>Creates or edit the mechanical material definition.</source>
+      <translation>Ustvari in uredi določilo mehanskega materiala.</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_MeshFromShape</name>
+    <message>
+      <location filename="_CommandMeshNetgenFromShape.py" line="41"/>
+      <source>FEM mesh from shape by Netgen</source>
+      <translation type="unfinished">FEM mesh from shape by Netgen</translation>
+    </message>
+    <message>
+      <location filename="_CommandMeshNetgenFromShape.py" line="42"/>
+      <source>Create a FEM volume mesh from a solid or face shape by Netgen internal mesher</source>
+      <translation type="unfinished">Create a FEM volume mesh from a solid or face shape by Netgen internal mesher</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_MeshGmshFromShape</name>
+    <message>
+      <location filename="_CommandMeshGmshFromShape.py" line="42"/>
+      <source>FEM mesh from shape by GMSH</source>
+      <translation type="unfinished">FEM mesh from shape by GMSH</translation>
+    </message>
+    <message>
+      <location filename="_CommandMeshGmshFromShape.py" line="43"/>
+      <source>Create a FEM mesh from a shape by GMSH mesher</source>
+      <translation type="unfinished">Create a FEM mesh from a shape by GMSH mesher</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_MeshRegion</name>
+    <message>
+      <location filename="_CommandMeshRegion.py" line="41"/>
+      <source>FEM mesh region</source>
+      <translation type="unfinished">FEM mesh region</translation>
+    </message>
+    <message>
+      <location filename="_CommandMeshRegion.py" line="43"/>
+      <source>Creates a FEM mesh region</source>
+      <translation type="unfinished">Creates a FEM mesh region</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_PrintMeshInfo</name>
+    <message>
+      <location filename="_CommandPrintMeshInfo.py" line="44"/>
+      <source>Print FEM mesh info</source>
+      <translation type="unfinished">Print FEM mesh info</translation>
     </message>
   </context>
   <context>
@@ -78,22 +475,37 @@
       <source>Purge results from an analysis</source>
       <translation>Počisti rezultate iz analize</translation>
     </message>
+    <message>
+      <location filename="_CommandPurgeResults.py" line="43"/>
+      <source>Purges all results from active analysis</source>
+      <translation type="unfinished">Purges all results from active analysis</translation>
+    </message>
   </context>
   <context>
-    <name>Fem_Quick_Analysis</name>
+    <name>Fem_RunAnalysis</name>
     <message>
-      <location filename="_CommandQuickAnalysis.py" line="40"/>
-      <source>Run CalculiX ccx</source>
-      <translation>Zaženi Calculix ccx</translation>
+      <location filename="_CommandRunSolver.py" line="40"/>
+      <source>Run solver calculations</source>
+      <translation type="unfinished">Run solver calculations</translation>
     </message>
     <message>
-      <location filename="_CommandQuickAnalysis.py" line="42"/>
-      <source>Write .inp file and run CalculiX ccx</source>
-      <translation>Zapiši datoteko .inp in zaženi CalculiX ccx</translation>
+      <location filename="_CommandRunSolver.py" line="42"/>
+      <source>Runs the calculations for the selected solver</source>
+      <translation type="unfinished">Runs the calculations for the selected solver</translation>
     </message>
   </context>
   <context>
     <name>Fem_ShellThickness</name>
+    <message>
+      <location filename="_CommandShellThickness.py" line="41"/>
+      <source>Shell plate thickness</source>
+      <translation type="unfinished">Shell plate thickness</translation>
+    </message>
+    <message>
+      <location filename="_CommandShellThickness.py" line="43"/>
+      <source>Creates a FEM shell plate thickness</source>
+      <translation type="unfinished">Creates a FEM shell plate thickness</translation>
+    </message>
     <message>
       <location filename="_CommandFemShellThickness.py" line="41"/>
       <source>FEM Shell Plate Thickness Definition ...</source>
@@ -117,9 +529,24 @@
       <source>Show result information of an analysis</source>
       <translation>Prikaži podatke o rezultatu analize</translation>
     </message>
+    <message>
+      <location filename="_CommandShowResult.py" line="42"/>
+      <source>Shows and visualizes selected result data</source>
+      <translation type="unfinished">Shows and visualizes selected result data</translation>
+    </message>
   </context>
   <context>
     <name>Fem_SolverCalculix</name>
+    <message>
+      <location filename="_CommandSolverCalculix.py" line="42"/>
+      <source>Solver CalculiX</source>
+      <translation type="unfinished">Solver CalculiX</translation>
+    </message>
+    <message>
+      <location filename="_CommandSolverCalculix.py" line="44"/>
+      <source>Creates a FEM solver CalculiX</source>
+      <translation type="unfinished">Creates a FEM solver CalculiX</translation>
+    </message>
     <message>
       <location filename="_CommandFemSolverCalculix.py" line="41"/>
       <source>Create FEM Solver CalculiX ...</source>
@@ -129,6 +556,58 @@
       <location filename="_CommandFemSolverCalculix.py" line="43"/>
       <source>Creates FEM Solver CalculiX</source>
       <translation>Ustvari CalculiX reševalnika za MKE</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_SolverZ88</name>
+    <message>
+      <location filename="_CommandSolverZ88.py" line="41"/>
+      <source>Solver Z88</source>
+      <translation type="unfinished">Solver Z88</translation>
+    </message>
+    <message>
+      <location filename="_CommandSolverZ88.py" line="43"/>
+      <source>Creates a FEM solver Z88</source>
+      <translation type="unfinished">Creates a FEM solver Z88</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_CreateFromShape</name>
+    <message>
+      <location filename="_CommandFemFromShape.py" line="39"/>
+      <source>Create FEM mesh</source>
+      <translation>Ustvari MKE mrežo</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemFromShape.py" line="40"/>
+      <source>Create FEM mesh from shape</source>
+      <translation>Ustvari MKE mrežo iz oblike</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_NewMechanicalAnalysis</name>
+    <message>
+      <location filename="_CommandNewMechanicalAnalysis.py" line="40"/>
+      <source>New mechanical analysis</source>
+      <translation>Nova mehanska analiza</translation>
+    </message>
+    <message>
+      <location filename="_CommandNewMechanicalAnalysis.py" line="42"/>
+      <source>Create a new mechanical analysis</source>
+      <translation>Ustvari novo mehansko analizo</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_Quick_Analysis</name>
+    <message>
+      <location filename="_CommandQuickAnalysis.py" line="40"/>
+      <source>Run CalculiX ccx</source>
+      <translation>Zaženi Calculix ccx</translation>
+    </message>
+    <message>
+      <location filename="_CommandQuickAnalysis.py" line="42"/>
+      <source>Write .inp file and run CalculiX ccx</source>
+      <translation>Zapiši datoteko .inp in zaženi CalculiX ccx</translation>
     </message>
   </context>
   <context>
@@ -142,19 +621,6 @@
       <location filename="_CommandSolverJobControl.py" line="42"/>
       <source>Dialog to start the calculation of the selected solver</source>
       <translation>Pogovorno okno za zagon izračuna z izbranim reševalnikom</translation>
-    </message>
-  </context>
-  <context>
-    <name>Fem_Analysis</name>
-    <message>
-      <location filename="_CommandNewMechanicalAnalysis.py" line="40"/>
-      <source>New mechanical analysis</source>
-      <translation>Nova mehanska analiza</translation>
-    </message>
-    <message>
-      <location filename="_CommandNewMechanicalAnalysis.py" line="42"/>
-      <source>Create a new mechanical analysis</source>
-      <translation>Ustvari novo mehansko analizo</translation>
     </message>
   </context>
   <context>
@@ -220,12 +686,12 @@
     <message>
       <location filename="../../Command.cpp" line="274"/>
       <source>Create FEM bearing constraint</source>
-      <translation>Ustvari MKE ležajno omejitev</translation>
+      <translation>Ustvari ležajno omejitev MKE</translation>
     </message>
     <message>
       <location filename="../../Command.cpp" line="275"/>
       <source>Create FEM constraint for a bearing</source>
-      <translation>Ustvari MKE omejitev za ležaj</translation>
+      <translation>Ustvari omejitev MKE za ležaj</translation>
     </message>
   </context>
   <context>
@@ -256,12 +722,12 @@
     <message>
       <location filename="../../Command.cpp" line="315"/>
       <source>Create FEM fixed constraint</source>
-      <translation>Ustvari MKE pritrjeno omejitev</translation>
+      <translation>Ustvari pritrjeno omejitev MKE</translation>
     </message>
     <message>
       <location filename="../../Command.cpp" line="316"/>
       <source>Create FEM constraint for a fixed geometric entity</source>
-      <translation>Ustvari MKE omejitev za pritrjeno geometrično entiteto</translation>
+      <translation>Ustvari omejitev MKE za pritrjeno geometrično entiteto</translation>
     </message>
   </context>
   <context>
@@ -274,12 +740,12 @@
     <message>
       <location filename="../../Command.cpp" line="357"/>
       <source>Create FEM force constraint</source>
-      <translation>Ustvari MKE omejitev sile</translation>
+      <translation>Ustvari omejitev MKE sile</translation>
     </message>
     <message>
       <location filename="../../Command.cpp" line="358"/>
       <source>Create FEM constraint for a force acting on a geometric entity</source>
-      <translation>Ustvari MKE omejitev za silo, ki deluje na geometrično entiteto</translation>
+      <translation>Ustvari omejitev MKE za silo, ki deluje na geometrično entiteto</translation>
     </message>
   </context>
   <context>
@@ -292,12 +758,12 @@
     <message>
       <location filename="../../Command.cpp" line="446"/>
       <source>Create FEM gear constraint</source>
-      <translation>Ustvari MKE zobniško omejitev</translation>
+      <translation>Ustvari zobniško omejitev MKE</translation>
     </message>
     <message>
       <location filename="../../Command.cpp" line="447"/>
       <source>Create FEM constraint for a gear</source>
-      <translation>Ustvari MKE omejitev za zobnik</translation>
+      <translation>Ustvari omejitev MKE za zobnik</translation>
     </message>
   </context>
   <context>
@@ -328,12 +794,12 @@
     <message>
       <location filename="../../Command.cpp" line="487"/>
       <source>Create FEM pulley constraint</source>
-      <translation>Ustvari MKE omejitev škripca</translation>
+      <translation>Ustvari omejitev MKE škripca</translation>
     </message>
     <message>
       <location filename="../../Command.cpp" line="488"/>
       <source>Create FEM constraint for a pulley</source>
-      <translation>Ustvari MKE omejitev za škripec</translation>
+      <translation>Ustvari omejitev MKE za škripec</translation>
     </message>
   </context>
   <context>
@@ -347,7 +813,7 @@
       <location filename="../../Command.cpp" line="104"/>
       <location filename="../../Command.cpp" line="105"/>
       <source>Create a FEM analysis</source>
-      <translation>Ustvari MKE analizo</translation>
+      <translation>Ustvari analizo MKE</translation>
     </message>
   </context>
   <context>

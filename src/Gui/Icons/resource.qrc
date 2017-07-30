@@ -11,6 +11,7 @@
         <file>freecad.svg</file>
         <file>freecad-doc.png</file>
         <file>bulb.svg</file>
+        <file>TextDocument.svg</file>
         <file>button_down.svg</file>
         <file>button_left.svg</file>
         <file>button_right.svg</file>
@@ -40,6 +41,8 @@
         <file>ClassBrowser/type_class.svg</file>
         <file>ClassBrowser/type_enum.svg</file>
         <file>ClassBrowser/type_module.svg</file>
+        <file>style/windows_branch_closed.png</file>
+        <file>style/windows_branch_open.png</file>
         <file>Std_ViewScreenShot.svg</file>
         <file>bound-expression.svg</file>
         <file>bound-expression-unset.svg</file>
@@ -149,6 +152,7 @@
         <file>WhatsThis.svg</file>
         <file>colors.svg</file>
         <file>px.svg</file>
+        <file>AddonManager.svg</file>
     </qresource>
     <!-- Alternative directory names for icons that should be loaded from a theme -->
     <!-- See also http://permalink.gmane.org/gmane.comp.lib.qt.general/26374 -->

@@ -4,7 +4,7 @@
 <context>
     <name>CmdPointsConvert</name>
     <message>
-        <location filename="../../Command.cpp" line="+190"/>
+        <location filename="../../Command.cpp" line="+191"/>
         <source>Points</source>
         <translation>点群</translation>
     </message>
@@ -62,9 +62,29 @@
     </message>
 </context>
 <context>
+    <name>CmdPointsMerge</name>
+    <message>
+        <location line="+256"/>
+        <source>Points</source>
+        <translation type="unfinished">点群</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Merge point clouds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+1"/>
+        <location line="+1"/>
+        <source>Merge several point clouds into one</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>CmdPointsPolyCut</name>
     <message>
-        <location line="+211"/>
+        <location line="-49"/>
         <source>Points</source>
         <translation>点群</translation>
     </message>
@@ -262,7 +282,7 @@
         <location line="-51"/>
         <location line="+51"/>
         <source>All Files</source>
-        <translation type="unfinished">All Files</translation>
+        <translation>すべてのファイル</translation>
     </message>
     <message>
         <location line="+74"/>
@@ -272,7 +292,7 @@
     <message>
         <location line="+1"/>
         <source>Enter maximum distance:</source>
-        <translation type="unfinished">Enter maximum distance:</translation>
+        <translation>最大距離を入力:</translation>
     </message>
 </context>
 <context>

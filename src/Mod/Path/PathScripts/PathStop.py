@@ -28,15 +28,8 @@ import Path
 from PySide import QtCore, QtGui
 
 # Qt tanslation handling
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-
-    def translate(context, text, disambig=None):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def translate(context, text, disambig=None):
-        return QtGui.QApplication.translate(context, text, disambig)
-
+def translate(context, text, disambig=None):
+    return QtCore.QCoreApplication.translate(context, text, disambig)
 
 class Stop:
     def __init__(self,obj):
@@ -77,7 +70,6 @@ class _ViewProviderStop:
         vobj.setEditorMode('LineWidth', mode)
         vobj.setEditorMode('MarkerColor', mode)
         vobj.setEditorMode('NormalColor', mode)
-        vobj.setEditorMode('ShowFirstRapid', mode)
         vobj.setEditorMode('DisplayMode', mode)
         vobj.setEditorMode('BoundingBox', mode)
         vobj.setEditorMode('Selectable', mode)
@@ -99,7 +91,6 @@ class _ViewProviderStop:
         vobj.setEditorMode('LineWidth', mode)
         vobj.setEditorMode('MarkerColor', mode)
         vobj.setEditorMode('NormalColor', mode)
-        vobj.setEditorMode('ShowFirstRapid', mode)
         vobj.setEditorMode('DisplayMode', mode)
         vobj.setEditorMode('BoundingBox', mode)
         vobj.setEditorMode('Selectable', mode)

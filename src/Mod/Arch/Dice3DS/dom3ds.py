@@ -20,6 +20,9 @@ import os, sys, struct
 
 import numpy
 
+# xrange is not available in python3
+if sys.version_info.major >= 3:
+    xrange = range
 
 # Exceptions
 
@@ -294,7 +297,7 @@ class ChunkBase(object):
             else:
                 ch = UnknownChunk(tag)
             ch.read(fbuf.read_fbuf(length-6),flags)
-        except (File3dsFormatError, FBufError), fe:
+        except (File3dsFormatError, FBufError) as fe:
             if flags['recover']:
                 if cls is not None:
                     label = cls.label

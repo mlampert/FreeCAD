@@ -32,6 +32,7 @@
 #include <Base/Console.h>
 #include <Gui/Application.h>
 #include <Gui/Language/Translator.h>
+#include "CurveOnMesh.h"
 #include "Workbench.h"
 
 // use a different name to CreateCommand()
@@ -67,20 +68,23 @@ PyObject* initModule()
 
 
 /* Python entry */
-PyMODINIT_FUNC initMeshPartGui()
+PyMOD_INIT_FUNC(MeshPartGui)
 {
     if (!Gui::Application::Instance) {
         PyErr_SetString(PyExc_ImportError, "Cannot load Gui module in console application.");
-        return;
+        PyMOD_Return(0);
     }
 
-    (void)MeshPartGui::initModule();
+    PyObject* mod = MeshPartGui::initModule();
     Base::Console().Log("Loading GUI of MeshPart module... done\n");
 
     // instantiating the commands
     CreateMeshPartCommands();
-    MeshPartGui::Workbench::init();
+    MeshPartGui::Workbench                  ::init();
+    MeshPartGui::ViewProviderCurveOnMesh    ::init();
 
      // add resources and reloads the translators
     loadMeshPartResource();
+
+    PyMOD_Return(mod);
 }

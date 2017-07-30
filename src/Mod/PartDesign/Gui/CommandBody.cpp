@@ -26,15 +26,20 @@
 # include <QApplication>
 # include <QMessageBox>
 # include <QInputDialog>
+# include <Inventor/C/basic.h>
+# include <Inventor/nodes/SoCamera.h>
 #endif
 
 #include <Base/Console.h>
 #include <App/Part.h>
 #include <Gui/Command.h>
+#include <Gui/Document.h>
 #include <Gui/Application.h>
 #include <Gui/ActiveObjectList.h>
 #include <Gui/MainWindow.h>
-#include <Gui/MDIView.h>
+#include <Gui/ViewProviderOrigin.h>
+#include <Gui/View3DInventor.h>
+#include <Gui/View3DInventorViewer.h>
 
 #include <Mod/Sketcher/App/SketchObject.h>
 #include <Mod/PartDesign/App/Body.h>
@@ -141,6 +146,7 @@ void CmdPartDesignBody::activated(int iMsg)
     std::vector<App::DocumentObject*> features =
         getSelection().getObjectsOfType(Part::Feature::getClassTypeId());
     App::DocumentObject* baseFeature = nullptr;
+    bool viewAll = features.empty();
 
 
     if (!features.empty()) {
@@ -162,10 +168,10 @@ void CmdPartDesignBody::activated(int iMsg)
             else if ( baseFeature->isDerivedFrom ( Part::BodyBase::getClassTypeId() ) )  {
                 // Prevent creating bodies based on bodies
                 QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Bad base feature"),
-                        QObject::tr("Body can't be based on annother body."));
+                        QObject::tr("Body can't be based on another body."));
                 baseFeature = nullptr;
-            } else {
-
+            }
+            else {
                 partOfBaseFeature = App::Part::getPartOfObject(baseFeature);
                 if (partOfBaseFeature != 0  &&  partOfBaseFeature != actPart){
                     //prevent cross-part mess
@@ -211,6 +217,25 @@ void CmdPartDesignBody::activated(int iMsg)
                  actPart->getNameInDocument(), bodyName.c_str());
     }
 
+    // The method 'SoCamera::viewBoundingBox' is still declared as protected in Coin3d versions
+    // older than 4.0.
+#if COIN_MAJOR_VERSION >= 4
+    // if no part feature was there then auto-adjust the camera
+    if (viewAll) {
+        Gui::Document* doc = Gui::Application::Instance->getDocument(getDocument());
+        Gui::View3DInventor* view = doc ? qobject_cast<Gui::View3DInventor*>(doc->getActiveView()) : nullptr;
+        if (view) {
+            SoCamera* camera = view->getViewer()->getCamera();
+            SbViewportRegion vpregion = view->getViewer()->getViewportRegion();
+            float aspectratio = vpregion.getViewportAspectRatio();
+
+            float size = Gui::ViewProviderOrigin::defaultSize();
+            SbBox3f bbox;
+            bbox.setBounds(-size,-size,-size,size,size,size);
+            camera->viewBoundingBox(bbox, aspectratio, 1.0f);
+        }
+    }
+#endif
 
     updateActive();
 }
@@ -286,7 +311,7 @@ void CmdPartDesignMigrate::activated(int iMsg)
             auto newChainIt = featureChains.emplace (featureChains.end());
             newChainIt->splice (newChainIt->end(), chain);
         } else {
-            // we are basing on some partdesign feature wich supposed to belong to some body
+            // we are basing on some partdesign feature which supposed to belong to some body
             PartDesign::Feature *baseFeat = static_cast <PartDesign::Feature *>( base );
 
             auto baseFeatSetIt = find ( migrateFeatures.begin (), migrateFeatures.end (), baseFeat );
@@ -335,7 +360,7 @@ void CmdPartDesignMigrate::activated(int iMsg)
         }
         migrateFeatures.erase ( featIt );
         featIt = migrateFeatures.begin ();
-        // TODO Align visability (2015-08-17, Fat-Zer)
+        // TODO Align visibility (2015-08-17, Fat-Zer)
     } /* for */
 
     // TODO make it work without parts (2015-09-04, Fat-Zer)
@@ -401,7 +426,7 @@ void CmdPartDesignMigrate::activated(int iMsg)
                 PartDesign::ProfileBased *sketchBased = static_cast<PartDesign::ProfileBased *> ( feature );
                 Part::Part2DObject *sketch = sketchBased->getVerifiedSketch( /*silent =*/ true);
                 if ( sketch ) {
-                    doCommand ( Doc,"App.activeDocument().%s.addFeature(App.activeDocument().%s)",
+                    doCommand ( Doc,"App.activeDocument().%s.addObject(App.activeDocument().%s)",
                             bodyName.c_str (), sketch->getNameInDocument() );
 
                     if ( sketch->isDerivedFrom ( Sketcher::SketchObject::getClassTypeId() ) ) {
@@ -419,7 +444,7 @@ void CmdPartDesignMigrate::activated(int iMsg)
                     }
                 }
             }
-            doCommand ( Doc,"App.activeDocument().%s.addFeature(App.activeDocument().%s)",
+            doCommand ( Doc,"App.activeDocument().%s.addObject(App.activeDocument().%s)",
                     bodyName.c_str (), feature->getNameInDocument() );
 
             PartDesignGui::relinkToBody ( feature );
@@ -477,7 +502,7 @@ void CmdPartDesignMoveTip::activated(int iMsg)
         return;
     } else if (!body) {
         QMessageBox::warning (0, QObject::tr( "Selection error" ),
-                QObject::tr( "Couldn't determin a body for the selected feature '%s'.", selFeature->Label.getValue() ) );
+                QObject::tr( "Couldn't determine a body for the selected feature '%s'.", selFeature->Label.getValue() ) );
         return;
     } else if ( !selFeature->isDerivedFrom(PartDesign::Feature::getClassTypeId () ) &&
             selFeature != body && body->BaseFeature.getValue() != selFeature ) {
@@ -552,7 +577,7 @@ void CmdPartDesignDuplicateSelection::activated(int iMsg)
 
         for (auto feature : newFeatures) {
             if (PartDesign::Body::isAllowed(feature)) {
-                doCommand(Doc,"App.activeDocument().%s.addFeature(App.activeDocument().%s)",
+                doCommand(Doc,"App.activeDocument().%s.addObject(App.activeDocument().%s)",
                           pcActiveBody->getNameInDocument(), feature->getNameInDocument());
                 doCommand(Gui,"Gui.activeDocument().hide(\"%s\")", feature->getNameInDocument());
             }
@@ -616,6 +641,15 @@ void CmdPartDesignMoveFeature::activated(int iMsg)
         PartDesign::Body* source = PartDesign::Body::findBodyOf(feat);
         source_bodies.insert(static_cast<App::DocumentObject*>(source));
     }
+    
+    if(source_bodies.size() != 1) {
+        //show messagebox and cancel
+        QMessageBox::warning(Gui::getMainWindow(), QObject::tr("Features cannot be moved"),
+            QObject::tr("Only features of a single source Body can be moved"));
+        return;
+    }
+     
+    auto source_body = *source_bodies.begin();
 
     std::vector<App::DocumentObject*> target_bodies;
     for (auto body : bodies) {
@@ -647,8 +681,20 @@ void CmdPartDesignMoveFeature::activated(int iMsg)
     PartDesign::Body* target = static_cast<PartDesign::Body*>(target_bodies[index]);
 
     openCommand("Move an object");
-
-    for (auto feat: features) {
+    
+    std::stringstream stream;
+    stream << "features_ = [App.ActiveDocument." << features.back()->getNameInDocument();
+    features.pop_back();
+    
+    for (auto feat: features)        
+        stream << ", App.ActiveDocument." << feat->getNameInDocument();
+    
+    stream << "]";
+    doCommand(Doc, stream.str().c_str());
+    doCommand(Doc, "App.ActiveDocument.%s.removeObjects(features_)", source_body->getNameInDocument());
+    doCommand(Doc, "App.ActiveDocument.%s.addObjects(features_)", target->getNameInDocument());
+    /*
+        
         // Find body of this feature
         Part::BodyBase* source = PartDesign::Body::findBodyOf(feat);
         bool featureWasTip = false;
@@ -658,14 +704,14 @@ void CmdPartDesignMoveFeature::activated(int iMsg)
         // Remove from the source body if the feature belonged to a body
         if (source) {
             featureWasTip = (source->Tip.getValue() == feat);
-            doCommand(Doc,"App.activeDocument().%s.removeFeature(App.activeDocument().%s)",
+            doCommand(Doc,"App.activeDocument().%s.removeObject(App.activeDocument().%s)",
                       source->getNameInDocument(), (feat)->getNameInDocument());
         }
 
         App::DocumentObject* targetOldTip = target->Tip.getValue();
 
         // Add to target body (always at the Tip)
-        doCommand(Doc,"App.activeDocument().%s.addFeature(App.activeDocument().%s)",
+        doCommand(Doc,"App.activeDocument().%s.addObject(App.activeDocument().%s)",
                       target->getNameInDocument(), (feat)->getNameInDocument());
         // Recompute to update the shape
         doCommand(Gui,"App.activeDocument().recompute()");
@@ -704,7 +750,7 @@ void CmdPartDesignMoveFeature::activated(int iMsg)
 
         //relink origin for sketches and datums (coordinates)
         PartDesignGui::relinkToOrigin(feat, target);
-    }
+    }*/
 
     updateActive();
 }
@@ -742,7 +788,7 @@ void CmdPartDesignMoveFeatureInTree::activated(int iMsg)
     if ( body ) {
         bodyBase= body->BaseFeature.getValue();
         for ( auto feat: features ) {
-            if ( !body->hasFeature ( feat ) ) {
+            if ( !body->hasObject ( feat ) ) {
                 allFeaturesFromSameBody = false;
                 break;
             }
@@ -760,7 +806,7 @@ void CmdPartDesignMoveFeatureInTree::activated(int iMsg)
     }
 
     // Create a list of all features in this body
-    const std::vector<App::DocumentObject*> & model = body->Model.getValues();
+    const std::vector<App::DocumentObject*> & model = body->Group.getValues();
 
     // Ask user to select the target feature
     bool ok;
@@ -798,9 +844,9 @@ void CmdPartDesignMoveFeatureInTree::activated(int iMsg)
         // Remove and re-insert the feature to/from the Body
         // TODO if tip was moved the new position of tip is quite undetermined (2015-08-07, Fat-Zer)
         // TODO warn the user if we are moving an object to some place before the object's link (2015-08-07, Fat-Zer)
-        doCommand ( Doc,"App.activeDocument().%s.removeFeature(App.activeDocument().%s)",
+        doCommand ( Doc,"App.activeDocument().%s.removeObject(App.activeDocument().%s)",
                 body->getNameInDocument(), feat->getNameInDocument() );
-        doCommand ( Doc, "App.activeDocument().%s.insertFeature(App.activeDocument().%s, %s, True)",
+        doCommand ( Doc, "App.activeDocument().%s.insertObject(App.activeDocument().%s, %s, True)",
                 body->getNameInDocument(), feat->getNameInDocument(), targetStr.c_str () );
     }
 

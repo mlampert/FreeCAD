@@ -40,7 +40,7 @@
 #include <QtGui/QColor>
 #include <QGraphicsView>
 #include <QtCore/QUrl>
-#include <QtOpenGL/QGLWidget>
+#include <QtOpenGL.h>
 #include "Gui/Quarter/Basic.h"
 
 class QMenu;
@@ -73,6 +73,7 @@ class QUARTER_DLL_API QuarterWidget : public QGraphicsView {
   Q_PROPERTY(TransparencyType transparencyType READ transparencyType WRITE setTransparencyType)
   Q_PROPERTY(RenderMode renderMode READ renderMode WRITE setRenderMode)
   Q_PROPERTY(StereoMode stereoMode READ stereoMode WRITE setStereoMode)
+  Q_PROPERTY(qreal devicePixelRatio READ devicePixelRatio NOTIFY devicePixelRatioChanged)
 
   Q_ENUMS(TransparencyType)
   Q_ENUMS(RenderMode)
@@ -80,9 +81,9 @@ class QUARTER_DLL_API QuarterWidget : public QGraphicsView {
 
 
 public:
-  explicit QuarterWidget(QWidget * parent = 0, const QGLWidget * sharewidget = 0, Qt::WindowFlags f = 0);
-  explicit QuarterWidget(QGLContext * context, QWidget * parent = 0, const QGLWidget * sharewidget = 0, Qt::WindowFlags f = 0);
-  explicit QuarterWidget(const QGLFormat & format, QWidget * parent = 0, const QGLWidget * shareWidget = 0, Qt::WindowFlags f = 0);
+  explicit QuarterWidget(QWidget * parent = 0, const QtGLWidget * sharewidget = 0, Qt::WindowFlags f = 0);
+  explicit QuarterWidget(QtGLContext * context, QWidget * parent = 0, const QtGLWidget * sharewidget = 0, Qt::WindowFlags f = 0);
+  explicit QuarterWidget(const QtGLFormat & format, QWidget * parent = 0, const QtGLWidget * shareWidget = 0, Qt::WindowFlags f = 0);
   virtual ~QuarterWidget();
 
   enum TransparencyType {
@@ -122,6 +123,8 @@ public:
 
   void setBackgroundColor(const QColor & color);
   QColor backgroundColor(void) const;
+
+  qreal devicePixelRatio(void) const;
 
   void resetNavigationModeFile(void);
   void setNavigationModeFile(const QUrl & url = QUrl(QString::fromLatin1(DEFAULT_NAVIGATIONFILE)));
@@ -183,16 +186,23 @@ public Q_SLOTS:
   void setStereoMode(StereoMode mode);
   void setTransparencyType(TransparencyType type);
 
+Q_SIGNALS:
+  void devicePixelRatioChanged(qreal dev_pixel_ratio);
+
+private Q_SLOTS:
+  void replaceViewport();
+
 protected:
   virtual void paintEvent(QPaintEvent*);
   virtual void resizeEvent(QResizeEvent*);
   virtual bool viewportEvent(QEvent* event);
   virtual void actualRedraw(void);
-  
+  virtual bool updateDevicePixelRatio(void);
+
   double renderTime;
 
 private:
-  void constructor(const QGLFormat& format, const QGLWidget* sharewidget);
+  void constructor(const QtGLFormat& format, const QtGLWidget* sharewidget);
   friend class QuarterWidgetP;
   class QuarterWidgetP * pimpl;
   bool initialized;  

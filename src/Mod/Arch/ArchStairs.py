@@ -91,9 +91,11 @@ class _CommandStairs:
         FreeCADGui.addModule("Arch")
         if len(FreeCADGui.Selection.getSelection()) == 1:
             n = FreeCADGui.Selection.getSelection()[0].Name
-            FreeCADGui.doCommand("Arch.makeStairs(baseobj=FreeCAD.ActiveDocument."+n+")")
+            FreeCADGui.doCommand("obj = Arch.makeStairs(baseobj=FreeCAD.ActiveDocument."+n+")")
         else:
-            FreeCADGui.doCommand("Arch.makeStairs(steps="+str(p.GetInt("StairsSteps",17))+")")
+            FreeCADGui.doCommand("obj = Arch.makeStairs(steps="+str(p.GetInt("StairsSteps",17))+")")
+        FreeCADGui.addModule("Draft")
+        FreeCADGui.doCommand("Draft.autogroup(obj)")
         FreeCAD.ActiveDocument.commitTransaction()
         FreeCAD.ActiveDocument.recompute()
 
@@ -126,6 +128,7 @@ class _Stairs(ArchComponent.Component):
         obj.addProperty("App::PropertyLength","StructureThickness","Structure",QT_TRANSLATE_NOOP("App::Property","The thickness of the massive structure or of the stringers"))
         obj.addProperty("App::PropertyLength","StringerWidth","Structure",QT_TRANSLATE_NOOP("App::Property","The width of the stringers"))
         obj.addProperty("App::PropertyLength","StructureOffset","Structure",QT_TRANSLATE_NOOP("App::Property","The offset between the border of the stairs and the structure"))
+        obj.addProperty("App::PropertyLength","StringerOverlap","Structure",QT_TRANSLATE_NOOP("App::Property","The overlap of the stringers above the bottom of the treads"))
 
         obj.Align = ['Left','Right','Center']
         obj.Landings = ["None","At center","At each corner"]
@@ -258,7 +261,7 @@ class _Stairs(ArchComponent.Component):
         fLength = float(l-obj.Width.Value)/(numberofsteps-2)
         fHeight = float(h)/numberofsteps
         a = math.atan(fHeight/fLength)
-        print "landing data:",fLength,":",fHeight
+        print("landing data:",fLength,":",fHeight)
 
         # step
         p1 = self.align(vBase,obj.Align,vWidth)
@@ -349,6 +352,10 @@ class _Stairs(ArchComponent.Component):
 
         "builds a simple, straight staircase from a straight edge"
 
+        # Upgrade obj if it is from an older version of FreeCAD
+        if not(hasattr(obj, "StringerOverlap")):
+            obj.addProperty("App::PropertyLength","StringerOverlap","Structure",QT_TRANSLATE_NOOP("App::Property","The overlap of the stringers above the bottom of the treads"))
+
         # general data
         import Part,DraftGeomUtils
         if not numberofsteps:
@@ -365,7 +372,7 @@ class _Stairs(ArchComponent.Component):
         vBase = edge.Vertexes[0].Point
         vNose = DraftVecUtils.scaleTo(vLength,-abs(obj.Nosing.Value))
         a = math.atan(vHeight.Length/vLength.Length)
-        #print "stair data:",vLength.Length,":",vHeight.Length
+        #print("stair data:",vLength.Length,":",vHeight.Length)
 
         # steps
         for i in range(numberofsteps-1):
@@ -402,7 +409,7 @@ class _Stairs(ArchComponent.Component):
                 h = DraftVecUtils.scaleTo(vLength,-resLength)
                 lProfile.append(lProfile[-1].add(Vector(h.x,h.y,-resHeight2)))
                 lProfile.append(vBase)
-                #print lProfile
+                #print(lProfile)
                 pol = Part.makePolygon(lProfile)
                 struct = Part.Face(pol)
                 evec = vWidth
@@ -415,12 +422,18 @@ class _Stairs(ArchComponent.Component):
             if obj.StringerWidth.Value and obj.StructureThickness.Value:
                 hyp = math.sqrt(vHeight.Length**2 + vLength.Length**2)
                 l1 = Vector(vLength).multiply(numberofsteps-1)
-                h1 = Vector(vHeight).multiply(numberofsteps-1).add(Vector(0,0,-abs(obj.TreadThickness.Value)))
+                h1 = Vector(vHeight).multiply(numberofsteps-1).add(Vector(0,0,-abs(obj.TreadThickness.Value)+obj.StringerOverlap.Value))
                 p1 = vBase.add(l1).add(h1)
                 p1 = self.align(p1,obj.Align,vWidth)
-                lProfile.append(p1)
+                if obj.StringerOverlap.Value <= float(h)/numberofsteps:
+                    lProfile.append(p1)
+                else:
+                    p1b = vBase.add(l1).add(Vector(0,0,float(h)))
+                    p1a = p1b.add(Vector(vLength).multiply((p1b.z-p1.z)/vHeight.Length))
+                    lProfile.append(p1a)
+                    lProfile.append(p1b)
                 h2 = (obj.StructureThickness.Value/vLength.Length)*hyp
-                lProfile.append(lProfile[-1].add(Vector(0,0,-abs(h2))))
+                lProfile.append(p1.add(Vector(0,0,-abs(h2))))
                 h3 = lProfile[-1].z-vBase.z
                 l3 = (h3/vHeight.Length)*vLength.Length
                 v3 = DraftVecUtils.scaleTo(vLength,-l3)
@@ -429,7 +442,7 @@ class _Stairs(ArchComponent.Component):
                 v4 = DraftVecUtils.scaleTo(vLength,-l4)
                 lProfile.append(lProfile[-1].add(v4))
                 lProfile.append(lProfile[0])
-                #print lProfile
+                #print(lProfile)
                 pol = Part.makePolygon(lProfile)
                 pol = Part.Face(pol)
                 evec = DraftVecUtils.scaleTo(vWidth,obj.StringerWidth.Value)
@@ -474,7 +487,7 @@ class _Stairs(ArchComponent.Component):
         else:
             h = obj.Height.Value
         hstep = h/obj.NumberOfSteps
-        landing = obj.NumberOfSteps/2
+        landing = int(obj.NumberOfSteps/2)
         p2 = p1.add(DraftVecUtils.scale(vLength,landing-1).add(Vector(0,0,landing*hstep)))
         p3 = p2.add(DraftVecUtils.scaleTo(vLength,obj.Width.Value))
         p4 = p3.add(DraftVecUtils.scale(vLength,obj.NumberOfSteps-(landing+1)).add(Vector(0,0,(obj.NumberOfSteps-landing)*hstep)))
@@ -484,11 +497,10 @@ class _Stairs(ArchComponent.Component):
 
 
     def makeCurvedStairs(self,obj,edge):
-        print "Not yet implemented!"
+        print("Not yet implemented!")
 
     def makeCurvedStairsWithLanding(self,obj,edge):
-        print "Not yet implemented!"
-
+        print("Not yet implemented!")
 
 
 class _ViewProviderStairs(ArchComponent.ViewProviderComponent):

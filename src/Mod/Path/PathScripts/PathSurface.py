@@ -22,9 +22,23 @@
 # *                                                                         *
 # ***************************************************************************
 
+from __future__ import print_function
 import FreeCAD
 import Path
 from PathScripts import PathUtils
+import PathScripts.PathLog as PathLog
+from PathScripts.PathUtils import waiting_effects
+import sys
+
+# xrange is not available in python3
+if sys.version_info.major >= 3:
+    xrange = range
+
+if False:
+    PathLog.setLevel(PathLog.Level.DEBUG, PathLog.thisModule())
+    PathLog.trackModule(PathLog.thisModule())
+else:
+    PathLog.setLevel(PathLog.Level.INFO, PathLog.thisModule())
 
 if FreeCAD.GuiUp:
     import FreeCADGui
@@ -36,47 +50,47 @@ __url__ = "http://www.freecadweb.org"
 
 """Path surface object and FreeCAD command"""
 
-# Qt tanslation handling
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
 
-    def translate(context, text, disambig=None):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def translate(context, text, disambig=None):
-        return QtGui.QApplication.translate(context, text, disambig)
+# Qt tanslation handling
+def translate(context, text, disambig=None):
+    return QtCore.QCoreApplication.translate(context, text, disambig)
 
 
 class ObjectSurface:
 
     def __init__(self, obj):
-        obj.addProperty("App::PropertyLinkSubList", "Base", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property","The base geometry of this toolpath"))
-        obj.addProperty("App::PropertyBool", "Active", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property","Make False, to prevent operation from generating code"))
-        obj.addProperty("App::PropertyString", "Comment", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property","An optional comment for this profile"))
-        obj.addProperty("App::PropertyString", "UserLabel", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property","User Assigned Label"))
+        obj.addProperty("App::PropertyLinkSubList", "Base", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property", "The base geometry of this toolpath"))
+        obj.addProperty("App::PropertyBool", "Active", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property", "Make False, to prevent operation from generating code"))
+        obj.addProperty("App::PropertyString", "Comment", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property", "An optional comment for this profile"))
+        obj.addProperty("App::PropertyString", "UserLabel", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property", "User Assigned Label"))
 
-        obj.addProperty("App::PropertyEnumeration", "Algorithm", "Algorithm", QtCore.QT_TRANSLATE_NOOP("App::Property","The library to use to generate the path"))
+        obj.addProperty("App::PropertyEnumeration", "Algorithm", "Algorithm", QtCore.QT_TRANSLATE_NOOP("App::Property", "The library to use to generate the path"))
         obj.Algorithm = ['OCL Dropcutter', 'OCL Waterline']
 
-        # Tool Properties
-        obj.addProperty("App::PropertyIntegerConstraint", "ToolNumber", "Tool", QtCore.QT_TRANSLATE_NOOP("App::Property","The tool number in use"))
-        obj.ToolNumber = (0, 0, 1000, 0)
-        obj.setEditorMode('ToolNumber', 1)  # make this read only
-        obj.addProperty("App::PropertyString", "ToolDescription", "Tool", QtCore.QT_TRANSLATE_NOOP("App::Property","The description of the tool "))
-        obj.setEditorMode('ToolDescription', 1)  # make this read onlyt
-
         # Surface Properties
-        obj.addProperty("App::PropertyFloatConstraint", "SampleInterval", "Surface", QtCore.QT_TRANSLATE_NOOP("App::Property","The Sample Interval.  Small values cause long wait"))
+        obj.addProperty("App::PropertyFloatConstraint", "SampleInterval", "Surface", QtCore.QT_TRANSLATE_NOOP("App::Property", "The Sample Interval.  Small values cause long wait"))
         obj.SampleInterval = (0, 0, 1, 0)
 
+        # Tool Properties
+        obj.addProperty("App::PropertyLink", "ToolController", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property", "The tool controller that will be used to calculate the path"))
+
         # Depth Properties
-        obj.addProperty("App::PropertyDistance", "ClearanceHeight", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property","The height needed to clear clamps and obstructions"))
-        obj.addProperty("App::PropertyDistance", "SafeHeight", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property","Rapid Safety Height between locations."))
-        obj.addProperty("App::PropertyFloatConstraint", "StepDown", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property","Incremental Step Down of Tool"))
+        obj.addProperty("App::PropertyDistance", "ClearanceHeight", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property", "The height needed to clear clamps and obstructions"))
+        obj.addProperty("App::PropertyDistance", "SafeHeight", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property", "Rapid Safety Height between locations."))
+        obj.addProperty("App::PropertyFloatConstraint", "StepDown", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property", "Incremental Step Down of Tool"))
         obj.StepDown = (0.0, 0.01, 100.0, 0.5)
-        obj.addProperty("App::PropertyDistance", "StartDepth", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property","Starting Depth of Tool- first cut depth in Z"))
-        obj.addProperty("App::PropertyDistance", "FinalDepth", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property","Final Depth of Tool- lowest value in Z"))
-        obj.addProperty("App::PropertyDistance", "FinishDepth", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property","Maximum material removed on final pass."))
+        obj.addProperty("App::PropertyDistance", "StartDepth", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property", "Starting Depth of Tool- first cut depth in Z"))
+        obj.addProperty("App::PropertyDistance", "FinalDepth", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property", "Final Depth of Tool- lowest value in Z"))
+        obj.addProperty("App::PropertyDistance", "FinishDepth", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property", "Maximum material removed on final pass."))
+
+        self.vertFeed = 0.0
+        self.horizFeed = 0.0
+        self.vertRapid = 0.0
+        self.horizRapid = 0.0
+        self.radius = 0.0
+
+        if FreeCAD.GuiUp:
+            ViewProviderSurface(obj.ViewObject)
 
         obj.Proxy = self
 
@@ -116,8 +130,7 @@ class ObjectSurface:
         return None
 
     def onChanged(self, obj, prop):
-        if prop == "UserLabel":
-            obj.Label = obj.UserLabel + " :" + obj.ToolDescription
+        pass
 
     def _waterline(self, obj, s, bb):
         import ocl
@@ -145,7 +158,7 @@ class ObjectSurface:
                     str(fmt(p.x)) + " Y" + str(fmt(p.y)) + \
                     " Z" + str(fmt(zheight)) + "\n"
                 loopstring += "(loop end)" + "\n"
-                print "    loop ", nloop, " with ", len(loop), " points"
+                print("    loop ", nloop, " with ", len(loop), " points")
                 nloop = nloop + 1
                 waterlinestring += loopstring
             waterlinestring += "(waterline end)" + "\n"
@@ -158,7 +171,8 @@ class ObjectSurface:
         surface = s
 
         t_before = time.time()
-        zheights = depthparams.get_depths()
+        zheights = [i for i in depthparams]
+
         wl = ocl.Waterline()
         # wl = ocl.AdaptiveWaterline() # this is slower, ca 60 seconds on i7
         # CPU
@@ -174,7 +188,7 @@ class ObjectSurface:
         # (see c++ code)
         all_loops = []
         for zh in zheights:
-            print "calculating Waterline at z= ", zh
+            print("calculating Waterline at z= ", zh)
             wl.reset()
             wl.setZ(zh)  # height for this waterline
             wl.run()
@@ -184,10 +198,10 @@ class ObjectSurface:
         n = 0
         output = ""
         for loops in all_loops:  # at each z-height, we may get many loops
-            print "  %d/%d:" % (n, len(all_loops))
+            print("  %d/%d:" % (n, len(all_loops)))
             output += drawLoops(loops)
             n = n + 1
-        print "(" + str(calctime) + ")"
+        print("(" + str(calctime) + ")")
         return output
 
     def _dropcutter(self, obj, s, bb):
@@ -231,11 +245,11 @@ class ObjectSurface:
         t_before = time.time()
         pdc.run()
         t_after = time.time()
-        print "calculation took ", t_after - t_before, " s"
+        print("calculation took ", t_after - t_before, " s")
 
         # retrieve the points
         clp = pdc.getCLPoints()
-        print "points received: " + str(len(clp))
+        print("points received: " + str(len(clp)))
 
         # generate the path commands
         output = ""
@@ -249,40 +263,29 @@ class ObjectSurface:
 
         return output
 
+    @waiting_effects
     def execute(self, obj):
         import MeshPart
         FreeCAD.Console.PrintWarning(
-            translate("PathSurface", "Hold on.  This might take a minute.\n"))
+            translate("Path_Surface", "Hold on.  This might take a minute.\n"))
         output = ""
         if obj.Comment != "":
             output += '(' + str(obj.Comment)+')\n'
 
-        toolLoad = PathUtils.getLastToolLoad(obj)
+        toolLoad = obj.ToolController
         if toolLoad is None or toolLoad.ToolNumber == 0:
-            self.vertFeed = 100
-            self.horizFeed = 100
-            self.vertRapid = 100
-            self.horizRapid = 100
-            self.radius = 0.25
-            obj.ToolNumber = 0
-            obj.ToolDescription = "UNDEFINED"
+            FreeCAD.Console.PrintError("No Tool Controller is selected. We need a tool to build a Path.")
         else:
             self.vertFeed = toolLoad.VertFeed.Value
             self.horizFeed = toolLoad.HorizFeed.Value
             self.vertRapid = toolLoad.VertRapid.Value
             self.horizRapid = toolLoad.HorizRapid.Value
-            tool = PathUtils.getTool(obj, toolLoad.ToolNumber)
-            if tool.Diameter == 0:
-                self.radius = 0.25
+            tool = toolLoad.Proxy.getTool(toolLoad)
+            if not tool or tool.Diameter == 0:
+                FreeCAD.Console.PrintError("No Tool found or diameter is zero. We need a tool to build a Path.")
+                return
             else:
                 self.radius = tool.Diameter/2
-            obj.ToolNumber = toolLoad.ToolNumber
-            obj.ToolDescription = toolLoad.Name
-
-        if obj.UserLabel == "":
-            obj.Label = obj.Name + " :" + obj.ToolDescription
-        else:
-            obj.Label = obj.UserLabel + " :" + obj.ToolDescription
 
         output += "(" + obj.Label + ")"
         output += "(Compensated Tool Path. Diameter: " + str(self.radius * 2) + ")"
@@ -296,25 +299,29 @@ class ObjectSurface:
         mesh = parentJob.Base
         if mesh is None:
             return
-        print "base object: " + mesh.Name
-
-
+        print("base object: " + mesh.Name)
 
         if obj.Algorithm in ['OCL Dropcutter', 'OCL Waterline']:
             try:
                 import ocl
             except:
-                FreeCAD.Console.PrintError(translate(
-                    "PathSurface", "This operation requires OpenCamLib to be installed.\n"))
+                FreeCAD.Console.PrintError(
+                        translate("Path_Surface", "This operation requires OpenCamLib to be installed.\n"))
                 return
 
-        #mesh = b[0]
         if mesh.TypeId.startswith('Mesh'):
             mesh = mesh.Mesh
-            bb = mesh.BoundBox
         else:
-            bb = mesh.Shape.BoundBox
-            mesh = MeshPart.meshFromShape(mesh.Shape, MaxLength=2)
+            # try/except is for Path Jobs created before GeometryTolerance
+            try:
+                deflection = parentJob.GeometryTolerance
+            except AttributeError:
+                from PathScripts.PathPreferences import PathPreferences
+                deflection = PathPreferences.defaultGeometryTolerance()
+
+            mesh = MeshPart.meshFromShape(mesh.Shape, Deflection=deflection)
+
+        bb = mesh.BoundBox
 
         s = ocl.STLSurf()
         for f in mesh.Facets:
@@ -340,6 +347,7 @@ class ObjectSurface:
             obj.Path = path
             obj.ViewObject.Visibility = False
 
+
 class ViewProviderSurface:
 
     def __init__(self, obj):  # mandatory
@@ -351,6 +359,9 @@ class ViewProviderSurface:
 
     def __setstate__(self, state):  # mandatory
         return None
+
+    def deleteObjectsOnReject(self):
+        return hasattr(self, 'deleteOnReject') and self.deleteOnReject
 
     def getIcon(self):  # optional
         return ":/icons/Path-Surfacing.svg"
@@ -365,10 +376,12 @@ class ViewProviderSurface:
 
     def setEdit(self, vobj, mode=0):
         FreeCADGui.Control.closeDialog()
-        taskd = TaskPanel()
+        taskd = TaskPanel(vobj.Object, self.deleteObjectsOnReject())
+
         taskd.obj = vobj.Object
         FreeCADGui.Control.showDialog(taskd)
         taskd.setupUi()
+        self.deleteOnReject = False
         return True
 
     def unsetEdit(self, vobj, mode):  # optional
@@ -397,78 +410,110 @@ class CommandPathSurfacing:
         zbottom = 0
 
         FreeCAD.ActiveDocument.openTransaction(
-            translate("Path_Surfacing", "Create Surface"))
+            translate("Path_Surface", "Create Surface"))
         FreeCADGui.addModule("PathScripts.PathSurface")
         FreeCADGui.doCommand(
             'obj = FreeCAD.ActiveDocument.addObject("Path::FeaturePython","Surface")')
         FreeCADGui.doCommand('PathScripts.PathSurface.ObjectSurface(obj)')
         FreeCADGui.doCommand('obj.Active = True')
-        FreeCADGui.doCommand(
-            'PathScripts.PathSurface.ViewProviderSurface(obj.ViewObject)')
         FreeCADGui.doCommand('from PathScripts import PathUtils')
         FreeCADGui.doCommand('obj.ClearanceHeight = ' + str(ztop + 2))
         FreeCADGui.doCommand('obj.StartDepth = ' + str(ztop))
         FreeCADGui.doCommand('obj.SafeHeight = ' + str(ztop + 2))
         FreeCADGui.doCommand('obj.StepDown = ' + str((ztop - zbottom) / 8))
         FreeCADGui.doCommand('obj.SampleInterval = 0.4')
+        FreeCADGui.doCommand('obj.ViewObject.Proxy.deleteOnReject = True')
 
         FreeCADGui.doCommand('obj.FinalDepth=' + str(zbottom))
         FreeCADGui.doCommand('PathScripts.PathUtils.addToJob(obj)')
+        FreeCADGui.doCommand('obj.ViewObject.startEditing()')
 
         FreeCAD.ActiveDocument.commitTransaction()
-        FreeCAD.ActiveDocument.recompute()
-        FreeCADGui.doCommand('obj.ViewObject.startEditing()')
 
 
 class TaskPanel:
 
-    def __init__(self):
+    def __init__(self, obj, deleteOnReject):
         # self.form = FreeCADGui.PySideUic.loadUi(FreeCAD.getHomePath() + "Mod/Path/SurfaceEdit.ui")
+        FreeCAD.ActiveDocument.openTransaction(translate("Path_Surface", "Surfacing Operation"))
         self.form = FreeCADGui.PySideUic.loadUi(":/panels/SurfaceEdit.ui")
         FreeCAD.Console.PrintWarning("Surface calculations can be slow.  Don't Panic.\n")
+        self.deleteOnReject = deleteOnReject
+        self.obj = obj
+        self.isDirty = True
 
     def accept(self):
-        self.getFields()
-
-        FreeCADGui.ActiveDocument.resetEdit()
         FreeCADGui.Control.closeDialog()
-        FreeCAD.ActiveDocument.recompute()
+        FreeCADGui.ActiveDocument.resetEdit()
+        FreeCAD.ActiveDocument.commitTransaction()
         FreeCADGui.Selection.removeObserver(self.s)
+        if self.isDirty:
+            FreeCAD.ActiveDocument.recompute()
 
     def reject(self):
         FreeCADGui.Control.closeDialog()
-        FreeCAD.ActiveDocument.recompute()
+        FreeCADGui.ActiveDocument.resetEdit()
+        FreeCAD.ActiveDocument.abortTransaction()
         FreeCADGui.Selection.removeObserver(self.s)
+        if self.deleteOnReject:
+            FreeCAD.ActiveDocument.openTransaction(translate("Path_Surface", "Uncreate Surface"))
+            FreeCAD.ActiveDocument.removeObject(self.obj.Name)
+            FreeCAD.ActiveDocument.commitTransaction()
+        FreeCAD.ActiveDocument.recompute()
+
+    def clicked(self,button):
+        if button == QtGui.QDialogButtonBox.Apply:
+            self.getFields()
+            FreeCAD.ActiveDocument.recompute()
+            self.isDirty = False
 
     def getFields(self):
         if self.obj:
             if hasattr(self.obj, "StartDepth"):
-                self.obj.StartDepth = self.form.startDepth.text()
+                self.obj.StartDepth = FreeCAD.Units.Quantity(self.form.startDepth.text()).Value
             if hasattr(self.obj, "FinalDepth"):
-                self.obj.FinalDepth = self.form.finalDepth.text()
+                self.obj.FinalDepth = FreeCAD.Units.Quantity(self.form.finalDepth.text()).Value
             if hasattr(self.obj, "FinishDepth"):
-                self.obj.FinishDepth = self.form.finishDepth.text()
+                self.obj.FinishDepth = FreeCAD.Units.Quantity(self.form.finishDepth.text()).Value
             if hasattr(self.obj, "StepDown"):
-                self.obj.StepDown = self.form.stepDown.value()
-
+                self.obj.StepDown = FreeCAD.Units.Quantity(self.form.stepDown.text()).Value
             if hasattr(self.obj, "SafeHeight"):
-                self.obj.SafeHeight = self.form.safeHeight.text()
+                self.obj.SafeHeight = FreeCAD.Units.Quantity(self.form.safeHeight.text()).Value
             if hasattr(self.obj, "ClearanceHeight"):
-                self.obj.ClearanceHeight = self.form.clearanceHeight.text()
+                self.obj.ClearanceHeight = FreeCAD.Units.Quantity(self.form.clearanceHeight.text()).Value
             if hasattr(self.obj, "Algorithm"):
                 self.obj.Algorithm = str(
                     self.form.algorithmSelect.currentText())
+            if hasattr(self.obj, "ToolController"):
+                PathLog.debug("name: {}".format(self.form.uiToolController.currentText()))
+                tc = PathUtils.findToolController(self.obj, self.form.uiToolController.currentText())
+                self.obj.ToolController = tc
 
-        self.obj.Proxy.execute(self.obj)
+        self.isDirty = True
 
     def setFields(self):
-        self.form.startDepth.setText(str(self.obj.StartDepth.Value))
-        self.form.finalDepth.setText(str(self.obj.FinalDepth.Value))
-        self.form.finishDepth.setText(str(self.obj.FinishDepth.Value))
-        self.form.stepDown.setValue(self.obj.StepDown)
+        self.form.startDepth.setText(FreeCAD.Units.Quantity(self.obj.StartDepth.Value, FreeCAD.Units.Length).UserString)
+        self.form.finalDepth.setText(FreeCAD.Units.Quantity(self.obj.FinalDepth.Value, FreeCAD.Units.Length).UserString)
+        self.form.finishDepth.setText(FreeCAD.Units.Quantity(self.obj.FinishDepth.Value, FreeCAD.Units.Length).UserString)
+        self.form.stepDown.setText(FreeCAD.Units.Quantity(self.obj.StepDown, FreeCAD.Units.Length).UserString)
+        self.form.safeHeight.setText(FreeCAD.Units.Quantity(self.obj.SafeHeight.Value, FreeCAD.Units.Length).UserString)
+        self.form.clearanceHeight.setText(FreeCAD.Units.Quantity(self.obj.ClearanceHeight.Value,  FreeCAD.Units.Length).UserString)
 
-        self.form.safeHeight.setText(str(self.obj.SafeHeight.Value))
-        self.form.clearanceHeight.setText(str(self.obj.ClearanceHeight.Value))
+        controllers = PathUtils.getToolControllers(self.obj)
+        labels = [c.Label for c in controllers]
+        self.form.uiToolController.blockSignals(True)
+        self.form.uiToolController.addItems(labels)
+        self.form.uiToolController.blockSignals(False)
+        if self.obj.ToolController is not None:
+            index = self.form.uiToolController.findText(
+                self.obj.ToolController.Label, QtCore.Qt.MatchFixedString)
+            PathLog.debug("searching for TC label {}. Found Index: {}".format(self.obj.ToolController.Label, index))
+            if index >= 0:
+                self.form.uiToolController.blockSignals(True)
+                self.form.uiToolController.setCurrentIndex(index)
+                self.form.uiToolController.blockSignals(False)
+        else:
+            self.obj.ToolController = PathUtils.findToolController(self.obj)
 
         for i in self.obj.Base:
             self.form.baseList.addItem(i[0].Name)
@@ -476,7 +521,9 @@ class TaskPanel:
         index = self.form.algorithmSelect.findText(
                 self.obj.Algorithm, QtCore.Qt.MatchFixedString)
         if index >= 0:
+            self.form.algorithmSelect.blockSignals(True)
             self.form.algorithmSelect.setCurrentIndex(index)
+            self.form.algorithmSelect.blockSignals(False)
 
     def open(self):
         self.s = SelObserver()
@@ -487,30 +534,30 @@ class TaskPanel:
         # check that the selection contains exactly what we want
         selection = FreeCADGui.Selection.getSelectionEx()
         if len(selection) != 1:
-            FreeCAD.Console.PrintError(translate(
-                "PathSurface", "Please select a single solid object from the project tree\n"))
+            FreeCAD.Console.PrintError(
+                    translate("Path_Surface", "Please select a single solid object from the project tree\n"))
             return
 
         if not len(selection[0].SubObjects) == 0:
-            FreeCAD.Console.PrintError(translate(
-                "PathSurface", "Please select a single solid object from the project tree\n"))
+            FreeCAD.Console.PrintError(
+                    translate("Path_Surface", "Please select a single solid object from the project tree\n"))
             return
 
         sel = selection[0].Object
         # get type of object
         if sel.TypeId.startswith('Mesh'):
             # it is a mesh already
-            print 'was already mesh'
+            print('was already mesh')
 
         elif sel.TypeId.startswith('Part') and \
                 (sel.Shape.BoundBox.XLength > 0) and \
                 (sel.Shape.BoundBox.YLength > 0) and \
                 (sel.Shape.BoundBox.ZLength > 0):
-            print 'this is a solid Part object'
+            print('this is a solid Part object')
 
         else:
             FreeCAD.Console.PrintError(
-                translate("PathSurface", "Cannot work with this object\n"))
+                    translate("Path_Surface", "Cannot work with this object\n"))
             return
 
         self.obj.Proxy.addsurfacebase(self.obj, sel)
@@ -551,13 +598,10 @@ class TaskPanel:
         FreeCAD.ActiveDocument.recompute()
 
     def getStandardButtons(self):
-        return int(QtGui.QDialogButtonBox.Ok)
+        return int(QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Apply | QtGui.QDialogButtonBox.Cancel)
 
     def setupUi(self):
-
-        # Connect Signals and Slots
-
-        #Base Geometry
+        # Base Geometry
         self.form.addBase.clicked.connect(self.addBase)
         self.form.deleteBase.clicked.connect(self.deleteBase)
         self.form.reorderBase.clicked.connect(self.reorderBase)
@@ -575,6 +619,7 @@ class TaskPanel:
 
         # Operation
         self.form.algorithmSelect.currentIndexChanged.connect(self.getFields)
+        self.form.uiToolController.currentIndexChanged.connect(self.getFields)
 
         sel = FreeCADGui.Selection.getSelectionEx()
         self.setFields()

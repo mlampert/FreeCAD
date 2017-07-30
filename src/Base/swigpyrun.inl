@@ -30,11 +30,11 @@ int createSWIGPointerObj_T(const char* TypeName, void* obj, PyObject** ptr, int 
     swig_type_info * swig_type = 0;
     swig_type = SWIG_TypeQuery(TypeName);
     if (!swig_type)
-        throw Base::Exception("Cannot find type information for requested type");
+        throw Base::RuntimeError("Cannot find type information for requested type");
     
     *ptr = SWIG_NewPointerObj(obj,swig_type,own);
     if (*ptr == 0)
-        throw Base::Exception("Cannot convert into requested type");
+        throw Base::RuntimeError("Cannot convert into requested type");
 
     // success
     return 0;
@@ -49,11 +49,11 @@ int convertSWIGPointerObj_T(const char* TypeName, PyObject* obj, void** ptr, int
     swig_type_info * swig_type = 0;
     swig_type = SWIG_TypeQuery(TypeName);
     if (!swig_type)
-        throw Base::Exception("Cannot find type information for requested type");
+        throw Base::RuntimeError("Cannot find type information for requested type");
 
     // return value of 0 is on success
     if (SWIG_ConvertPtr(obj, ptr, swig_type, flags))
-        throw Base::Exception("Cannot convert into requested type");
+        throw Base::RuntimeError("Cannot convert into requested type");
 
     // success
     return 0;
@@ -88,7 +88,11 @@ void cleanupSWIG_T(const char* TypeName)
         PyObject *key, *value;
         pos = 0;
         while (PyDict_Next(dict, &pos, &key, &value)) {
+#if PY_MAJOR_VERSION >= 3
+            if (value != Py_None && PyUnicode_Check(key)) {
+#else
             if (value != Py_None && PyString_Check(key)) {
+#endif
                 void* ptr = 0;
                 if (SWIG_ConvertPtr(value, &ptr, 0, 0) == 0)
                     PyDict_SetItem(dict, key, Py_None);

@@ -68,7 +68,7 @@ View3DInventorRiftViewer::View3DInventorRiftViewer() : CoinRiftWidget()
     basePosition = SbVec3f(0.0f, 0.5f, 0.8f);
 }
 
-//void saveWinPostion(void)
+//void saveWinPosition(void)
 //{
 //  
 // 
@@ -79,7 +79,7 @@ View3DInventorRiftViewer::~View3DInventorRiftViewer()
 {
     ParameterGrp::handle hGrp = App::GetApplication().GetParameterGroupByPath("User parameter:BaseApp/Preferences/Oculus");
 
-    // remeber last postion on close
+    // remember last position on close
     hGrp->SetInt("RenderWindowPosX",pos().x());
     hGrp->SetInt("RenderWindowPosY",pos().y());
     hGrp->SetInt("RenderWindowSizeW",size().width());

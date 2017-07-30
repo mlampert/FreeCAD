@@ -22,6 +22,10 @@ if (BUILD_VR)
     add_definitions(-DBUILD_VR )
 endif(BUILD_VR)
 
+if (BUILD_ADDONMGR)
+    add_definitions(-DBUILD_ADDONMGR )
+endif(BUILD_ADDONMGR)
+
 include_directories(
     ${CMAKE_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -238,6 +242,7 @@ set(Gui_MOC_HDRS
     DockWindowManager.h
     DocumentRecovery.h
     EditorView.h
+    TextDocumentEditorView.h
     ExpressionCompleter.h
     DlgExpressionInput.h
     FileDialog.h
@@ -627,6 +632,7 @@ SOURCE_GROUP("Dock Windows" FILES ${Dock_Windows_SRCS})
 SET(Editor_CPP_SRCS
     CallTips.cpp
     EditorView.cpp
+    TextDocumentEditorView.cpp
     PythonConsole.cpp
     PythonConsolePy.cpp
     PythonDebugger.cpp
@@ -637,6 +643,7 @@ SET(Editor_CPP_SRCS
 SET(Editor_HPP_SRCS
     CallTips.h
     EditorView.h
+    TextDocumentEditorView.h
     PythonConsole.h
     PythonConsolePy.h
     PythonDebugger.h
@@ -892,6 +899,7 @@ SET(Viewprovider_CPP_SRCS
     ViewProviderPart.cpp
     ViewProviderOrigin.cpp
     ViewProviderMaterialObject.cpp
+    ViewProviderTextDocument.cpp
 )
 SET(Viewprovider_SRCS
     ${Viewprovider_CPP_SRCS}
@@ -920,6 +928,7 @@ SET(Viewprovider_SRCS
     ViewProviderPart.h
     ViewProviderOrigin.h
     ViewProviderMaterialObject.h
+    ViewProviderTextDocument.h
 )
 SOURCE_GROUP("View3D\\Viewprovider" FILES ${Viewprovider_SRCS})
 
@@ -928,6 +937,7 @@ SET(Inventor_CPP_SRCS
     Inventor/SoDrawingGrid.cpp
     Inventor/SoAutoZoomTranslation.cpp
     Inventor/MarkerBitmaps.cpp
+    Inventor/SmSwitchboard.cpp
     SoFCBackgroundGradient.cpp
     SoFCBoundingBox.cpp
     SoFCColorBar.cpp
@@ -952,6 +962,7 @@ SET(Inventor_SRCS
     Inventor/SoDrawingGrid.h
     Inventor/SoAutoZoomTranslation.h
     Inventor/MarkerBitmaps.h
+    Inventor/SmSwitchboard.h
     SoFCBackgroundGradient.h
     SoFCBoundingBox.h
     SoFCColorBar.h
@@ -1070,6 +1081,7 @@ SET(FreeCADGui_CPP_SRCS
     Document.cpp
     DocumentModel.cpp
     DocumentPyImp.cpp
+    DocumentObserver.cpp
     ExpressionBinding.cpp
     GraphicsViewZoom.cpp
     ExpressionCompleter.cpp
@@ -1094,6 +1106,7 @@ SET(FreeCADGui_SRCS
     BitmapFactory.h
     Document.h
     DocumentModel.h
+    DocumentObserver.h
     ExpressionBinding.cpp
     ExpressionCompleter.h
     FreeCADGuiInit.py

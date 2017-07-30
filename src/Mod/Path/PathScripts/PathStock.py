@@ -27,24 +27,19 @@ import FreeCADGui
 from FreeCAD import Vector
 from PySide import QtCore, QtGui
 import Part
-# Qt tanslation handling
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
 
-    def translate(context, text, disambig=None):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def translate(context, text, disambig=None):
-        return QtGui.QApplication.translate(context, text, disambig)
+# Qt tanslation handling
+def translate(context, text, disambig=None):
+    return QtCore.QCoreApplication.translate(context, text, disambig)
 
 
 class Stock:
 
     def __init__(self, obj):
         "Make stock"
-        obj.addProperty("App::PropertyFloat","Length_Allowance","Stock",QtCore.QT_TRANSLATE_NOOP("App::Property","extra allownace from part width")).Length_Allowance = 1.0
-        obj.addProperty("App::PropertyFloat","Width_Allowance","Stock",QtCore.QT_TRANSLATE_NOOP("App::Property","extra allownace from part width")).Width_Allowance = 1.0
-        obj.addProperty("App::PropertyFloat","Height_Allowance","Stock",QtCore.QT_TRANSLATE_NOOP("App::Property","extra allownace from part width")).Height_Allowance = 1.0
+        obj.addProperty("App::PropertyFloat","Length_Allowance","Stock",QtCore.QT_TRANSLATE_NOOP("App::Property","extra allowance from part width")).Length_Allowance = 1.0
+        obj.addProperty("App::PropertyFloat","Width_Allowance","Stock",QtCore.QT_TRANSLATE_NOOP("App::Property","extra allowance from part width")).Width_Allowance = 1.0
+        obj.addProperty("App::PropertyFloat","Height_Allowance","Stock",QtCore.QT_TRANSLATE_NOOP("App::Property","extra allowance from part width")).Height_Allowance = 1.0
         obj.addProperty("App::PropertyLink","Base","Base",QtCore.QT_TRANSLATE_NOOP("App::Property","The base object this represents"))
         obj.Proxy = self
 
@@ -105,8 +100,7 @@ class CommandPathStock:
         return FreeCAD.ActiveDocument is not None
 
     def Activated(self):
-        FreeCAD.ActiveDocument.openTransaction(translate(
-            "PathStock", "Creates a 3D object to represent raw stock to mill the part out of"))
+        FreeCAD.ActiveDocument.openTransaction(translate("Path_Stock", "Creates a 3D object to represent raw stock to mill the part out of"))
         FreeCADGui.addModule("PathScripts.PathStock")
         snippet = '''
 import FreeCADGui

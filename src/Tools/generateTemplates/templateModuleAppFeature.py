@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # (c) 2006 Juergen Riegel 
 
-import template
+from . import template
 import generateBase.generateModel_Module
 import generateBase.generateTools
 
@@ -70,7 +70,7 @@ PROPERTY_SOURCE(@self.module.Name@::@self.feature.Name@, App::Feature)
 -
 }
 """	
-	# here the template for the user part of the implementation. This gets NOT overrite when allready exist
+	# Here's the template for the user part of the implementation. This does NOT get overwritten if it already exists.
 	TemplateImplement = """
 // 
 #include "PreCompiled.h"

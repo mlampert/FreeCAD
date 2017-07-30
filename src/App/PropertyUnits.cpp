@@ -75,19 +75,28 @@ Base::Quantity PropertyQuantity::createQuantityFromPy(PyObject *value)
 {
     Base::Quantity quant;
 
-    if (PyString_Check(value))
-        quant = Quantity::parse(QString::fromLatin1(PyString_AsString(value)));
-    else if (PyUnicode_Check(value)){
+    if (PyUnicode_Check(value)){
+#if PY_MAJOR_VERSION >= 3
+        quant = Quantity::parse(QString::fromUtf8(PyUnicode_AsUTF8(value)));
+    }
+#else
         PyObject* unicode = PyUnicode_AsUTF8String(value);
         std::string Str;
         Str = PyString_AsString(unicode);
         quant = Quantity::parse(QString::fromUtf8(Str.c_str()));
         Py_DECREF(unicode);
     }
+    else if (PyString_Check(value))
+        quant = Quantity::parse(QString::fromLatin1(PyString_AsString(value)));
+#endif
     else if (PyFloat_Check(value))
         quant = Quantity(PyFloat_AsDouble(value),_Unit);
+#if PY_MAJOR_VERSION < 3
     else if (PyInt_Check(value))
         quant = Quantity((double)PyInt_AsLong(value),_Unit);
+#endif
+    else if (PyLong_Check(value))
+        quant = Quantity((double)PyLong_AsLong(value),_Unit);
     else if (PyObject_TypeCheck(value, &(QuantityPy::Type))) {
         Base::QuantityPy  *pcObject = static_cast<Base::QuantityPy*>(value);
         quant = *(pcObject->getQuantityPtr());
@@ -113,7 +122,7 @@ void PropertyQuantity::setPyObject(PyObject *value)
     }
 
     if (unit != _Unit)
-        throw Base::Exception("Not matching Unit!");
+        throw Base::UnitsMismatchError("Not matching Unit!");
 
     PropertyFloat::setValue(quant.getValue());
 }
@@ -178,7 +187,7 @@ void PropertyQuantityConstraint::setPyObject(PyObject *value)
     }
 
     if (unit != _Unit)
-        throw Base::Exception("Not matching Unit!");
+        throw Base::UnitsMismatchError("Not matching Unit!");
 
     PropertyFloat::setValue(quant.getValue());
 }

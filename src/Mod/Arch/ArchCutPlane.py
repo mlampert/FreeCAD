@@ -74,6 +74,13 @@ class _CommandCutPlane:
         return len(FreeCADGui.Selection.getSelection()) > 1
 
     def Activated(self):
+        sel = FreeCADGui.Selection.getSelectionEx()
+        if len(sel) != 2:
+            FreeCAD.Console.PrintError("You must select exactly two objects, the shape to be cut and the cut plane\n")
+            return
+        if not sel[1].SubObjects:
+            FreeCAD.Console.PrintError("You must select a face from the second object (cut plane), not the whole object\n")
+            return
         panel=_CutPlaneTaskPanel()
         FreeCADGui.Control.showDialog(panel)
 
@@ -127,11 +134,11 @@ class _CutPlaneTaskPanel:
             self.previewObj.Shape = cutVolume
 
     def retranslateUi(self, TaskPanel):
-        TaskPanel.setWindowTitle(QtGui.QApplication.translate("Arch", "Cut Plane", None, QtGui.QApplication.UnicodeUTF8))
-        self.title.setText(QtGui.QApplication.translate("Arch", "Cut Plane options", None, QtGui.QApplication.UnicodeUTF8))
-        self.infoText.setText(QtGui.QApplication.translate("Arch", "Wich side to cut", None, QtGui.QApplication.UnicodeUTF8))
-        self.combobox.addItems([QtGui.QApplication.translate("Arch", "Behind", None, QtGui.QApplication.UnicodeUTF8),
-                                    QtGui.QApplication.translate("Arch", "Front", None, QtGui.QApplication.UnicodeUTF8)])
+        TaskPanel.setWindowTitle(QtGui.QApplication.translate("Arch", "Cut Plane", None))
+        self.title.setText(QtGui.QApplication.translate("Arch", "Cut Plane options", None))
+        self.infoText.setText(QtGui.QApplication.translate("Arch", "Which side to cut", None))
+        self.combobox.addItems([QtGui.QApplication.translate("Arch", "Behind", None),
+                                    QtGui.QApplication.translate("Arch", "Front", None)])
 
 if FreeCAD.GuiUp:
     FreeCADGui.addCommand('Arch_CutPlane',_CommandCutPlane())

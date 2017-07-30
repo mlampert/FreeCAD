@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (c) 2014 Abdullah Tahiri <abdullah.tahiri.yo@gmail.com             *
+ *   Copyright (c) 2014 Abdullah Tahiri <abdullah.tahiri.yo@gmail.com>     *
  *                                                                         *
  *   This file is part of the FreeCAD CAx development system.              *
  *                                                                         *
@@ -27,6 +27,7 @@
 # include <QContextMenuEvent>
 # include <QMenu>
 # include <QRegExp>
+# include <QShortcut>
 # include <QString>
 #endif
 
@@ -231,6 +232,8 @@ void ElementView::keyPressEvent(QKeyEvent * event)
 
 // ----------------------------------------------------------------------------
 
+/* TRANSLATOR SketcherGui::TaskSketcherElements */
+
 TaskSketcherElements::TaskSketcherElements(ViewProviderSketch *sketchView)
     : TaskBox(Gui::BitmapFactory().pixmap("document-new"),tr("Elements"),true, 0)
     , sketchView(sketchView)
@@ -244,6 +247,18 @@ TaskSketcherElements::TaskSketcherElements(ViewProviderSketch *sketchView)
     // we need a separate container widget to add all controls to
     proxy = new QWidget(this);
     ui->setupUi(proxy);
+#ifdef Q_OS_MAC
+    QString cmdKey = QString::fromUtf8("\xe2\x8c\x98"); // U+2318
+#else
+    // translate the text (it's offered by Qt's translation files)
+    // but avoid being picked up by lupdate
+    const char* ctrlKey = "Ctrl";
+    QString cmdKey = QShortcut::tr(ctrlKey);
+#endif
+    QString zKey = QString::fromLatin1("Z");
+    ui->Explanation->setText(tr("<html><head/><body><p>&quot;%1&quot;: multiple selection</p>"
+                                "<p>&quot;%2&quot;: switch to next valid type</p></body></html>")
+                             .arg(cmdKey).arg(zKey));
     ui->listWidgetElements->setSelectionMode(QAbstractItemView::ExtendedSelection);
     ui->listWidgetElements->setEditTriggers(QListWidget::NoEditTriggers);
     ui->listWidgetElements->setMouseTracking(true);
@@ -293,10 +308,14 @@ TaskSketcherElements::TaskSketcherElements(ViewProviderSketch *sketchView)
 
 TaskSketcherElements::~TaskSketcherElements()
 {
-    ParameterGrp::handle hGrp = App::GetApplication().GetParameterGroupByPath("User parameter:BaseApp/Preferences/Mod/Sketcher/Elements");
-    hGrp->SetBool("Auto-switch to edge", ui->autoSwitchBox->isChecked());
-    hGrp->SetBool("Extended Naming", ui->namingBox->isChecked());
-    
+    try {
+        ParameterGrp::handle hGrp = App::GetApplication().GetParameterGroupByPath("User parameter:BaseApp/Preferences/Mod/Sketcher/Elements");
+        hGrp->SetBool("Auto-switch to edge", ui->autoSwitchBox->isChecked());
+        hGrp->SetBool("Extended Naming", ui->namingBox->isChecked());
+    }
+    catch (const Base::Exception&) {
+    }
+
     connectionElementsChanged.disconnect();
     delete ui;
 }
@@ -648,6 +667,13 @@ void TaskSketcherElements::slotElementsChanged(void)
     QIcon Sketcher_Element_ArcOfHyperbola_MidPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Hyperbolic_Arc_Centre_Point") );
     QIcon Sketcher_Element_ArcOfHyperbola_StartingPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Hyperbolic_Arc_Start_Point") );
     QIcon Sketcher_Element_ArcOfHyperbola_EndPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Hyperbolic_Arc_End_Point") );
+    QIcon Sketcher_Element_ArcOfParabola_Edge( Gui::BitmapFactory().pixmap("Sketcher_Element_Parabolic_Arc_Edge") );
+    QIcon Sketcher_Element_ArcOfParabola_MidPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Parabolic_Arc_Centre_Point") );
+    QIcon Sketcher_Element_ArcOfParabola_StartingPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Parabolic_Arc_Start_Point") );
+    QIcon Sketcher_Element_ArcOfParabola_EndPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Parabolic_Arc_End_Point") );
+    QIcon Sketcher_Element_BSpline_Edge( Gui::BitmapFactory().pixmap("Sketcher_Element_BSpline_Edge") );
+    QIcon Sketcher_Element_BSpline_StartingPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_BSpline_StartPoint") );
+    QIcon Sketcher_Element_BSpline_EndPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_BSpline_EndPoint") );
     QIcon none( Gui::BitmapFactory().pixmap("Sketcher_Element_SelectionTypeInvalid") );
 
     assert(sketchView);
@@ -660,7 +686,8 @@ void TaskSketcherElements::slotElementsChanged(void)
     
     int i=1;
     for(std::vector< Part::Geometry * >::const_iterator it= vals.begin();it!=vals.end();++it,++i){
-      Base::Type type = (*it)->getTypeId();      
+      Base::Type type = (*it)->getTypeId();
+      bool construction = (*it)->Construction;
       
       ui->listWidgetElements->addItem(new ElementItem(
         (type == Part::GeomPoint::getClassTypeId()          && element==1) ? Sketcher_Element_Point_StartingPoint :
@@ -682,31 +709,53 @@ void TaskSketcherElements::slotElementsChanged(void)
         (type == Part::GeomArcOfHyperbola::getClassTypeId()    && element==0) ? Sketcher_Element_ArcOfHyperbola_Edge :
         (type == Part::GeomArcOfHyperbola::getClassTypeId()    && element==1) ? Sketcher_Element_ArcOfHyperbola_StartingPoint :
         (type == Part::GeomArcOfHyperbola::getClassTypeId()    && element==2) ? Sketcher_Element_ArcOfHyperbola_EndPoint :
-        (type == Part::GeomArcOfHyperbola::getClassTypeId()    && element==3) ? Sketcher_Element_ArcOfHyperbola_MidPoint :        
+        (type == Part::GeomArcOfHyperbola::getClassTypeId()    && element==3) ? Sketcher_Element_ArcOfHyperbola_MidPoint :
+        (type == Part::GeomArcOfParabola::getClassTypeId()    && element==0) ? Sketcher_Element_ArcOfParabola_Edge :
+        (type == Part::GeomArcOfParabola::getClassTypeId()    && element==1) ? Sketcher_Element_ArcOfParabola_StartingPoint :
+        (type == Part::GeomArcOfParabola::getClassTypeId()    && element==2) ? Sketcher_Element_ArcOfParabola_EndPoint :
+        (type == Part::GeomArcOfParabola::getClassTypeId()    && element==3) ? Sketcher_Element_ArcOfParabola_MidPoint :
+        (type == Part::GeomBSplineCurve::getClassTypeId()    && element==0) ? Sketcher_Element_BSpline_Edge :
+        (type == Part::GeomBSplineCurve::getClassTypeId()    && element==1) ? Sketcher_Element_BSpline_StartingPoint :
+        (type == Part::GeomBSplineCurve::getClassTypeId()    && element==2) ? Sketcher_Element_BSpline_EndPoint :
         none,
         type == Part::GeomPoint::getClassTypeId()           ? ( isNamingBoxChecked ?
                                                                 (tr("Point") + QString::fromLatin1("(Edge%1)").arg(i)):
                                                                 (QString::fromLatin1("%1-").arg(i)+tr("Point")))         :
         type == Part::GeomLineSegment::getClassTypeId()     ? ( isNamingBoxChecked ?
-                                                                (tr("Line") + QString::fromLatin1("(Edge%1)").arg(i)):
+                                                                (tr("Line") + QString::fromLatin1("(Edge%1)").arg(i)) + 
+                                                                (construction?(QString::fromLatin1("-")+tr("Construction")):QString::fromLatin1("")):
                                                                 (QString::fromLatin1("%1-").arg(i)+tr("Line")))         :
         type == Part::GeomArcOfCircle::getClassTypeId()     ? ( isNamingBoxChecked ?
-                                                                (tr("Arc") + QString::fromLatin1("(Edge%1)").arg(i)):
+                                                                (tr("Arc") + QString::fromLatin1("(Edge%1)").arg(i)) +
+                                                                (construction?(QString::fromLatin1("-")+tr("Construction")):QString::fromLatin1("")):
                                                                 (QString::fromLatin1("%1-").arg(i)+tr("Arc")))         :
         type == Part::GeomCircle::getClassTypeId()          ? ( isNamingBoxChecked ?
-                                                                (tr("Circle") + QString::fromLatin1("(Edge%1)").arg(i)):
+                                                                (tr("Circle") + QString::fromLatin1("(Edge%1)").arg(i)) +
+                                                                (construction?(QString::fromLatin1("-")+tr("Construction")):QString::fromLatin1("")):
                                                                 (QString::fromLatin1("%1-").arg(i)+tr("Circle")))         :
         type == Part::GeomEllipse::getClassTypeId()         ? ( isNamingBoxChecked ? 
-                                                                (tr("Ellipse") + QString::fromLatin1("(Edge%1)").arg(i)):
+                                                                (tr("Ellipse") + QString::fromLatin1("(Edge%1)").arg(i)) +
+                                                                (construction?(QString::fromLatin1("-")+tr("Construction")):QString::fromLatin1("")):
                                                                 (QString::fromLatin1("%1-").arg(i)+tr("Ellipse")))   :
         type == Part::GeomArcOfEllipse::getClassTypeId()    ? ( isNamingBoxChecked ? 
-                                                                (tr("Elliptical Arc") + QString::fromLatin1("(Edge%1)").arg(i)):
+                                                                (tr("Elliptical Arc") + QString::fromLatin1("(Edge%1)").arg(i)) +
+                                                                (construction?(QString::fromLatin1("-")+tr("Construction")):QString::fromLatin1("")):
                                                                 (QString::fromLatin1("%1-").arg(i)+tr("Elliptical Arc")))   :
         type == Part::GeomArcOfHyperbola::getClassTypeId()    ? ( isNamingBoxChecked ? 
-                                                                (tr("Hyperbolic Arc") + QString::fromLatin1("(Edge%1)").arg(i)):
+                                                                (tr("Hyperbolic Arc") + QString::fromLatin1("(Edge%1)").arg(i)) +
+                                                                (construction?(QString::fromLatin1("-")+tr("Construction")):QString::fromLatin1("")):
                                                                 (QString::fromLatin1("%1-").arg(i)+tr("Hyperbolic Arc")))   :
+        type == Part::GeomArcOfParabola::getClassTypeId()    ? ( isNamingBoxChecked ? 
+                                                                (tr("Parabolic Arc") + QString::fromLatin1("(Edge%1)").arg(i)) +
+                                                                (construction?(QString::fromLatin1("-")+tr("Construction")):QString::fromLatin1("")):
+                                                                (QString::fromLatin1("%1-").arg(i)+tr("Parabolic Arc")))   :
+        type == Part::GeomBSplineCurve::getClassTypeId()    ? ( isNamingBoxChecked ? 
+                                                                (tr("BSpline") + QString::fromLatin1("(Edge%1)").arg(i)) +
+                                                                (construction?(QString::fromLatin1("-")+tr("Construction")):QString::fromLatin1("")):
+                                                                (QString::fromLatin1("%1-").arg(i)+tr("BSpline")))   :
         ( isNamingBoxChecked ?
-          (tr("Other") + QString::fromLatin1("(Edge%1)").arg(i)):
+          (tr("Other") + QString::fromLatin1("(Edge%1)").arg(i)) +
+          (construction?(QString::fromLatin1("-")+tr("Construction")):QString::fromLatin1("")):
           (QString::fromLatin1("%1-").arg(i)+tr("Other"))),
         i-1,
         sketchView->getSketchObject()->getVertexIndexGeoPos(i-1,Sketcher::start),
@@ -733,6 +782,23 @@ void TaskSketcherElements::slotElementsChanged(void)
             (type == Part::GeomArcOfCircle::getClassTypeId()         && element==3) ? Sketcher_Element_Arc_MidPoint :
             (type == Part::GeomCircle::getClassTypeId()        && element==0) ? Sketcher_Element_Circle_Edge :
             (type == Part::GeomCircle::getClassTypeId()        && element==3) ? Sketcher_Element_Circle_MidPoint :
+            (type == Part::GeomEllipse::getClassTypeId()        && element==0) ? Sketcher_Element_Ellipse_Edge :
+            (type == Part::GeomEllipse::getClassTypeId()        && element==3) ? Sketcher_Element_Ellipse_MidPoint :
+            (type == Part::GeomArcOfEllipse::getClassTypeId()    && element==0) ? Sketcher_Element_ArcOfEllipse_Edge :
+            (type == Part::GeomArcOfEllipse::getClassTypeId()    && element==1) ? Sketcher_Element_ArcOfEllipse_StartingPoint :
+            (type == Part::GeomArcOfEllipse::getClassTypeId()    && element==2) ? Sketcher_Element_ArcOfEllipse_EndPoint :
+            (type == Part::GeomArcOfEllipse::getClassTypeId()    && element==3) ? Sketcher_Element_ArcOfEllipse_MidPoint :
+            (type == Part::GeomArcOfHyperbola::getClassTypeId()    && element==0) ? Sketcher_Element_ArcOfHyperbola_Edge :
+            (type == Part::GeomArcOfHyperbola::getClassTypeId()    && element==1) ? Sketcher_Element_ArcOfHyperbola_StartingPoint :
+            (type == Part::GeomArcOfHyperbola::getClassTypeId()    && element==2) ? Sketcher_Element_ArcOfHyperbola_EndPoint :
+            (type == Part::GeomArcOfHyperbola::getClassTypeId()    && element==3) ? Sketcher_Element_ArcOfHyperbola_MidPoint :
+            (type == Part::GeomArcOfParabola::getClassTypeId()    && element==0) ? Sketcher_Element_ArcOfParabola_Edge :
+            (type == Part::GeomArcOfParabola::getClassTypeId()    && element==1) ? Sketcher_Element_ArcOfParabola_StartingPoint :
+            (type == Part::GeomArcOfParabola::getClassTypeId()    && element==2) ? Sketcher_Element_ArcOfParabola_EndPoint :
+            (type == Part::GeomArcOfParabola::getClassTypeId()    && element==3) ? Sketcher_Element_ArcOfParabola_MidPoint :
+            (type == Part::GeomBSplineCurve::getClassTypeId()    && element==0) ? Sketcher_Element_BSpline_Edge :
+            (type == Part::GeomBSplineCurve::getClassTypeId()    && element==1) ? Sketcher_Element_BSpline_StartingPoint :
+            (type == Part::GeomBSplineCurve::getClassTypeId()    && element==2) ? Sketcher_Element_BSpline_EndPoint :
             none,
             type == Part::GeomPoint::getClassTypeId()         ? ( isNamingBoxChecked ?
                                                                 (tr("Point") + QString::fromLatin1("(ExternalEdge%1)").arg(j-2)):
@@ -746,6 +812,21 @@ void TaskSketcherElements::slotElementsChanged(void)
             type == Part::GeomCircle::getClassTypeId()        ? ( isNamingBoxChecked ?
                                                                 (tr("Circle") + QString::fromLatin1("(ExternalEdge%1)").arg(j-2)):
                                                                 (QString::fromLatin1("%1-").arg(i)+tr("Circle")))         :
+            type == Part::GeomEllipse::getClassTypeId()         ? ( isNamingBoxChecked ? 
+                                                                (tr("Ellipse") + QString::fromLatin1("(ExternalEdge%1)").arg(j-2)):
+                                                                (QString::fromLatin1("%1-").arg(i)+tr("Ellipse")))   :
+            type == Part::GeomArcOfEllipse::getClassTypeId()    ? ( isNamingBoxChecked ? 
+                                                                (tr("Elliptical Arc") + QString::fromLatin1("(ExternalEdge%1)").arg(j-2)):
+                                                                (QString::fromLatin1("%1-").arg(i)+tr("Elliptical Arc")))   :
+            type == Part::GeomArcOfHyperbola::getClassTypeId()    ? ( isNamingBoxChecked ? 
+                                                                (tr("Hyperbolic Arc") + QString::fromLatin1("(ExternalEdge%1)").arg(j-2)):
+                                                                (QString::fromLatin1("%1-").arg(i)+tr("Hyperbolic Arc")))   :
+            type == Part::GeomArcOfParabola::getClassTypeId()    ? ( isNamingBoxChecked ? 
+                                                                (tr("Parabolic Arc") + QString::fromLatin1("(ExternalEdge%1)").arg(j-2)):
+                                                                (QString::fromLatin1("%1-").arg(i)+tr("Parabolic Arc")))   :
+            type == Part::GeomBSplineCurve::getClassTypeId()    ? ( isNamingBoxChecked ? 
+                                                                (tr("BSpline") + QString::fromLatin1("(ExternalEdge%1)").arg(j-2)):
+                                                                (QString::fromLatin1("%1-").arg(i)+tr("BSpline")))   :
             ( isNamingBoxChecked ?
             (tr("Other") + QString::fromLatin1("(ExternalEdge%1)").arg(j-2)):
             (QString::fromLatin1("%1-").arg(i)+tr("Other"))),
@@ -889,6 +970,13 @@ void TaskSketcherElements::updateIcons(int element)
     QIcon Sketcher_Element_ArcOfHyperbola_MidPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Hyperbolic_Arc_Centre_Point") );
     QIcon Sketcher_Element_ArcOfHyperbola_StartingPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Hyperbolic_Arc_Start_Point") );
     QIcon Sketcher_Element_ArcOfHyperbola_EndPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Hyperbolic_Arc_End_Point") );    
+    QIcon Sketcher_Element_ArcOfParabola_Edge( Gui::BitmapFactory().pixmap("Sketcher_Element_Parabolic_Arc_Edge") );
+    QIcon Sketcher_Element_ArcOfParabola_MidPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Parabolic_Arc_Centre_Point") );
+    QIcon Sketcher_Element_ArcOfParabola_StartingPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Parabolic_Arc_Start_Point") );
+    QIcon Sketcher_Element_ArcOfParabola_EndPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_Parabolic_Arc_End_Point") );
+    QIcon Sketcher_Element_BSpline_Edge( Gui::BitmapFactory().pixmap("Sketcher_Element_BSpline_Edge") );
+    QIcon Sketcher_Element_BSpline_StartingPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_BSpline_StartPoint") );
+    QIcon Sketcher_Element_BSpline_EndPoint( Gui::BitmapFactory().pixmap("Sketcher_Element_BSpline_EndPoint") );
     QIcon none( Gui::BitmapFactory().pixmap("Sketcher_Element_SelectionTypeInvalid") );
     
     for (int i=0;i<ui->listWidgetElements->count(); i++) {
@@ -914,7 +1002,14 @@ void TaskSketcherElements::updateIcons(int element)
         (type == Part::GeomArcOfHyperbola::getClassTypeId()    && element==0) ? Sketcher_Element_ArcOfHyperbola_Edge :
         (type == Part::GeomArcOfHyperbola::getClassTypeId()    && element==1) ? Sketcher_Element_ArcOfHyperbola_StartingPoint :
         (type == Part::GeomArcOfHyperbola::getClassTypeId()    && element==2) ? Sketcher_Element_ArcOfHyperbola_EndPoint :
-        (type == Part::GeomArcOfHyperbola::getClassTypeId()    && element==3) ? Sketcher_Element_ArcOfHyperbola_MidPoint :        
+        (type == Part::GeomArcOfHyperbola::getClassTypeId()    && element==3) ? Sketcher_Element_ArcOfHyperbola_MidPoint :
+        (type == Part::GeomArcOfParabola::getClassTypeId()    && element==0) ? Sketcher_Element_ArcOfParabola_Edge :
+        (type == Part::GeomArcOfParabola::getClassTypeId()    && element==1) ? Sketcher_Element_ArcOfParabola_StartingPoint :
+        (type == Part::GeomArcOfParabola::getClassTypeId()    && element==2) ? Sketcher_Element_ArcOfParabola_EndPoint :
+        (type == Part::GeomArcOfParabola::getClassTypeId()    && element==3) ? Sketcher_Element_ArcOfParabola_MidPoint :
+        (type == Part::GeomBSplineCurve::getClassTypeId()    && element==0) ? Sketcher_Element_BSpline_Edge :
+        (type == Part::GeomBSplineCurve::getClassTypeId()    && element==1) ? Sketcher_Element_BSpline_StartingPoint :
+        (type == Part::GeomBSplineCurve::getClassTypeId()    && element==2) ? Sketcher_Element_BSpline_EndPoint :
         none);
     }
 }

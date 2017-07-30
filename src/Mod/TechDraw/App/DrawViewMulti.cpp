@@ -146,14 +146,15 @@ App::DocumentObjectExecReturn *DrawViewMulti::execute(void)
         TopoDS_Shape mirroredShape = TechDrawGeometry::mirrorShape(comp,
                                                     inputCenter,
                                                     Scale.getValue());
-        geometryObject = buildGeometryObject(mirroredShape,inputCenter);
+        gp_Ax2 viewAxis = getViewAxis(Base::Vector3d(inputCenter.X(),inputCenter.Y(),inputCenter.Z()),Direction.getValue());
+        geometryObject = buildGeometryObject(mirroredShape,viewAxis);
 
 #if MOD_TECHDRAW_HANDLE_FACES
         extractFaces();
 #endif //#if MOD_TECHDRAW_HANDLE_FACES
     }
     catch (Standard_Failure) {
-        Handle_Standard_Failure e1 = Standard_Failure::Caught();
+        Handle(Standard_Failure) e1 = Standard_Failure::Caught();
         Base::Console().Log("LOG - DVM::execute - projection failed for %s - %s **\n",getNameInDocument(),e1->GetMessageString());
         return new App::DocumentObjectExecReturn(e1->GetMessageString());
     }

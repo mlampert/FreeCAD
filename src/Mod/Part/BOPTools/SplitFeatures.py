@@ -37,18 +37,18 @@ if FreeCAD.GuiUp:
 #-------------------------- translation-related code ----------------------------------------
 #(see forum thread "A new Part tool is being born... JoinFeatures!"
 #http://forum.freecadweb.org/viewtopic.php?f=22&t=11112&start=30#p90239 )
-try:
-    _fromUtf8 = QtCore.QString.fromUtf8
-except Exception:
-    def _fromUtf8(s):
-        return s
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except NameError:
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+    try:
+        _fromUtf8 = QtCore.QString.fromUtf8
+    except Exception:
+        def _fromUtf8(s):
+            return s
+    try:
+        _encoding = QtGui.QApplication.UnicodeUTF8
+        def _translate(context, text, disambig):
+            return QtGui.QApplication.translate(context, text, disambig, _encoding)
+    except AttributeError:
+        def _translate(context, text, disambig):
+            return QtGui.QApplication.translate(context, text, disambig)
 #--------------------------/translation-related code ----------------------------------------
 
 def getIconPath(icon_dot_svg):
@@ -99,12 +99,6 @@ class ViewProviderBooleanFragments:
         self.ViewObject = vobj
         self.Object = vobj.Object
 
-    def setEdit(self,vobj,mode):
-        return False
-
-    def unsetEdit(self,vobj,mode):
-        return
-
     def __getstate__(self):
         return None
 
@@ -119,8 +113,23 @@ class ViewProviderBooleanFragments:
             for obj in self.claimChildren():
                 obj.ViewObject.show()
         except Exception as err:
-            FreeCAD.Console.PrintError("Error in onDelete: " + err.message)
+            FreeCAD.Console.PrintError("Error in onDelete: " + str(err))
         return True
+
+    def canDragObjects(self):
+        return True
+    def canDropObjects(self):
+        return True
+    def canDragObject(self, dragged_object):
+        return True
+    def canDropObject(self, incoming_object):
+        return hasattr(incoming_object, 'Shape')
+    def dragObject(self, selfvp, dragged_object):
+        objs = self.Object.Objects
+        objs.remove(dragged_object)
+        self.Object.Objects = objs
+    def dropObject(self, selfvp, incoming_object):
+        self.Object.Objects = self.Object.Objects + [incoming_object]
 
 def cmdCreateBooleanFragmentsFeature(name, mode):
     """cmdCreateBooleanFragmentsFeature(name, mode): implementation of GUI command to create
@@ -141,7 +150,7 @@ def cmdCreateBooleanFragmentsFeature(name, mode):
         mb = QtGui.QMessageBox()
         mb.setIcon(mb.Icon.Warning)
         mb.setText(_translate("Part_SplitFeatures","Computing the result failed with an error: \n\n{err}\n\nClick 'Continue' to create the feature anyway, or 'Abort' to cancel.", None)
-                   .format(err= err.message))
+                   .format(err= str(err)))
         mb.setWindowTitle(_translate("Part_SplitFeatures","Bad selection", None))
         btnAbort = mb.addButton(QtGui.QMessageBox.StandardButton.Abort)
         btnOK = mb.addButton(_translate("Part_SplitFeatures","Continue",None), QtGui.QMessageBox.ButtonRole.ActionRole)
@@ -225,13 +234,6 @@ class ViewProviderSlice:
         self.ViewObject = vobj
         self.Object = vobj.Object
 
-
-    def setEdit(self,vobj,mode):
-        return False
-
-    def unsetEdit(self,vobj,mode):
-        return
-
     def __getstate__(self):
         return None
 
@@ -246,7 +248,7 @@ class ViewProviderSlice:
             for obj in self.claimChildren():
                 obj.ViewObject.show()
         except Exception as err:
-            FreeCAD.Console.PrintError("Error in onDelete: " + err.message)
+            FreeCAD.Console.PrintError("Error in onDelete: " + str(err))
         return True
 
 def cmdCreateSliceFeature(name, mode):
@@ -269,7 +271,7 @@ def cmdCreateSliceFeature(name, mode):
         mb = QtGui.QMessageBox()
         mb.setIcon(mb.Icon.Warning)
         mb.setText(_translate("Part_SplitFeatures","Computing the result failed with an error: \n\n{err}\n\nClick 'Continue' to create the feature anyway, or 'Abort' to cancel.", None)
-                   .format(err= err.message))
+                   .format(err= str(err)))
         mb.setWindowTitle(_translate("Part_SplitFeatures","Bad selection", None))
         btnAbort = mb.addButton(QtGui.QMessageBox.StandardButton.Abort)
         btnOK = mb.addButton(_translate("Part_SplitFeatures","Continue",None), QtGui.QMessageBox.ButtonRole.ActionRole)
@@ -353,13 +355,6 @@ class ViewProviderXOR:
         self.ViewObject = vobj
         self.Object = vobj.Object
 
-
-    def setEdit(self,vobj,mode):
-        return False
-
-    def unsetEdit(self,vobj,mode):
-        return
-
     def __getstate__(self):
         return None
 
@@ -374,8 +369,23 @@ class ViewProviderXOR:
             for obj in self.claimChildren():
                 obj.ViewObject.show()
         except Exception as err:
-            FreeCAD.Console.PrintError("Error in onDelete: " + err.message)
+            FreeCAD.Console.PrintError("Error in onDelete: " + str(err))
         return True
+
+    def canDragObjects(self):
+        return True
+    def canDropObjects(self):
+        return True
+    def canDragObject(self, dragged_object):
+        return True
+    def canDropObject(self, incoming_object):
+        return hasattr(incoming_object, 'Shape')
+    def dragObject(self, selfvp, dragged_object):
+        objs = self.Object.Objects
+        objs.remove(dragged_object)
+        self.Object.Objects = objs
+    def dropObject(self, selfvp, incoming_object):
+        self.Object.Objects = self.Object.Objects + [incoming_object]
 
 def cmdCreateXORFeature(name):
     """cmdCreateXORFeature(name): implementation of GUI command to create
@@ -395,7 +405,7 @@ def cmdCreateXORFeature(name):
         mb = QtGui.QMessageBox()
         mb.setIcon(mb.Icon.Warning)
         mb.setText(_translate("Part_SplitFeatures","Computing the result failed with an error: \n\n{err}\n\nClick 'Continue' to create the feature anyway, or 'Abort' to cancel.", None)
-                   .format(err= err.message))
+                   .format(err= str(err)))
         mb.setWindowTitle(_translate("Part_SplitFeatures","Bad selection", None))
         btnAbort = mb.addButton(QtGui.QMessageBox.StandardButton.Abort)
         btnOK = mb.addButton(_translate("Part_SplitFeatures","Continue",None), QtGui.QMessageBox.ButtonRole.ActionRole)

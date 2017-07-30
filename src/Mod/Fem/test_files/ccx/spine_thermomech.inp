@@ -1,3 +1,6 @@
+** written by FreeCAD inp file writer for CalculiX,Abaqus meshes
+
+** Nodes
 *Node, NSET=Nall
 1, 203.2, 25.4, 0
 2, 203.2, 25.4, 25.4
@@ -44,31 +47,39 @@
 43, 51.308, 12.7, 12.7
 44, 100.482, 12.7, 12.7
 45, 152.908, 12.7, 12.7
-*Element, TYPE=C3D10, ELSET=Eall
-37, 5, 6, 12, 11, 26, 43, 33, 20, 37, 34
-38, 9, 12, 11, 2, 44, 34, 39, 15, 45, 38
-39, 3, 4, 1, 12, 27, 36, 22, 24, 41, 35
-40, 2, 12, 11, 1, 45, 34, 38, 25, 35, 21
-41, 2, 12, 1, 4, 45, 35, 25, 16, 41, 36
-42, 9, 12, 2, 10, 44, 45, 15, 31, 42, 32
-43, 2, 12, 4, 10, 45, 41, 16, 32, 42, 18
-44, 9, 12, 10, 6, 44, 42, 31, 14, 43, 30
-45, 9, 12, 6, 11, 44, 43, 14, 39, 34, 37
-46, 6, 7, 5, 12, 29, 19, 26, 43, 23, 33
-47, 8, 7, 6, 12, 28, 29, 13, 40, 23, 43
-48, 12, 10, 6, 8, 42, 30, 43, 40, 17, 13
+
+
+** Volume elements
+*Element, TYPE=C3D10, ELSET=Evolumes
+1, 5, 6, 12, 11, 26, 43, 33, 20, 37, 34
+2, 9, 12, 11, 2, 44, 34, 39, 15, 45, 38
+3, 3, 4, 1, 12, 27, 36, 22, 24, 41, 35
+4, 2, 12, 11, 1, 45, 34, 38, 25, 35, 21
+5, 2, 12, 1, 4, 45, 35, 25, 16, 41, 36
+6, 9, 12, 2, 10, 44, 45, 15, 31, 42, 32
+7, 2, 12, 4, 10, 45, 41, 16, 32, 42, 18
+8, 9, 12, 10, 6, 44, 42, 31, 14, 43, 30
+9, 9, 12, 6, 11, 44, 43, 14, 39, 34, 37
+10, 6, 7, 5, 12, 29, 19, 26, 43, 23, 33
+11, 8, 7, 6, 12, 28, 29, 13, 40, 23, 43
+12, 12, 10, 6, 8, 42, 30, 43, 40, 17, 13
+
+** Define element set Eall
+*ELSET, ELSET=Eall
+Evolumes
 
 
 
 ***********************************************************
-** Element sets for materials and FEM element type (solid, shell, beam)
+** Element sets for materials and FEM element type (solid, shell, beam, fluid)
 ** written by write_element_sets_material_and_femelement_type function
 *ELSET,ELSET=MechanicalMaterialSolid
-Eall
+Evolumes
 
 ***********************************************************
-** Node set for fixed constraint
+** Node sets for fixed constraint
 ** written by write_node_sets_constraints_fixed function
+** FemConstraintFixed
 *NSET,NSET=FemConstraintFixed
 5,
 6,
@@ -83,6 +94,7 @@ Eall
 ***********************************************************
 ** Node sets for temperature constraints
 ** written by write_node_sets_constraints_temperature function
+** FemConstraintTemperature
 *NSET,NSET=FemConstraintTemperature
 5,
 6,
@@ -101,6 +113,7 @@ Eall
 ** Thermal conductivity unit is kW/mm/K = t*mm/K*s^3
 ** Specific Heat unit is kJ/t/K = mm^2/s^2/K
 ** FreeCAD material name: Steel-Generic
+** MechanicalMaterial
 *MATERIAL, NAME=MechanicalMaterial
 *ELASTIC
 200000, 0.300
@@ -123,22 +136,19 @@ Nall,300.0
 *SOLID SECTION, ELSET=MechanicalMaterialSolid, MATERIAL=MechanicalMaterial
 
 ***********************************************************
-** One step is needed to run the thermomechanical analysis of FreeCAD
-** written by write_step_begin_thermomech function
+** At least one step is needed to run an CalculiX analysis of FreeCAD
+** written by write_step_begin function
 *STEP, INC=2000
 *CONTROLS, PARAMETERS=TIME INCREMENTATION
 4,8,9,200,10,400,,200,,
 0.25,0.5,0.75,0.85,,,1.5,
-
-***********************************************************
-** Coupled temperature displacement analysis
-** written by write_analysis_thermomech function
 *COUPLED TEMPERATURE-DISPLACEMENT, STEADY STATE
 1.0,1.0
 
 ***********************************************************
 ** Fixed Constraints
 ** written by write_constraints_fixed function
+** FemConstraintFixed
 *BOUNDARY
 FemConstraintFixed,1
 FemConstraintFixed,2
@@ -148,6 +158,7 @@ FemConstraintFixed,3
 ***********************************************************
 ** Fixed temperature constraint applied
 ** written by write_constraints_temperature function
+** FemConstraintTemperature
 *BOUNDARY
 FemConstraintTemperature,11,11,310.93
 
@@ -155,27 +166,28 @@ FemConstraintTemperature,11,11,310.93
 ***********************************************************
 ** Heatflux constraints
 ** written by write_constraints_heatflux function
+** FemConstraintHeatflux
 *FILM
 ** Heat flux on face Face3
-39,F2,255.3722,0.005678
-43,F3,255.3722,0.005678
-47,F2,255.3722,0.005678
-48,F2,255.3722,0.005678
+3,F2,255.3722,0.005678
+7,F3,255.3722,0.005678
+11,F2,255.3722,0.005678
+12,F2,255.3722,0.005678
 ** Heat flux on face Face4
-37,F2,255.3722,0.005678
-38,F4,255.3722,0.005678
-40,F4,255.3722,0.005678
-45,F4,255.3722,0.005678
+1,F2,255.3722,0.005678
+2,F4,255.3722,0.005678
+4,F4,255.3722,0.005678
+9,F4,255.3722,0.005678
 ** Heat flux on face Face5
-37,F4,255.3722,0.005678
-39,F4,255.3722,0.005678
-40,F3,255.3722,0.005678
-46,F3,255.3722,0.005678
+1,F4,255.3722,0.005678
+3,F4,255.3722,0.005678
+4,F3,255.3722,0.005678
+10,F3,255.3722,0.005678
 ** Heat flux on face Face6
-42,F4,255.3722,0.005678
-43,F4,255.3722,0.005678
-44,F4,255.3722,0.005678
-48,F3,255.3722,0.005678
+6,F4,255.3722,0.005678
+7,F4,255.3722,0.005678
+8,F4,255.3722,0.005678
+12,F3,255.3722,0.005678
 
 ***********************************************************
 ** Outputs --> frd file
@@ -185,9 +197,9 @@ U, NT
 *EL FILE
 S, E
 ** outputs --> dat file
-*NODE PRINT , NSET=Nall 
+*NODE PRINT , NSET=Nall
 U 
-*EL PRINT , ELSET=Eall 
+*EL PRINT , ELSET=Eall
 S 
 
 ***********************************************************
@@ -197,9 +209,9 @@ S
 ***********************************************************
 ** CalculiX Input file
 ** written by write_footer function
-**   written by    --> FreeCAD 0.17.8088 (Git)
-**   written on    --> Thu Jul 28 10:14:28 2016
-**   file name     --> FEM_spine.fcstd
+**   written by    --> FreeCAD 0.17.9749 (Git)
+**   written on    --> Sun Jan 22 14:33:57 2017
+**   file name     --> 
 **   analysis name --> Analysis
 **
 **

@@ -35,7 +35,7 @@
 using namespace App;
 
 
-PROPERTY_SOURCE_WITH_EXTENSIONS(App::Part, App::DocumentObject)
+PROPERTY_SOURCE_WITH_EXTENSIONS(App::Part, App::GeoFeature)
 
 
 //===========================================================================
@@ -57,7 +57,7 @@ Part::Part(void)
     // license stuff
     ADD_PROPERTY_TYPE(License, ("CC BY 3.0"), 0, App::Prop_None, "License string of the Item");
     ADD_PROPERTY_TYPE(LicenseURL, ("http://creativecommons.org/licenses/by/3.0/"), 0, App::Prop_None, "URL to the license text/contract");
-    // color and apperance
+    // color and appearance
     ADD_PROPERTY(Color, (1.0, 1.0, 1.0, 1.0)); // set transparent -> not used
 
     GroupExtension::initExtension(this);
@@ -67,24 +67,17 @@ Part::~Part(void)
 {
 }
 
-App::Part *Part::getPartOfObject (const DocumentObject* obj, bool indirect) {
-    const Document* doc = obj->getDocument();
-    std::vector<DocumentObject*> grps = doc->getObjectsOfType ( Part::getClassTypeId() );
-
-    for (auto partObj: grps) {
-        Part* part = static_cast <Part* >(partObj);
-        if ( indirect ) {
-            if ( part->geoHasObject (obj) ) {
-                return part;
-            }
-        } else {
-            if ( part->hasObject (obj) ) {
-                return part;
-            }
-        }
+App::Part *Part::getPartOfObject (const DocumentObject* obj) {
+    
+    //as a Part is a geofeaturegroup it must directly link to all objects it contains, even 
+    //if they are in additional groups etc.
+    auto list = obj->getInList();
+    for (auto obj : list) {
+        if(obj->isDerivedFrom(App::Part::getClassTypeId()))
+            return static_cast<App::Part*>(obj);
     }
 
-    return 0;
+    return nullptr;
 }
 
 

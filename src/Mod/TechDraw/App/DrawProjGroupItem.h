@@ -23,6 +23,8 @@
 #ifndef _DrawProjGroupItem_h_
 #define _DrawProjGroupItem_h_
 
+#include <gp_Ax2.hxx>
+
 #include <App/DocumentObject.h>
 #include <App/PropertyStandard.h>
 #include <App/FeaturePython.h>
@@ -46,7 +48,7 @@ class DrawProjGroup;
 
 class TechDrawExport DrawProjGroupItem : public TechDraw::DrawViewPart
 {
-    PROPERTY_HEADER(TechDraw::DrawProjGroupItem);
+    PROPERTY_HEADER_WITH_OVERRIDE(TechDraw::DrawProjGroupItem);
 
 public:
     /// Constructor
@@ -54,27 +56,29 @@ public:
     ~DrawProjGroupItem();
 
     App::PropertyEnumeration Type;
+    App::PropertyVector      RotationVector;
 
-    short mustExecute() const;
-    /** @name methods overide Feature */
-    //@{
-    /// recalculate the Feature
-    virtual void onDocumentRestored();
-//    virtual App::DocumentObjectExecReturn *execute(void);  // TODO: Delete me too if we take out the implementation
-    //@}
+    short mustExecute() const override;
+    virtual void onDocumentRestored() override;
+    virtual void unsetupObject() override;
 
-    DrawProjGroup* getGroup(void);
+    DrawProjGroup* getGroup(void) const;
+    double getRotateAngle();
 
     /// returns the type name of the ViewProvider
-    virtual const char* getViewProviderName(void) const {
+    virtual const char* getViewProviderName(void) const override {
         return "TechDrawGui::ViewProviderProjGroupItem";
     }
     //return PyObject as DrawProjGroupItemPy
-    virtual PyObject *getPyObject(void);
+    virtual PyObject *getPyObject(void) override;
+
+    virtual gp_Ax2 getViewAxis(const Base::Vector3d& pt,
+                               const Base::Vector3d& direction, 
+                               const bool flip=true) const override;
 
 protected:
-    /// Called by the container when a Property was changed
-    void onChanged(const App::Property* prop);
+    void onChanged(const App::Property* prop) override;
+
 private:
     static const char* TypeEnums[];
 };

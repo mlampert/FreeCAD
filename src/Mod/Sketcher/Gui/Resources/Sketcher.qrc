@@ -41,6 +41,17 @@
         <file>icons/SketcherWorkbench.svg</file>
         <file>icons/Sketcher_AlterConstruction.svg</file>
         <file>icons/Sketcher_AlterFillet.svg</file>
+        <file>icons/Sketcher_BSplineApproximate.svg</file>
+        <file>icons/Sketcher_BSplineComb.svg</file>
+        <file>icons/Sketcher_BSplineDecreaseDegree.svg</file>
+        <file>icons/Sketcher_BSplineDecreaseKnotMultiplicity.svg</file>
+        <file>icons/Sketcher_BSplineDegree.svg</file>
+        <file>icons/Sketcher_BSplineIncreaseDegree.svg</file>
+        <file>icons/Sketcher_BSplineIncreaseKnotMultiplicity.svg</file>
+        <file>icons/Sketcher_BSplineKnotMultiplicity.svg</file>
+        <file>icons/Sketcher_BSplinePolygon.svg</file>
+        <file>icons/Sketcher_CarbonCopy.svg</file>
+        <file>icons/Sketcher_CarbonCopy_Constr.svg</file>
         <file>icons/Sketcher_Clone.svg</file>
         <file>icons/Sketcher_CloseShape.svg</file>
         <file>icons/Sketcher_Conics.svg</file>
@@ -62,6 +73,8 @@
         <file>icons/Sketcher_Create3PointCircle_Constr.svg</file>
         <file>icons/Sketcher_CreateArc.svg</file>
         <file>icons/Sketcher_CreateArc_Constr.svg</file>
+        <file>icons/Sketcher_CreateBSpline.svg</file>
+        <file>icons/Sketcher_CreateBSpline_Constr.svg</file>
         <file>icons/Sketcher_CreateCircle.svg</file>
         <file>icons/Sketcher_CreateCircle_Constr.svg</file>
         <file>icons/Sketcher_CreateEllipse.svg</file>
@@ -91,12 +104,17 @@
         <file>icons/Sketcher_CreateText.svg</file>
         <file>icons/Sketcher_CreateTriangle.svg</file>
         <file>icons/Sketcher_CreateTriangle_Constr.svg</file>
+        <file>icons/Sketcher_Create_Periodic_BSpline.svg</file>
+        <file>icons/Sketcher_Create_Periodic_BSpline_Constr.svg</file>
         <file>icons/Sketcher_DraftLine.svg</file>
         <file>icons/Sketcher_EditSketch.svg</file>
         <file>icons/Sketcher_Element_Arc_Edge.svg</file>
         <file>icons/Sketcher_Element_Arc_EndPoint.svg</file>
         <file>icons/Sketcher_Element_Arc_MidPoint.svg</file>
         <file>icons/Sketcher_Element_Arc_StartingPoint.svg</file>
+        <file>icons/Sketcher_Element_BSpline_Edge.svg</file>
+        <file>icons/Sketcher_Element_BSpline_EndPoint.svg</file>
+        <file>icons/Sketcher_Element_BSpline_StartPoint.svg</file>
         <file>icons/Sketcher_Element_Circle_Edge.svg</file>
         <file>icons/Sketcher_Element_Circle_MidPoint.svg</file>
         <file>icons/Sketcher_Element_Ellipse_All.svg</file>
@@ -118,10 +136,15 @@
         <file>icons/Sketcher_Element_Line_Edge.svg</file>
         <file>icons/Sketcher_Element_Line_EndPoint.svg</file>
         <file>icons/Sketcher_Element_Line_StartingPoint.svg</file>
+        <file>icons/Sketcher_Element_Parabolic_Arc_Centre_Point.svg</file>
+        <file>icons/Sketcher_Element_Parabolic_Arc_Edge.svg</file>
+        <file>icons/Sketcher_Element_Parabolic_Arc_End_Point.svg</file>
+        <file>icons/Sketcher_Element_Parabolic_Arc_Start_Point.svg</file>
         <file>icons/Sketcher_Element_Point_StartingPoint.svg</file>
         <file>icons/Sketcher_Element_SelectionTypeInvalid.svg</file>
         <file>icons/Sketcher_Elliptical_Arc.svg</file>
         <file>icons/Sketcher_Elliptical_Arc_Constr.svg</file>
+        <file>icons/Sketcher_Extend.svg</file>
         <file>icons/Sketcher_External.svg</file>
         <file>icons/Sketcher_Hyperbolic_Arc.svg</file>
         <file>icons/Sketcher_Hyperbolic_Arc_Constr.svg</file>
@@ -130,6 +153,9 @@
         <file>icons/Sketcher_MergeSketch.svg</file>
         <file>icons/Sketcher_MirrorSketch.svg</file>
         <file>icons/Sketcher_NewSketch.svg</file>
+        <file alias="icons/preferences-sketcher.svg">icons/Sketcher_NewSketch.svg</file>
+        <file>icons/Sketcher_Parabolic_Arc.svg</file>
+        <file>icons/Sketcher_Parabolic_Arc_Constr.svg</file>
         <file>icons/Sketcher_ProfilesHexagon1.svg</file>
         <file>icons/Sketcher_RectangularArray.svg</file>
         <file>icons/Sketcher_SelectConflictingConstraints.svg</file>
@@ -173,16 +199,21 @@
         <file>icons/small/Constraint_VerticalDistance_sm.xpm</file>
         <file>icons/small/Constraint_Vertical_sm.xpm</file>
         <file>translations/Sketcher_af.qm</file>
+        <file>translations/Sketcher_ca.qm</file>
         <file>translations/Sketcher_cs.qm</file>
         <file>translations/Sketcher_de.qm</file>
         <file>translations/Sketcher_el.qm</file>
         <file>translations/Sketcher_es-ES.qm</file>
+        <file>translations/Sketcher_eu.qm</file>
         <file>translations/Sketcher_fi.qm</file>
         <file>translations/Sketcher_fr.qm</file>
+        <file>translations/Sketcher_gl.qm</file>
         <file>translations/Sketcher_hr.qm</file>
         <file>translations/Sketcher_hu.qm</file>
         <file>translations/Sketcher_it.qm</file>
         <file>translations/Sketcher_ja.qm</file>
+        <file>translations/Sketcher_kab.qm</file>
+        <file>translations/Sketcher_ko.qm</file>
         <file>translations/Sketcher_nl.qm</file>
         <file>translations/Sketcher_no.qm</file>
         <file>translations/Sketcher_pl.qm</file>

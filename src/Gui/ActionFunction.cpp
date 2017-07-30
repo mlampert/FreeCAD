@@ -112,4 +112,68 @@ void ActionFunction::hovered()
     }
 }
 
+// ----------------------------------------------------------------------------
+
+namespace Gui {
+class TimerFunctionPrivate
+{
+public:
+    boost::function<void()> timeoutFunc;
+    boost::function<void(QObject*)> timeoutFuncQObject;
+    boost::function<void(QVariant)> timeoutFuncQVariant;
+    bool autoDelete;
+    QPointer<QObject> argQObject;
+    QVariant argQVariant;
+};
+}
+
+TimerFunction::TimerFunction(QObject* parent)
+  : QObject(parent), d_ptr(new TimerFunctionPrivate())
+{
+    d_ptr->autoDelete = false;
+}
+
+TimerFunction::~TimerFunction()
+{
+}
+
+void TimerFunction::setFunction(boost::function<void()> func)
+{
+    Q_D(TimerFunction);
+    d->timeoutFunc = func;
+}
+
+void TimerFunction::setFunction(boost::function<void(QObject*)> func, QObject* args)
+{
+    Q_D(TimerFunction);
+    d->timeoutFuncQObject = func;
+    d->argQObject = args;
+}
+
+void TimerFunction::setFunction(boost::function<void(QVariant)> func, QVariant args)
+{
+    Q_D(TimerFunction);
+    d->timeoutFuncQVariant = func;
+    d->argQVariant = args;
+}
+
+void TimerFunction::setAutoDelete(bool on)
+{
+    Q_D(TimerFunction);
+    d->autoDelete = on;
+}
+
+void TimerFunction::timeout()
+{
+    Q_D(TimerFunction);
+    if (d->timeoutFunc)
+        d->timeoutFunc();
+    else if (d->timeoutFuncQObject)
+        d->timeoutFuncQObject(d->argQObject);
+    else if (d->timeoutFuncQVariant)
+        d->timeoutFuncQVariant(d->argQVariant);
+    if (d->autoDelete)
+        deleteLater();
+}
+
 #include "moc_ActionFunction.cpp"

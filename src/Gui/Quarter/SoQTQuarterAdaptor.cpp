@@ -132,19 +132,19 @@ static unsigned char fps2dfont[][12] = {
     {  0,  0,  0,  0,  0,  0, 78, 57,  0,  0,  0,  0 }  // ~
 };
 
-SIM::Coin3D::Quarter::SoQTQuarterAdaptor::SoQTQuarterAdaptor(QWidget* parent, const QGLWidget* sharewidget, Qt::WindowFlags f)
+SIM::Coin3D::Quarter::SoQTQuarterAdaptor::SoQTQuarterAdaptor(QWidget* parent, const QtGLWidget* sharewidget, Qt::WindowFlags f)
     : QuarterWidget(parent, sharewidget, f), matrixaction(SbViewportRegion(100,100))
 {
     init();
 }
 
-SIM::Coin3D::Quarter::SoQTQuarterAdaptor::SoQTQuarterAdaptor(const QGLFormat& format, QWidget* parent, const QGLWidget* shareWidget, Qt::WindowFlags f)
+SIM::Coin3D::Quarter::SoQTQuarterAdaptor::SoQTQuarterAdaptor(const QtGLFormat& format, QWidget* parent, const QtGLWidget* shareWidget, Qt::WindowFlags f)
     : QuarterWidget(format, parent, shareWidget, f), matrixaction(SbViewportRegion(100,100))
 {
     init();
 }
 
-SIM::Coin3D::Quarter::SoQTQuarterAdaptor::SoQTQuarterAdaptor(QGLContext* context, QWidget* parent, const QGLWidget* sharewidget, Qt::WindowFlags f)
+SIM::Coin3D::Quarter::SoQTQuarterAdaptor::SoQTQuarterAdaptor(QtGLContext* context, QWidget* parent, const QtGLWidget* sharewidget, Qt::WindowFlags f)
     : QuarterWidget(context, parent, sharewidget, f), matrixaction(SbViewportRegion(100,100))
 {
     init();
@@ -174,7 +174,7 @@ void SIM::Coin3D::Quarter::SoQTQuarterAdaptor::init()
 QWidget* SIM::Coin3D::Quarter::SoQTQuarterAdaptor::getWidget()
 {
     //we keep the function from SoQt as we want to introduce the QGraphicsView and then the GLWidget
-    //is seperated from the Widget used in layouts again
+    //is separated from the Widget used in layouts again
     return this;
 }
 
@@ -186,7 +186,7 @@ QWidget* SIM::Coin3D::Quarter::SoQTQuarterAdaptor::getGLWidget()
 QWidget* SIM::Coin3D::Quarter::SoQTQuarterAdaptor::getWidget() const
 {
     //we keep the function from SoQt as we want to introduce the QGraphicsView and then the GLWidget
-    //is seperated from the Widget used in layouts again
+    //is separated from the Widget used in layouts again
     return const_cast<SoQTQuarterAdaptor*>(this);
 }
 

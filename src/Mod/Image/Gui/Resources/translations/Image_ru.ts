@@ -44,12 +44,14 @@
 <context>
     <name>ImageGui::GLImageBox</name>
     <message>
-        <location filename="../../GLImageBox.cpp" line="+325"/>
+        <location filename="../../GLImageBox.cpp" line="+331"/>
+        <location filename="../../OpenGLImageBox.cpp" line="+385"/>
         <source>Undefined type of colour space for image viewing</source>
         <translation>Неопределенный тип цвета пространства для просмотра изображений</translation>
     </message>
     <message>
         <location line="-1"/>
+        <location filename="../../OpenGLImageBox.cpp" line="-1"/>
         <source>Image pixel format</source>
         <translation>Растровый формат изображения</translation>
     </message>
@@ -95,7 +97,7 @@
 <context>
     <name>ImageGui::ImageView</name>
     <message>
-        <location filename="../../ImageView.cpp" line="+104"/>
+        <location filename="../../ImageView.cpp" line="+107"/>
         <source>&amp;Fit image</source>
         <translation>&amp; Растянуть изображения</translation>
     </message>
@@ -199,13 +201,21 @@
     </message>
     <message>
         <location line="+8"/>
-        <source>Error open image</source>
-        <translation>Ошибка при открытии изображения</translation>
+        <source>Error opening image</source>
+        <translation>Ошибка открытия изображения</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Could not load the choosen image</source>
+        <source>Could not load the chosen image</source>
         <translation>Не удалось загрузить выбранное изображение</translation>
+    </message>
+    <message>
+        <source>Error open image</source>
+        <translation type="obsolete">Ошибка при открытии изображения</translation>
+    </message>
+    <message>
+        <source>Could not load the choosen image</source>
+        <translation type="obsolete">Не удалось загрузить выбранное изображение</translation>
     </message>
 </context>
 <context>

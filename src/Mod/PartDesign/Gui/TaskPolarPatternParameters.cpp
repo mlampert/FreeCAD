@@ -194,7 +194,7 @@ void TaskPolarPatternParameters::updateUI()
     unsigned occurrences = pcPolarPattern->Occurrences.getValue();
 
     if (axesLinks.setCurrentLink(pcPolarPattern->Axis) == -1){
-        //failed to set current, because the link isnt in the list yet
+        //failed to set current, because the link isn't in the list yet
         axesLinks.addLink(pcPolarPattern->Axis, getRefStr(pcPolarPattern->Axis.getValue(),pcPolarPattern->Axis.getSubValues()));
         axesLinks.setCurrentLink(pcPolarPattern->Axis);
     }
@@ -375,16 +375,16 @@ unsigned TaskPolarPatternParameters::getOccurrences(void) const
 TaskPolarPatternParameters::~TaskPolarPatternParameters()
 {
     //hide the parts coordinate system axis for selection
-    PartDesign::Body * body = PartDesign::Body::findBodyOf ( getObject() );
-    if ( body ) {
-        try {
+    try {
+        PartDesign::Body * body = PartDesign::Body::findBodyOf ( getObject() );
+        if ( body ) {
             App::Origin *origin = body->getOrigin();
             ViewProviderOrigin* vpOrigin;
             vpOrigin = static_cast<ViewProviderOrigin*>(Gui::Application::Instance->getViewProvider(origin));
             vpOrigin->resetTemporaryVisibility ();
-        } catch (const Base::Exception &ex) {
-            Base::Console().Error ("%s\n", ex.what () );
         }
+    } catch (const Base::Exception &ex) {
+        Base::Console().Error ("%s\n", ex.what () );
     }
 
     delete ui;

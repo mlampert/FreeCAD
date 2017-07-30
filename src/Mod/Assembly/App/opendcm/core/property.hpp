@@ -51,12 +51,12 @@ namespace dcm {
  *
  * @brief Concept and handling of properties for generic data storage and type extension.
  *
- * Properties are a basic building block of the dcm and fullfill two essential tasks: First, build a
+ * Properties are a basic building block of the dcm and fulfill two essential tasks: First, build a
  * infrastructure for storing data in any kind of object and second, make this data universally accessible.
  * Universally accessible means in this context, that it shall be possible to retrieve data only by
  * knowing some kind of identifier. No data type specific get/set functions or access to class members
  * should be needed to access the stored values. The usage of identifiers allows to design interfaces
- * for properties in a type interchangable way. Therefore no restrictions are imposed on the interface,
+ * for properties in a type interchangeable way. Therefore no restrictions are imposed on the interface,
  * no matter what or how much data is stored.
  *
  * The connection of data type and identifier is achieved through the property structs, which all follow
@@ -67,10 +67,10 @@ namespace dcm {
  * retrieving it's reference with get-methods.
  *
  * Propertys are further designed to fit in the concept of compile-time modularisation. To allow the extension
- * of all data-holding entitys with new data types, propertys store their own purpose. Thats
+ * of all data-holding entities with new data types, propertys store their own purpose. Thats
  * done by extending the property struct with a second typedef which is named kind and which specifies of which
  * kind the property is. That means, that this typedef defines when the property shall be used and for which
- * context it is designed for. Dependend on the propertys kind, it will be added to diffrent places inside the dcm.
+ * context it is designed for. Dependend on the propertys kind, it will be added to different places inside the dcm.
  * A property of kind @ref vertex_property will added to vertices, a property of kind @ref object_property to all
  * objects and so on.
  *
@@ -458,11 +458,11 @@ PropertyOwner<PropertyList>::PropertyOwner() {
 };
 
 /**
- * @brief Convienience spezialisation to ease interaction with system class
+ * @brief Convienience specialization to ease interaction with system class
  *
- * Normaly property lists are retrieved from the system class, however, there are no empty lists. If no
+ * Normally property lists are retrieved from the system class, however, there are no empty lists. If no
  * property is supplied for a PropertyOwner derived class, a mpl::void_ type will be retrieved. To
- * remove the burdon of checking for that type in the class definition this spezialisation is supplied.
+ * remove the burden of checking for that type in the class definition this specialization is supplied.
  **/
 template<>
 struct PropertyOwner<mpl::void_> {
@@ -514,7 +514,7 @@ struct empty_prop {
  * @brief Add a type to clusters
  *
  * Allows to specify special types to ClusterGraphs and make a it possibe to distuingish between
- * diffrent purposes. The cluster types need to be int.
+ * different purposes. The cluster types need to be int.
  **/
 struct type_prop {
     //states the type of a cluster
@@ -572,7 +572,7 @@ struct id_prop {
 }
 
 namespace boost {
-//access the propertymap needs to be boost visable
+//access the propertymap needs to be boost visible
 template<typename P, typename G>
 typename dcm::property_map<P, G>::value_type	get(const dcm::property_map<P, G>& map,
         typename dcm::property_map<P, G>::key_type key)

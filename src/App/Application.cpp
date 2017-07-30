@@ -62,6 +62,7 @@
 #include <Base/Parameter.h>
 #include <Base/Console.h>
 #include <Base/Factory.h>
+#include <Base/ExceptionFactory.h>
 #include <Base/FileInfo.h>
 #include <Base/Type.h>
 #include <Base/BaseClass.h>
@@ -70,6 +71,7 @@
 #include <Base/MatrixPy.h>
 #include <Base/VectorPy.h>
 #include <Base/AxisPy.h>
+#include <Base/CoordinateSystemPy.h>
 #include <Base/BoundBoxPy.h>
 #include <Base/PlacementPy.h>
 #include <Base/RotationPy.h>
@@ -104,6 +106,7 @@
 #include "OriginFeature.h"
 #include "Origin.h"
 #include "MaterialObject.h"
+#include "TextDocument.h"
 #include "Expression.h"
 #include "Transactions.h"
 #include <App/MaterialPy.h>
@@ -147,6 +150,34 @@ using namespace Base;
 using namespace App;
 using namespace std;
 
+/** Observer that watches relabeled objects and make sure that the labels inside
+ * a document are unique.
+ * @note In the FreeCAD design it is explicitly allowed to have duplicate labels
+ * (i.e. the user visible text e.g. in the tree view) while the internal names
+ * are always guaranteed to be unique.
+ */
+class ObjectLabelObserver
+{
+public:
+    /// The one and only instance.
+    static ObjectLabelObserver* instance();
+    /// Destructs the sole instance.
+    static void destruct ();
+
+    /** Checks the new label of the object and relabel it if needed
+     * to make it unique document-wide
+     */
+    void slotRelabelObject(const App::DocumentObject&, const App::Property&);
+
+private:
+    static ObjectLabelObserver* _singleton;
+
+    ObjectLabelObserver();
+    ~ObjectLabelObserver();
+    const App::DocumentObject* current;
+    ParameterGrp::handle _hPGrp;
+};
+
 
 //==========================================================================
 // Application
@@ -159,7 +190,6 @@ Base::ConsoleObserverFile *Application::_pConsoleObserverFile =0;
 
 AppExport std::map<std::string,std::string> Application::mConfig;
 BaseExport extern PyObject* Base::BaseExceptionFreeCADError;
-
 
 //**************************************************************************
 // Construction and destruction
@@ -176,6 +206,11 @@ PyDoc_STRVAR(FreeCAD_doc,
 PyDoc_STRVAR(Console_doc,
      "FreeCAD Console\n"
     );
+    
+PyDoc_STRVAR(Base_doc,
+    "The Base module contains the classes for the geometric basics\n"
+    "like vector, matrix, bounding box, placement, rotation, axis, ...\n"
+    );
 
 Application::Application(std::map<std::string,std::string> &mConfig)
   : _mConfig(mConfig), _pActiveDoc(0)
@@ -187,10 +222,31 @@ Application::Application(std::map<std::string,std::string> &mConfig)
 
     // setting up Python binding
     Base::PyGILStateLocker lock;
+#if PY_MAJOR_VERSION >= 3
+    static struct PyModuleDef FreeCADModuleDef = {
+        PyModuleDef_HEAD_INIT,
+        "FreeCAD", FreeCAD_doc, -1,
+        Application::Methods,
+        NULL, NULL, NULL, NULL
+    };
+    PyObject* pAppModule = PyModule_Create(&FreeCADModuleDef);
+    _PyImport_FixupBuiltin(pAppModule, "FreeCAD");
+#else
     PyObject* pAppModule = Py_InitModule3("FreeCAD", Application::Methods, FreeCAD_doc);
+#endif
     Py::Module(pAppModule).setAttr(std::string("ActiveDocument"),Py::None());
 
+#if PY_MAJOR_VERSION >= 3
+    static struct PyModuleDef ConsoleModuleDef = {
+        PyModuleDef_HEAD_INIT,
+        "__FreeCADConsole__", Console_doc, -1,
+        ConsoleSingleton::Methods,
+        NULL, NULL, NULL, NULL
+    };
+    PyObject* pConsoleModule = PyModule_Create(&ConsoleModuleDef);
+#else
     PyObject* pConsoleModule = Py_InitModule3("__FreeCADConsole__", ConsoleSingleton::Methods, Console_doc);
+#endif
 
     // introducing additional classes
 
@@ -207,22 +263,29 @@ Application::Application(std::map<std::string,std::string> &mConfig)
     // Note: Create an own module 'Base' which should provide the python
     // binding classes from the base module. At a later stage we should
     // remove these types from the FreeCAD module.
-    PyObject* pBaseModule = Py_InitModule3("__FreeCADBase__", NULL,
-        "The Base module contains the classes for the geometric basics\n"
-        "like vector, matrix, bounding box, placement, rotation, axis, ...");
 
-    // Python exceptions
+#if PY_MAJOR_VERSION >= 3
+    static struct PyModuleDef BaseModuleDef = {
+        PyModuleDef_HEAD_INIT,
+        "__FreeCADBase__", Base_doc, -1,
+        NULL, NULL, NULL, NULL, NULL
+    };
+    PyObject* pBaseModule = PyModule_Create(&BaseModuleDef);
+#else
+    PyObject* pBaseModule = Py_InitModule3("__FreeCADBase__", NULL, Base_doc);
+#endif
     Base::BaseExceptionFreeCADError = PyErr_NewException("Base.FreeCADError", PyExc_RuntimeError, NULL);
     Py_INCREF(Base::BaseExceptionFreeCADError);
     PyModule_AddObject(pBaseModule, "FreeCADError", Base::BaseExceptionFreeCADError);
 
     // Python types
-    Base::Interpreter().addType(&Base::VectorPy     ::Type,pBaseModule,"Vector");
-    Base::Interpreter().addType(&Base::MatrixPy     ::Type,pBaseModule,"Matrix");
-    Base::Interpreter().addType(&Base::BoundBoxPy   ::Type,pBaseModule,"BoundBox");
-    Base::Interpreter().addType(&Base::PlacementPy  ::Type,pBaseModule,"Placement");
-    Base::Interpreter().addType(&Base::RotationPy   ::Type,pBaseModule,"Rotation");
-    Base::Interpreter().addType(&Base::AxisPy       ::Type,pBaseModule,"Axis");
+    Base::Interpreter().addType(&Base::VectorPy          ::Type,pBaseModule,"Vector");
+    Base::Interpreter().addType(&Base::MatrixPy          ::Type,pBaseModule,"Matrix");
+    Base::Interpreter().addType(&Base::BoundBoxPy        ::Type,pBaseModule,"BoundBox");
+    Base::Interpreter().addType(&Base::PlacementPy       ::Type,pBaseModule,"Placement");
+    Base::Interpreter().addType(&Base::RotationPy        ::Type,pBaseModule,"Rotation");
+    Base::Interpreter().addType(&Base::AxisPy            ::Type,pBaseModule,"Axis");
+    Base::Interpreter().addType(&Base::CoordinateSystemPy::Type,pBaseModule,"CoordinateSystem");
 
     Base::Interpreter().addType(&App::MaterialPy::Type, pAppModule, "Material");
 
@@ -233,11 +296,22 @@ Application::Application(std::map<std::string,std::string> &mConfig)
     PyModule_AddObject(pAppModule, "Console", pConsoleModule);
 
     //insert Units module
-    PyObject* pUnitsModule = Py_InitModule3("Units", Base::UnitsApi::Methods,
-          "The Unit API");
+#if PY_MAJOR_VERSION >= 3
+    static struct PyModuleDef UnitsModuleDef = {
+        PyModuleDef_HEAD_INIT,
+        "Units", "The Unit API", -1,
+        Base::UnitsApi::Methods,
+        NULL, NULL, NULL, NULL
+    };
+    PyObject* pUnitsModule = PyModule_Create(&UnitsModuleDef);
+#else
+    PyObject* pUnitsModule = Py_InitModule3("Units", Base::UnitsApi::Methods,"The Unit API");
+#endif
     Base::Interpreter().addType(&Base::QuantityPy  ::Type,pUnitsModule,"Quantity");
     // make sure to set the 'nb_true_divide' slot
+#if PY_MAJOR_VERSION < 3
     Base::QuantityPy::Type.tp_as_number->nb_true_divide = Base::QuantityPy::Type.tp_as_number->nb_divide;
+#endif
     Base::Interpreter().addType(&Base::UnitPy      ::Type,pUnitsModule,"Unit");
 
     Py_INCREF(pUnitsModule);
@@ -273,7 +347,7 @@ void Application::renameDocument(const char *OldName, const char *NewName)
         signalRenameDocument(*temp);
     }
     else {
-        throw Base::Exception("Application::renameDocument(): no document with this name to rename!");
+        throw Base::RuntimeError("Application::renameDocument(): no document with this name to rename!");
     }
 }
 
@@ -338,6 +412,8 @@ bool Application::closeDocument(const char* name)
     map<string,Document*>::iterator pos = DocMap.find( name );
     if (pos == DocMap.end()) // no such document
         return false;
+
+    Base::ConsoleRefreshDisabler disabler;
 
     // Trigger observers before removing the document from the internal map.
     // Some observers might rely on this document still being there.
@@ -422,7 +498,7 @@ Document* Application::openDocument(const char * FileName)
     if (!File.exists()) {
         std::stringstream str;
         str << "File '" << FileName << "' does not exist!";
-        throw Base::Exception(str.str().c_str());
+        throw Base::FileSystemError(str.str().c_str());
     }
 
     // Before creating a new document we check whether the document is already open
@@ -433,7 +509,7 @@ Document* Application::openDocument(const char * FileName)
         if (filepath == fi) {
             std::stringstream str;
             str << "The project '" << FileName << "' is already open!";
-            throw Base::Exception(str.str().c_str());
+            throw Base::FileSystemError(str.str().c_str());
         }
     }
 
@@ -507,7 +583,7 @@ void Application::setActiveDocument(const char *Name)
     else {
         std::stringstream s;
         s << "Try to activate unknown document '" << Name << "'";
-        throw Base::Exception(s.str());
+        throw Base::RuntimeError(s.str());
     }
 }
 
@@ -622,7 +698,7 @@ Base::Reference<ParameterGrp>  Application::GetParameterGroupByPath(const char* 
 
     // is there a path seperator ?
     if (pos == std::string::npos) {
-        throw Base::Exception("Application::GetParameterGroupByPath() no parameter set name specified");
+        throw Base::ValueError("Application::GetParameterGroupByPath() no parameter set name specified");
     }
     // assigning the parameter set name
     cTemp.assign(cName,0,pos);
@@ -631,7 +707,7 @@ Base::Reference<ParameterGrp>  Application::GetParameterGroupByPath(const char* 
     // test if name is valid
     std::map<std::string,ParameterManager *>::iterator It = mpcPramManager.find(cTemp.c_str());
     if (It == mpcPramManager.end())
-        throw Base::Exception("Application::GetParameterGroupByPath() unknown parameter set name specified");
+        throw Base::ValueError("Application::GetParameterGroupByPath() unknown parameter set name specified");
 
     return It->second->GetGroup(cName.c_str());
 }
@@ -985,19 +1061,71 @@ static void freecadNewHandler ()
 }
 #endif
 
+#if defined(FC_OS_LINUX)
+#include <execinfo.h>
+#include <dlfcn.h>
+#include <cxxabi.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <string>
+#include <sstream>
+
+// This function produces a stack backtrace with demangled function & method names.
+void printBacktrace(size_t skip=0)
+{
+    void *callstack[128];
+    size_t nMaxFrames = sizeof(callstack) / sizeof(callstack[0]);
+    size_t nFrames = backtrace(callstack, nMaxFrames);
+    char **symbols = backtrace_symbols(callstack, nFrames);
+
+    for (size_t i = skip; i < nFrames; i++) {
+        char *demangled = NULL;
+        int status = -1;
+        Dl_info info;
+        if (dladdr(callstack[i], &info) && info.dli_sname && info.dli_fname) {
+            if (info.dli_sname[0] == '_') {
+                demangled = abi::__cxa_demangle(info.dli_sname, NULL, 0, &status);
+            }
+        }
+
+        std::stringstream str;
+        if (status == 0) {
+            void* offset = (void*)((char*)callstack[i] - (char*)info.dli_saddr);
+            str << "#" << (i-skip) << "  " << callstack[i] << " in " << demangled << " from " << info.dli_fname << "+" << offset << std::endl;
+            free(demangled);
+        }
+        else {
+            str << "#" << (i-skip) << "  " << symbols[i] << std::endl;
+        }
+
+        // cannot directly print to cerr when using --write-log
+        std::cerr << str.str();
+    }
+
+    free(symbols);
+}
+#endif
+
 void segmentation_fault_handler(int sig)
 {
+#if defined(FC_OS_LINUX)
+    std::cerr << "Program received signal SIGSEGV, Segmentation fault.\n";
+    printBacktrace(2);
+    exit(1);
+#endif
+
     switch (sig) {
         case SIGSEGV:
             std::cerr << "Illegal storage access..." << std::endl;
 #if !defined(_DEBUG)
-            throw Base::Exception("Illegal storage access! Please save your work under a new file name and restart the application!");
+            throw Base::AccessViolation("Illegal storage access! Please save your work under a new file name and restart the application!");
 #endif
             break;
         case SIGABRT:
             std::cerr << "Abnormal program termination..." << std::endl;
 #if !defined(_DEBUG)
-            throw Base::Exception("Break signal occoured");
+            throw Base::AbnormalProgramTermination("Break signal occoured");
 #endif
             break;
         default:
@@ -1016,7 +1144,7 @@ void unexpection_error_handler()
     std::cerr << "Unexpected error occurred..." << std::endl;
     // try to throw an exception and give the user chance to save their work
 #if !defined(_DEBUG)
-    throw Base::Exception("Unexpected error occurred! Please save your work under a new file name and restart the application!");
+    throw Base::AbnormalProgramTermination("Unexpected error occurred! Please save your work under a new file name and restart the application!");
 #else
     terminate();
 #endif
@@ -1031,12 +1159,12 @@ void my_trans_func( unsigned int code, EXCEPTION_POINTERS* pExp )
    //{
    //    case FLT_DIVIDE_BY_ZERO :
    //       //throw CMyFunkyDivideByZeroException(code, pExp);
-   //       throw Base::Exception("Devision by zero!");
+   //       throw Base::DivisionByZeroError("Devision by zero!");
    //    break;
    //}
 
    // general C++ SEH exception for things we don't need to handle separately....
-   throw Base::Exception("my_trans_func()");
+   throw Base::RuntimeError("my_trans_func()");
 }
 #endif
 void Application::init(int argc, char ** argv)
@@ -1051,12 +1179,14 @@ void Application::init(int argc, char ** argv)
 #endif
         // if an unexpected crash occurs we can install a handler function to
         // write some additional information
-#ifdef _MSC_VER // Microsoft compiler
+#if defined (_MSC_VER) // Microsoft compiler
         std::signal(SIGSEGV,segmentation_fault_handler);
         std::signal(SIGABRT,segmentation_fault_handler);
         std::set_terminate(my_terminate_handler);
         std::set_unexpected(unexpection_error_handler);
 //        _set_se_translator(my_trans_func);
+#elif defined(FC_OS_LINUX)
+        std::signal(SIGSEGV,segmentation_fault_handler);
 #endif
 
         initTypes();
@@ -1096,6 +1226,7 @@ void Application::initTypes(void)
     App ::PropertyFloat             ::init();
     App ::PropertyFloatList         ::init();
     App ::PropertyFloatConstraint   ::init();
+    App ::PropertyPrecision         ::init();
     App ::PropertyQuantity          ::init();
     App ::PropertyQuantityConstraint::init();
     App ::PropertyAngle             ::init();
@@ -1125,8 +1256,11 @@ void Application::initTypes(void)
     App ::PropertyMatrix            ::init();
     App ::PropertyVector            ::init();
     App ::PropertyVectorDistance    ::init();
+    App ::PropertyPosition          ::init();
+    App ::PropertyDirection         ::init();
     App ::PropertyVectorList        ::init();
     App ::PropertyPlacement         ::init();
+    App ::PropertyPlacementList     ::init();
     App ::PropertyPlacementLink     ::init();
     App ::PropertyGeometry          ::init();
     App ::PropertyComplexGeoData    ::init();
@@ -1170,6 +1304,7 @@ void Application::initTypes(void)
     App ::MeasureDistance           ::init();
     App ::MaterialObject            ::init();
     App ::MaterialObjectPython      ::init();
+    App ::TextDocument              ::init();
     App ::Placement                 ::init();
     App ::OriginFeature             ::init();
     App ::Plane                     ::init();
@@ -1193,6 +1328,35 @@ void Application::initTypes(void)
     // register transaction type
     new App::TransactionProducer<TransactionDocumentObject>
             (DocumentObject::getClassTypeId());
+
+    // register exception producer types
+    new ExceptionProducer<Base::AbortException>;
+    new ExceptionProducer<Base::XMLBaseException>;
+    new ExceptionProducer<Base::XMLParseException>;
+    new ExceptionProducer<Base::FileException>;
+    new ExceptionProducer<Base::FileSystemError>;
+    new ExceptionProducer<Base::BadFormatError>;
+    new ExceptionProducer<Base::MemoryException>;
+    new ExceptionProducer<Base::MemoryException>;
+    new ExceptionProducer<Base::AccessViolation>;
+    new ExceptionProducer<Base::AbnormalProgramTermination>;
+    new ExceptionProducer<Base::UnknownProgramOption>;
+    new ExceptionProducer<Base::ProgramInformation>;
+    new ExceptionProducer<Base::TypeError>;
+    new ExceptionProducer<Base::ValueError>;
+    new ExceptionProducer<Base::IndexError>;
+    new ExceptionProducer<Base::AttributeError>;
+    new ExceptionProducer<Base::RuntimeError>;
+    new ExceptionProducer<Base::NotImplementedError>;
+    new ExceptionProducer<Base::DivisionByZeroError>;
+    new ExceptionProducer<Base::ReferencesError>;
+    new ExceptionProducer<Base::ExpressionError>;
+    new ExceptionProducer<Base::ParserError>;
+    new ExceptionProducer<Base::UnicodeError>;
+    new ExceptionProducer<Base::OverflowError>;
+    new ExceptionProducer<Base::UnderflowError>;
+    new ExceptionProducer<Base::UnitsMismatchError>;
+    new ExceptionProducer<Base::CADKernelError>;
 }
 
 void Application::initConfig(int argc, char ** argv)
@@ -1280,6 +1444,35 @@ void Application::initConfig(int argc, char ** argv)
 
     LoadParameters();
 
+    auto loglevelParam = _pcUserParamMngr->GetGroup("BaseApp/LogLevels");
+    const auto &loglevels = loglevelParam->GetIntMap();
+    bool hasDefault = false;
+    for(const auto &v : loglevels) {
+        if(v.first == "Default") {
+#ifndef FC_DEBUG
+            if(v.second>=0) {
+                hasDefault = true;
+                Base::Console().SetDefaultLogLevel(v.second);
+            }
+#endif
+        }else if(v.first == "DebugDefault") {
+#ifdef FC_DEBUG
+            if(v.second>=0) {
+                hasDefault = true;
+                Base::Console().SetDefaultLogLevel(v.second);
+            }
+#endif
+        }else
+            *Base::Console().GetLogLevel(v.first.c_str()) = v.second;
+    }
+    if(!hasDefault) {
+#ifdef FC_DEBUG
+        loglevelParam->SetInt("DebugDefault",Base::Console().LogLevel(-1));
+#else
+        loglevelParam->SetInt("Default",Base::Console().LogLevel(-1));
+#endif
+    }
+
     // Set application tmp. directory
     mConfig["AppTempPath"] = Base::FileInfo::getTempPath();
     std::string tmpPath = _pcUserParamMngr->GetGroup("BaseApp/Preferences/General")->GetASCII("TempPath");
@@ -1344,8 +1537,14 @@ void Application::initApplication(void)
 
     // starting the init script
     Console().Log("Run App init script\n");
-    Interpreter().runString(Base::ScriptFactory().ProduceScript("CMakeVariables"));
-    Interpreter().runString(Base::ScriptFactory().ProduceScript("FreeCADInit"));
+    try {
+        Interpreter().runString(Base::ScriptFactory().ProduceScript("CMakeVariables"));
+        Interpreter().runString(Base::ScriptFactory().ProduceScript("FreeCADInit"));
+        ObjectLabelObserver::instance();
+    }
+    catch (const Base::Exception& e) {
+        Base::Console().Error("%s\n", e.what());
+    }
 }
 
 std::list<std::string> Application::getCmdLineFiles()
@@ -1474,7 +1673,7 @@ void Application::runApplication()
     processCmdLineFiles();
 
     if (mConfig["RunMode"] == "Cmd") {
-        // Run the comandline interface
+        // Run the commandline interface
         Interpreter().runCommandLine("FreeCAD Console mode");
     }
     else if (mConfig["RunMode"] == "Internal") {
@@ -1677,7 +1876,7 @@ void Application::ParseOptions(int ac, char ** av)
     config.add_options()
     //("write-log,l", value<string>(), "write a log file")
     ("write-log,l", descr.c_str())
-    ("log-file", value<string>(), "Unlike to --write-log this allows to log to an arbitrary file")
+    ("log-file", value<string>(), "Unlike --write-log this allows logging to an arbitrary file")
     ("user-cfg,u", value<string>(),"User config file to load/save user settings")
     ("system-cfg,s", value<string>(),"Systen config file to load/save system settings")
     ("run-test,t",   value<string>()   ,"Test case - or 0 for all")
@@ -1713,9 +1912,9 @@ void Application::ParseOptions(int ac, char ** av)
     ("btn",        boost::program_options::value< string >(), "set the X-Window button color")
     ("name",       boost::program_options::value< string >(), "set the X-Window name")
     ("title",      boost::program_options::value< string >(), "set the X-Window title")
-    ("visual",     boost::program_options::value< string >(), "set the X-Window to color scema")
-    ("ncols",      boost::program_options::value< int    >(), "set the X-Window to color scema")
-    ("cmap",                                                  "set the X-Window to color scema")
+    ("visual",     boost::program_options::value< string >(), "set the X-Window to color scheme")
+    ("ncols",      boost::program_options::value< int    >(), "set the X-Window to color scheme")
+    ("cmap",                                                  "set the X-Window to color scheme")
 #if defined(FC_OS_MACOSX)
     ("psn",        boost::program_options::value< string >(), "process serial number")
 #endif
@@ -1726,7 +1925,7 @@ void Application::ParseOptions(int ac, char ** av)
     //x11.add_options()
     //    ("display",  boost::program_options::value< string >(), "set the X-Server")
     //    ;
-    //0000723: improper handling of qt specific comand line arguments
+    //0000723: improper handling of qt specific command line arguments
     std::vector<std::string> args;
     bool merge=false;
     for (int i=1; i<ac; i++) {
@@ -1745,6 +1944,9 @@ void Application::ParseOptions(int ac, char ** av)
             merge = true;
         }
         else if (strcmp(av[i],"-session") == 0) {
+            merge = true;
+        }
+        else if (strcmp(av[i],"-graphicssystem") == 0) {
             merge = true;
         }
     }
@@ -1787,7 +1989,7 @@ void Application::ParseOptions(int ac, char ** av)
     if (vm.count("help")) {
         std::stringstream str;
         str << mConfig["ExeName"] << endl << endl;
-        str << "For detailed descripton see http://www.freecadweb.org" << endl<<endl;
+        str << "For detailed description see http://www.freecadweb.org" << endl<<endl;
         str << "Usage: " << mConfig["ExeName"] << " [options] File1 File2 ..." << endl << endl;
         str << visible << endl;
         throw Base::ProgramInformation(str.str());
@@ -1934,7 +2136,7 @@ void Application::ExtractUserPath()
     // Default paths for the user specific stuff
     struct passwd *pwd = getpwuid(getuid());
     if (pwd == NULL)
-        throw Base::Exception("Getting HOME path from system failed!");
+        throw Base::RuntimeError("Getting HOME path from system failed!");
     mConfig["UserHomePath"] = pwd->pw_dir;
 
     char *path = pwd->pw_dir;
@@ -1952,7 +2154,7 @@ void Application::ExtractUserPath()
         // This should never ever happen
         std::stringstream str;
         str << "Application data directory " << appData << " does not exist!";
-        throw Base::Exception(str.str());
+        throw Base::FileSystemError(str.str());
     }
 
     // In order to write into our data path, we must create some directories, first.
@@ -1969,7 +2171,7 @@ void Application::ExtractUserPath()
                 error += appData;
                 // Want more details on console
                 std::cerr << error << std::endl;
-                throw Base::Exception(error);
+                throw Base::FileSystemError(error);
             }
         }
         appData += PATHSEP;
@@ -1983,7 +2185,7 @@ void Application::ExtractUserPath()
             error += appData;
             // Want more details on console
             std::cerr << error << std::endl;
-            throw Base::Exception(error);
+            throw Base::FileSystemError(error);
         }
     }
 
@@ -1996,7 +2198,7 @@ void Application::ExtractUserPath()
     // Default paths for the user specific stuff on the platform
     struct passwd *pwd = getpwuid(getuid());
     if (pwd == NULL)
-        throw Base::Exception("Getting HOME path from system failed!");
+        throw Base::RuntimeError("Getting HOME path from system failed!");
     mConfig["UserHomePath"] = pwd->pw_dir;
     std::string appData = pwd->pw_dir;
     appData += PATHSEP;
@@ -2008,7 +2210,7 @@ void Application::ExtractUserPath()
         // This should never ever happen
         std::stringstream str;
         str << "Application data directory " << appData << " does not exist!";
-        throw Base::Exception(str.str());
+        throw Base::FileSystemError(str.str());
     }
 
     // In order to write to our data path, we must create some directories, first.
@@ -2024,7 +2226,7 @@ void Application::ExtractUserPath()
                 error += appData;
                 // Want more details on console
                 std::cerr << error << std::endl;
-                throw Base::Exception(error);
+                throw Base::FileSystemError(error);
             }
         }
         appData += PATHSEP;
@@ -2038,7 +2240,7 @@ void Application::ExtractUserPath()
             error += appData;
             // Want more details on console
             std::cerr << error << std::endl;
-            throw Base::Exception(error);
+            throw Base::FileSystemError(error);
         }
     }
 
@@ -2073,7 +2275,7 @@ void Application::ExtractUserPath()
             // This should never ever happen
             std::stringstream str;
             str << "Application data directory " << appData << " does not exist!";
-            throw Base::Exception(str.str());
+            throw Base::FileSystemError(str.str());
         }
 
         // In order to write to our data path we must create some directories first.
@@ -2089,7 +2291,7 @@ void Application::ExtractUserPath()
                     error += appData;
                     // Want more details on console
                     std::cerr << error << std::endl;
-                    throw Base::Exception(error);
+                    throw Base::FileSystemError(error);
                 }
             }
         }
@@ -2103,7 +2305,7 @@ void Application::ExtractUserPath()
                 error += appData;
                 // Want more details on console
                 std::cerr << error << std::endl;
-                throw Base::Exception(error);
+                throw Base::FileSystemError(error);
             }
         }
 
@@ -2172,7 +2374,7 @@ std::string Application::FindHomePath(const char* sCall)
         int nchars = readlink("/proc/self/exe", resolved, PATH_MAX);
 #endif
         if (nchars < 0 || nchars >= PATH_MAX)
-            throw Base::Exception("Cannot determine the absolute path of the executable");
+            throw Base::FileSystemError("Cannot determine the absolute path of the executable");
         resolved[nchars] = '\0'; // enfore null termination
         absPath = resolved;
     }
@@ -2194,28 +2396,35 @@ std::string Application::FindHomePath(const char* sCall)
 
 std::string Application::FindHomePath(const char* call)
 {
-    uint32_t sz = 0;
-    char *buf;
+    // If Python is initialized at this point, then we're being run from
+    // MainPy.cpp, which hopefully rewrote argv[0] to point at the
+    // FreeCAD shared library.
+    if (!Py_IsInitialized()) {
+        uint32_t sz = 0;
+        char *buf;
 
-    _NSGetExecutablePath(NULL, &sz); //function only returns "sz" if first arg is to small to hold value
-    buf = (char*) malloc(++sz);
+        _NSGetExecutablePath(NULL, &sz); //function only returns "sz" if first arg is to small to hold value
+        buf = new char[++sz];
 
-    if (_NSGetExecutablePath(buf, &sz) == 0) {
-        char resolved[PATH_MAX];
-        char* path = realpath(buf, resolved);
-        free(buf);
+        if (_NSGetExecutablePath(buf, &sz) == 0) {
+            char resolved[PATH_MAX];
+            char* path = realpath(buf, resolved);
+            delete [] buf;
 
-        if (path) {
-            std::string Call(resolved), TempHomePath;
-            std::string::size_type pos = Call.find_last_of(PATHSEP);
-            TempHomePath.assign(Call,0,pos);
-            pos = TempHomePath.find_last_of(PATHSEP);
-            TempHomePath.assign(TempHomePath,0,pos+1);
-            return TempHomePath;
+            if (path) {
+                std::string Call(resolved), TempHomePath;
+                std::string::size_type pos = Call.find_last_of(PATHSEP);
+                TempHomePath.assign(Call,0,pos);
+                pos = TempHomePath.find_last_of(PATHSEP);
+                TempHomePath.assign(TempHomePath,0,pos+1);
+                return TempHomePath;
+            }
+        } else {
+            delete [] buf;
         }
     }
 
-    return call; // error
+    return call;
 }
 
 #elif defined (FC_OS_WIN32)
@@ -2261,3 +2470,80 @@ std::string Application::FindHomePath(const char* sCall)
 #else
 # error "std::string Application::FindHomePath(const char*) not implemented"
 #endif
+
+ObjectLabelObserver* ObjectLabelObserver::_singleton = 0;
+
+ObjectLabelObserver* ObjectLabelObserver::instance()
+{
+    if (!_singleton)
+        _singleton = new ObjectLabelObserver;
+    return _singleton;
+}
+
+void ObjectLabelObserver::destruct ()
+{
+    delete _singleton;
+    _singleton = 0;
+}
+
+void ObjectLabelObserver::slotRelabelObject(const App::DocumentObject& obj, const App::Property& prop)
+{
+    // observe only the Label property
+    if (&prop == &obj.Label) {
+        // have we processed this (or another?) object right now?
+        if (current) {
+            return;
+        }
+
+        std::string label = obj.Label.getValue();
+        App::Document* doc = obj.getDocument();
+        if (doc && !_hPGrp->GetBool("DuplicateLabels")) {
+            std::vector<std::string> objectLabels;
+            std::vector<App::DocumentObject*>::const_iterator it;
+            std::vector<App::DocumentObject*> objs = doc->getObjects();
+            bool match = false;
+
+            for (it = objs.begin();it != objs.end();++it) {
+                if (*it == &obj)
+                    continue; // don't compare object with itself
+                std::string objLabel = (*it)->Label.getValue();
+                if (!match && objLabel == label)
+                    match = true;
+                objectLabels.push_back(objLabel);
+            }
+
+            // make sure that there is a name conflict otherwise we don't have to do anything
+            if (match && !label.empty()) {
+                // remove number from end to avoid lengthy names
+                size_t lastpos = label.length()-1;
+                while (label[lastpos] >= 48 && label[lastpos] <= 57) {
+                    // if 'lastpos' becomes 0 then all characters are digits. In this case we use
+                    // the complete label again
+                    if (lastpos == 0) {
+                        lastpos = label.length()-1;
+                        break;
+                    }
+                    lastpos--;
+                }
+
+                label = label.substr(0, lastpos+1);
+                label = Base::Tools::getUniqueName(label, objectLabels, 3);
+                this->current = &obj;
+                const_cast<App::DocumentObject&>(obj).Label.setValue(label);
+                this->current = 0;
+            }
+        }
+    }
+}
+
+ObjectLabelObserver::ObjectLabelObserver() : current(0)
+{
+    App::GetApplication().signalChangedObject.connect(boost::bind
+        (&ObjectLabelObserver::slotRelabelObject, this, _1, _2));
+    _hPGrp = App::GetApplication().GetUserParameter().GetGroup("BaseApp");
+    _hPGrp = _hPGrp->GetGroup("Preferences")->GetGroup("Document");
+}
+
+ObjectLabelObserver::~ObjectLabelObserver()
+{
+}

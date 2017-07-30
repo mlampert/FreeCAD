@@ -4,21 +4,21 @@
 <context>
     <name>CmdPointsConvert</name>
     <message>
-        <location filename="../../Command.cpp" line="+190"/>
+        <location filename="../../Command.cpp" line="+191"/>
         <source>Points</source>
         <translation>点</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Convert to points...</source>
-        <translation type="unfinished">Convert to points...</translation>
+        <translation>将转换为点...</translation>
     </message>
     <message>
         <location line="+1"/>
         <location line="+1"/>
         <location line="+1"/>
         <source>Convert to points</source>
-        <translation type="unfinished">Convert to points</translation>
+        <translation>将转换为点</translation>
     </message>
 </context>
 <context>
@@ -62,9 +62,29 @@
     </message>
 </context>
 <context>
+    <name>CmdPointsMerge</name>
+    <message>
+        <location line="+256"/>
+        <source>Points</source>
+        <translation type="unfinished">点</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Merge point clouds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+1"/>
+        <location line="+1"/>
+        <source>Merge several point clouds into one</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>CmdPointsPolyCut</name>
     <message>
-        <location line="+211"/>
+        <location line="-49"/>
         <source>Points</source>
         <translation>点</translation>
     </message>
@@ -262,7 +282,7 @@
         <location line="-51"/>
         <location line="+51"/>
         <source>All Files</source>
-        <translation type="unfinished">All Files</translation>
+        <translation>所有文件</translation>
     </message>
     <message>
         <location line="+74"/>

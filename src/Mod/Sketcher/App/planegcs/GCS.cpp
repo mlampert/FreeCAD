@@ -582,6 +582,13 @@ int System::addConstraintPointOnHyperbolicArc(Point &p, ArcOfHyperbola &e, int t
     return addConstraint(constr);   
 }
 
+int System::addConstraintPointOnParabolicArc(Point &p, ArcOfParabola &e, int tagId)
+{
+    Constraint *constr = new ConstraintPointOnParabola(p, e);
+    constr->setTag(tagId);
+    return addConstraint(constr);   
+}
+
 int System::addConstraintArcOfEllipseRules(ArcOfEllipse &a, int tagId)
 {
     addConstraintCurveValue(a.start,a,a.startAngle, tagId);
@@ -599,6 +606,12 @@ int System::addConstraintCurveValue(Point &p, Curve &a, double *u, int tagId)
 }
 
 int System::addConstraintArcOfHyperbolaRules(ArcOfHyperbola &a, int tagId)
+{
+    addConstraintCurveValue(a.start,a,a.startAngle, tagId);
+    return addConstraintCurveValue(a.end,a,a.endAngle, tagId);
+}
+
+int System::addConstraintArcOfParabolaRules(ArcOfParabola &a, int tagId)
 {
     addConstraintCurveValue(a.start,a,a.startAngle, tagId);
     return addConstraintCurveValue(a.end,a,a.endAngle, tagId);
@@ -750,7 +763,14 @@ int System::addConstraintEqualRadii(ArcOfHyperbola &a1, ArcOfHyperbola &a2, int 
     
     Constraint *constr = new ConstraintEqualMajorAxesConic(&a1,&a2);
     constr->setTag(tagId);
-    return addConstraint(constr);    
+    return addConstraint(constr);
+}
+
+int System::addConstraintEqualFocus(ArcOfParabola &a1, ArcOfParabola &a2, int tagId)
+{
+    Constraint *constr = new ConstraintEqualFocalDistance(&a1,&a2);
+    constr->setTag(tagId);
+    return addConstraint(constr);
 }
 
 int System::addConstraintEqualRadius(Circle &c1, Arc &a2, int tagId)
@@ -981,6 +1001,18 @@ int System::addConstraintInternalAlignmentHyperbolaFocus(Hyperbola &e, Point &p1
     return addConstraintEqual(e.focus1.y, p1.y, tagId);
 }
 
+int System::addConstraintInternalAlignmentParabolaFocus(Parabola &e, Point &p1, int tagId)
+{
+    addConstraintEqual(e.focus1.x, p1.x, tagId);
+    return addConstraintEqual(e.focus1.y, p1.y, tagId);
+}
+
+int System::addConstraintInternalAlignmentBSplineControlPoint(BSpline &b, Circle &c, int poleindex, int tagId)
+{
+    addConstraintEqual(b.poles[poleindex].x, c.center.x, tagId);
+    addConstraintEqual(b.poles[poleindex].y, c.center.y, tagId);
+    return addConstraintEqual(b.weights[poleindex], c.rad, tagId);
+}
 
 //calculates angle between two curves at point of their intersection p. If two
 //points are supplied, p is used for first curve and p2 for second, yielding a

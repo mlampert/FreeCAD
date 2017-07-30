@@ -140,14 +140,34 @@ This is a more detailed check as done in isValid().</UserDocu>
     </Methode>
     <Methode Name="fuse" Const="true">
       <Documentation>
-        <UserDocu>Union of this and a given topo shape.</UserDocu>
+        <UserDocu>Union of this and a given (list of) topo shape.
+fuse(tool) -> Shape
+  or
+fuse((tool1,tool2,...),[tolerance=0.0]) -> Shape
+
+Union of this and a given list of topo shapes.
+
+Supports (OCCT 6.9.0 and above):
+- Fuzzy Boolean operations (global tolerance for a Boolean operation)
+- Support of multiple arguments for a single Boolean operation
+- Parallelization of Boolean Operations algorithm
+
+Beginning from OCCT 6.8.1 a tolerance value can be specified.</UserDocu>
       </Documentation>
     </Methode>
     <Methode Name="multiFuse" Const="true">
       <Documentation>
         <UserDocu>multiFuse((tool1,tool2,...),[tolerance=0.0]) -> Shape
+
 Union of this and a given list of topo shapes.
-Beginning from OCCT 6.8.1 a tolerance value can be specified</UserDocu>
+
+Supports (OCCT 6.9.0 and above):
+- Fuzzy Boolean operations (global tolerance for a Boolean operation)
+- Support of multiple arguments for a single Boolean operation
+- Parallelization of Boolean Operations algorithm
+
+Beginning from OCCT 6.8.1 a tolerance value can be specified.
+Deprecated: use fuse() instead.</UserDocu>
       </Documentation>
     </Methode>
     <Methode Name="oldFuse" Const="true">
@@ -157,12 +177,36 @@ Beginning from OCCT 6.8.1 a tolerance value can be specified</UserDocu>
     </Methode>
     <Methode Name="common" Const="true">
       <Documentation>
-        <UserDocu>Intersection of this and a given topo shape.</UserDocu>
+        <UserDocu>Intersection of this and a given (list of) topo shape.
+common(tool) -> Shape
+  or
+common((tool1,tool2,...),[tolerance=0.0]) -> Shape
+
+Intersection of this and a given list of topo shapes.
+
+Supports:
+- Fuzzy Boolean operations (global tolerance for a Boolean operation)
+- Support of multiple arguments for a single Boolean operation (s1 AND (s2 OR s3))
+- Parallelization of Boolean Operations algorithm
+
+OCC 6.9.0 or later is required.</UserDocu>
       </Documentation>
     </Methode>
     <Methode Name="section" Const="true">
       <Documentation>
-        <UserDocu>Section of this with a given topo shape.</UserDocu>
+        <UserDocu>Section of this with a given (list of) topo shape.
+section(tool) -> Shape
+  or
+section((tool1,tool2,...),[tolerance=0.0]) -> Shape
+
+Section of this and a given list of topo shapes.
+
+Supports:
+- Fuzzy Boolean operations (global tolerance for a Boolean operation)
+- Support of multiple arguments for a single Boolean operation (s1 AND (s2 OR s3))
+- Parallelization of Boolean Operations algorithm
+
+OCC 6.9.0 or later is required.</UserDocu>
       </Documentation>
     </Methode>
     <Methode Name="slices" Const="true">
@@ -177,7 +221,19 @@ Beginning from OCCT 6.8.1 a tolerance value can be specified</UserDocu>
     </Methode>
     <Methode Name="cut" Const="true">
       <Documentation>
-        <UserDocu>Difference of this and a given topo shape.</UserDocu>
+        <UserDocu>Difference of this and a given (list of) topo shape
+cut(tool) -> Shape
+  or
+cut((tool1,tool2,...),[tolerance=0.0]) -> Shape
+
+Substraction of this and a given list of topo shapes.
+
+Supports:
+- Fuzzy Boolean operations (global tolerance for a Boolean operation)
+- Support of multiple arguments for a single Boolean operation
+- Parallelization of Boolean Operations algorithm
+
+OCC 6.9.0 or later is required.</UserDocu>
       </Documentation>
     </Methode>
     <Methode Name="generalFuse" Const="true">
@@ -203,6 +259,8 @@ shape of this, and the rest are those that come from corresponding shapes in
 list_of_other_shapes.
 hint: use isSame method to test shape equality
 
+Parallelization of Boolean Operations algorithm
+
 OCC 6.9.0 or later is required.
 </UserDocu>
       </Documentation>
@@ -222,6 +280,13 @@ Return a list of sub-shapes that are direct children of this shape.
  * If cumLoc is true, the function multiplies all
    sub-shapes by the location of this shape, i.e. it applies to
    each sub-shape the transformation that is associated with this shape.
+        </UserDocu>
+      </Documentation>
+    </Methode>
+    <Methode Name="ancestorsOfType">
+      <Documentation>
+        <UserDocu>ancestorsOfType(shape, shape type) -> list
+For a sub-shape of this shape get its ancestors of a type.
         </UserDocu>
       </Documentation>
     </Methode>
@@ -323,7 +388,7 @@ shape.
 * join: method of offsetting non-tangent joints. 0 = arcs, 1 = tangent, 2 =
 intersection
 
-* fill: if true, offsetting a shell is to yeild a solid
+* fill: if true, offsetting a shell is to yield a solid
 
 Returns: result of offsetting.</UserDocu>
       </Documentation>
@@ -430,7 +495,7 @@ Orientation is not taken into account.</UserDocu>
     </Methode>
     <Methode Name="project" Const="true">
       <Documentation>
-        <UserDocu>Project a shape on this shape</UserDocu>
+        <UserDocu>Project a list of shapes on this shape</UserDocu>
       </Documentation>
     </Methode>
     <Methode Name="makeParallelProjection" Const="true">

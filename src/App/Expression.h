@@ -328,6 +328,8 @@ public:
         TRUNC,
         CEIL,
         FLOOR,
+        HYPOT,
+        CATH,
 
         // Aggregates
         AGGREGATES,
@@ -481,6 +483,7 @@ AppExport Expression * parse(const App::DocumentObject *owner, const char *buffe
 AppExport UnitExpression * parseUnit(const App::DocumentObject *owner, const char *buffer);
 AppExport ObjectIdentifier parsePath(const App::DocumentObject *owner, const char* buffer);
 AppExport bool isTokenAnIndentifier(const std::string & str);
+AppExport bool isTokenAUnit(const std::string & str);
 AppExport std::vector<boost::tuple<int, int, std::string> > tokenize(const std::string & str);
 
 /**

@@ -216,7 +216,7 @@ void InputField::contextMenuEvent(QContextMenuEvent *event)
     // call the menu and wait until its back
     QAction *saveAction = menu->exec(event->globalPos());
 
-    // look what the user has choosen
+    // look what the user has chosen
     if(saveAction == SaveValueAction)
         pushToSavedValues();
     else{
@@ -492,8 +492,13 @@ void InputField::setMinimum(double m)
 
 void InputField::setUnitText(const QString& str)
 {
-    Base::Quantity quant = Base::Quantity::parse(str);
-    setUnit(quant.getUnit());
+    try {
+        Base::Quantity quant = Base::Quantity::parse(str);
+        setUnit(quant.getUnit());
+    }
+    catch (...) {
+        // ignore exceptions
+    }
 }
 
 QString InputField::getUnitText(void)

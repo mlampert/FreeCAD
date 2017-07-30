@@ -277,10 +277,10 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
     // labels and progressbar
     d->status = new StatusBarObserver();
     d->actionLabel = new QLabel(statusBar());
-    d->actionLabel->setMinimumWidth(120);
+    // d->actionLabel->setMinimumWidth(120);
     d->sizeLabel = new QLabel(tr("Dimension"), statusBar());
     d->sizeLabel->setMinimumWidth(120);
-    statusBar()->addWidget(d->actionLabel, 0);
+    statusBar()->addWidget(d->actionLabel, 1);
     QProgressBar* progressBar = Gui::Sequencer::instance()->getProgressBar(statusBar());
     statusBar()->addPermanentWidget(progressBar, 0);
     statusBar()->addPermanentWidget(d->sizeLabel, 0);
@@ -371,7 +371,15 @@ MainWindow::MainWindow(QWidget * parent, Qt::WindowFlags f)
 
     // Python console
     PythonConsole* pcPython = new PythonConsole(this);
-    pcPython->setWordWrapMode(QTextOption::NoWrap);
+    ParameterGrp::handle hGrp = App::GetApplication().GetUserParameter().
+        GetGroup("BaseApp")->GetGroup("Preferences")->GetGroup("General");
+
+    if (hGrp->GetBool("PythonWordWrap", true)) {
+      pcPython->setWordWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+    } else {
+      pcPython->setWordWrapMode(QTextOption::NoWrap);
+    }
+
     pcPython->setWindowIcon(Gui::BitmapFactory().iconFromTheme("applications-python"));
     pcPython->setObjectName
         (QString::fromLatin1(QT_TRANSLATE_NOOP("QDockWidget","Python console")));
@@ -461,57 +469,11 @@ void MainWindow::arrangeIcons()
 void MainWindow::tile()
 {
     d->mdiArea->tileSubWindows();
-
-// Warn about limitation in Qt4.8 involving multiple OpenGL widgets with Cocoa.
-#if defined(__APPLE__)
-    ParameterGrp::handle hGrp = App::GetApplication().GetUserParameter().
-        GetGroup("BaseApp")->GetGroup("Preferences")->GetGroup("MainWindow");
-
-    if(hGrp->GetBool("ShowAppleMdiWarning", true)) {
-        QMessageBox mb(this);
-        mb.setIcon(QMessageBox::Warning);
-        mb.setTextFormat(Qt::RichText);
-        mb.setText(tr("There is a rendering issue on MacOS."));
-        mb.setInformativeText(tr("See <a href=\"http://www.freecadweb.org/wiki/index.php?title=OpenGL_on_MacOS\"> the wiki</a> for more information"));
-
-        QAbstractButton *suppressBtn;
-        suppressBtn = mb.addButton(tr("Don't show again"), QMessageBox::DestructiveRole);
-        mb.addButton(QMessageBox::Ok);
-
-        mb.exec();
-        if(mb.clickedButton() == suppressBtn) {
-            hGrp->SetBool("ShowAppleMdiWarning", false);
-        }
-    }
-#endif // defined(__APPLE__)
 }
 
 void MainWindow::cascade()
 {
     d->mdiArea->cascadeSubWindows();
-
-// See above in MainWindow::tile()
-#if defined(__APPLE__)
-    ParameterGrp::handle hGrp = App::GetApplication().GetUserParameter().
-        GetGroup("BaseApp")->GetGroup("Preferences")->GetGroup("MainWindow");
-
-    if(hGrp->GetBool("ShowAppleMdiWarning", true)) {
-        QMessageBox mb(this);
-        mb.setIcon(QMessageBox::Warning);
-        mb.setTextFormat(Qt::RichText);
-        mb.setText(tr("There is a rendering issue on MacOS."));
-        mb.setInformativeText(tr("See <a href=\"http://www.freecadweb.org/wiki/index.php?title=OpenGL_on_MacOS\"> the wiki</a> for more information"));
-
-        QAbstractButton *suppressBtn;
-        suppressBtn = mb.addButton(tr("Don't show again"), QMessageBox::DestructiveRole);
-        mb.addButton(QMessageBox::Ok);
-
-        mb.exec();
-        if(mb.clickedButton() == suppressBtn) {
-            hGrp->SetBool("ShowAppleMdiWarning", false);
-        }
-    }
-#endif // defined(__APPLE__)
 }
 
 void MainWindow::closeActiveWindow ()
@@ -1542,7 +1504,7 @@ void MainWindow::changeEvent(QEvent *e)
 void MainWindow::showMessage (const QString& message, int timeout)
 {
     QFontMetrics fm(statusBar()->font());
-    QString msg = fm.elidedText(message, Qt::ElideMiddle, this->width()/2);
+    QString msg = fm.elidedText(message, Qt::ElideMiddle, this->d->actionLabel->width());
 #if QT_VERSION <= 0x040600
     this->statusBar()->showMessage(msg, timeout);
 #else

@@ -110,7 +110,9 @@ public:
     void drawConstraintIcons();
 
     /// draw the sketch in the inventor nodes
-    void draw(bool temp=false);
+    /// temp => use temporary solver solution in SketchObject
+    /// recreateinformationscenography => forces a rebuild of the information layer scenography
+    void draw(bool temp=false, bool rebuildinformationlayer=true);
 
     /// draw the edit curve
     void drawEdit(const std::vector<Base::Vector2d> &EditCurve);
@@ -120,6 +122,9 @@ public:
     /// Observer message from the Selection
     virtual void onSelectionChanged(const Gui::SelectionChanges& msg);
 
+    /// Show/Hide nodes from information layer
+    void showRestoreInformationLayer();
+    
     /** @name handler control */
     //@{
     /// sets an DrawSketchHandler in control
@@ -352,9 +357,6 @@ protected:
     void addSelectPoint(int SelectPoint);
     void removeSelectPoint(int SelectPoint);
     void clearSelectPoints(void);
-
-    // handle stacked placements of App::Parts
-    Base::Placement getPlacement();
     
     // modes while sketching
     SketchMode Mode;
@@ -373,6 +375,7 @@ protected:
     static SbColor PreselectColor;
     static SbColor SelectColor;
     static SbColor PreselectSelectedColor;
+    static SbColor InformationColor;
 
     static SbTime prvClickTime;
     static SbVec3f prvClickPoint;
@@ -380,13 +383,17 @@ protected:
     static SbVec2s newCursorPos;
 
     float zCross;
-    float zLines;
+    //float zLines;
     float zPoints;
     float zConstr;
     float zHighlight;
     float zText;
     float zEdit;
     float zHighLine;
+    float zInfo;
+    float zLowLines;
+    float zMidLines;
+    float zHighLines;
 
     // reference coordinates for relative operations
     double xInit,yInit;
@@ -395,8 +402,10 @@ protected:
     std::string oldWb;
 
     Gui::Rubberband* rubberband;
-    App::Part*          parentPart = nullptr;
-    Part::BodyBase*     parentBody = nullptr;
+
+    // information layer variables
+    bool visibleInformationChanged;
+    double combrepscalehyst;
 };
 
 } // namespace PartGui

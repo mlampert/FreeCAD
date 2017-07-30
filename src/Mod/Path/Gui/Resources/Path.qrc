@@ -18,12 +18,12 @@
         <file>icons/Path-FaceProfile.svg</file>
         <file>icons/Path-Face.svg</file>
         <file>icons/Path-Heights.svg</file>
+        <file>icons/Path-Helix.svg</file>
         <file>icons/Path-Hop.svg</file>
         <file>icons/Path-Inspect.svg</file>
         <file>icons/Path-Job.svg</file>
         <file>icons/Path-Kurve.svg</file>
         <file>icons/Path-LengthOffset.svg</file>
-        <file>icons/Path-LoadTool.svg</file>
         <file>icons/Path-MachineLathe.svg</file>
         <file>icons/Path-MachineMill.svg</file>
         <file>icons/Path-Machine.svg</file>
@@ -43,19 +43,27 @@
         <file>icons/Path-Stock.svg</file>
         <file>icons/Path-Stop.svg</file>
         <file>icons/Path-ToolChange.svg</file>
+        <file>icons/Path-ToolController.svg</file>
         <file>icons/Path-Toolpath.svg</file>
         <file>icons/Path-ToolTable.svg</file>
+        <file>icons/Path-Area.svg</file>
+        <file>icons/Path-Area-View.svg</file>
+        <file>icons/Path-Area-Workplane.svg</file>
         <file>icons/preferences-path.svg</file>
         <file>panels/ContourEdit.ui</file>
         <file>panels/DlgJobChooser.ui</file>
+        <file>panels/DlgJobCreate.ui</file>
         <file>panels/DlgSelectPostProcessor.ui</file>
         <file>panels/DlgToolCopy.ui</file>
+        <file>panels/DlgTCChooser.ui</file>
         <file>panels/DogboneEdit.ui</file>
         <file>panels/DrillingEdit.ui</file>
         <file>panels/EngraveEdit.ui</file>
+        <file>panels/HoldingTagsEdit.ui</file>
         <file>panels/JobEdit.ui</file>
         <file>panels/MillFaceEdit.ui</file>
         <file>panels/PocketEdit.ui</file>
+        <file>panels/PointEdit.ui</file>
         <file>panels/ProfileEdgesEdit.ui</file>
         <file>panels/ProfileEdit.ui</file>
         <file>panels/RemoteEdit.ui</file>
@@ -63,6 +71,7 @@
         <file>panels/ToolControl.ui</file>
         <file>panels/ToolEdit.ui</file>
         <file>panels/ToolLibraryEditor.ui</file>
+        <file>preferences/PathDressupHoldingTags.ui</file>
         <file>preferences/PathJob.ui</file>
         <file>translations/Path_af.qm</file>
         <file>translations/Path_cs.qm</file>
@@ -90,5 +99,10 @@
         <file>translations/Path_uk.qm</file>
         <file>translations/Path_zh-CN.qm</file>
         <file>translations/Path_zh-TW.qm</file>
+        <file>translations/Path_eu.qm</file>
+        <file>translations/Path_ca.qm</file>
+        <file>translations/Path_gl.qm</file>
+        <file>translations/Path_kab.qm</file>
+        <file>translations/Path_ko.qm</file>
     </qresource>
 </RCC>

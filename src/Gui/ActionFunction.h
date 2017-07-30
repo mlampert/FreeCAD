@@ -25,6 +25,8 @@
 #define GUI_ACTIONFUNCTION_H
 
 #include <QObject>
+#include <QPointer>
+#include <QVariant>
 #include <boost/function.hpp>
 
 class QAction;
@@ -84,6 +86,31 @@ private:
     QScopedPointer<ActionFunctionPrivate> d_ptr;
     Q_DISABLE_COPY(ActionFunction)
     Q_DECLARE_PRIVATE(ActionFunction)
+};
+
+class TimerFunctionPrivate;
+
+class GuiExport TimerFunction : public QObject
+{
+    Q_OBJECT
+
+public:
+    /// Constructor
+    TimerFunction(QObject* = 0);
+    virtual ~TimerFunction();
+
+    void setFunction(boost::function<void()> func);
+    void setFunction(boost::function<void(QObject*)> func, QObject* args);
+    void setFunction(boost::function<void(QVariant)> func, QVariant args);
+    void setAutoDelete(bool);
+
+private Q_SLOTS:
+    void timeout();
+
+private:
+    QScopedPointer<TimerFunctionPrivate> d_ptr;
+    Q_DISABLE_COPY(TimerFunction)
+    Q_DECLARE_PRIVATE(TimerFunction)
 };
 
 } //namespace Gui

@@ -116,7 +116,7 @@ template = """<!DOCTYPE html>
         </html>"""
 
 
-if open.__module__ == '__builtin__':
+if open.__module__ in ['__builtin__','io']:
     pythonopen = open
     
 def export(exportList,filename):
@@ -126,7 +126,7 @@ def export(exportList,filename):
     outfile = pythonopen(filename,"wb")
     outfile.write(html)
     outfile.close()
-    FreeCAD.Console.PrintMessage(translate("Arch","successfully written ").decode("utf8")+filename+"\n")
+    FreeCAD.Console.PrintMessage(translate("Arch","successfully written ", utf8_decode=True)+filename+"\n")
     
 def getHTML(objectsList):
     "returns the complete HTML code of a viewer for the given objects"
@@ -155,7 +155,7 @@ def getCameraData():
     else:
         result += "camera.position.set(0,0,1000);\n"
     result += tab+"camera.lookAt( scene.position );\n"+tab
-    # print result
+    # print(result)
     return result
     
 def getObjectData(obj,wireframeMode=wireframeStyle):

@@ -331,7 +331,7 @@ PartGui::DimensionLinear::DimensionLinear()
 
     SO_KIT_INIT_INSTANCE();
 
-    SO_NODE_ADD_FIELD(rotate, (1.0, 0.0, 0.0, 0.0));//postion orientation of the dimension.
+    SO_NODE_ADD_FIELD(rotate, (1.0, 0.0, 0.0, 0.0));//position orientation of the dimension.
     SO_NODE_ADD_FIELD(length, (1.0));//turns into dimension length
     SO_NODE_ADD_FIELD(origin, (0.0, 0.0, 0.0));//static
     SO_NODE_ADD_FIELD(text, ("test"));//dimension text
@@ -638,10 +638,10 @@ PartGui::VectorAdapter::VectorAdapter() : status(false), vector()
 PartGui::VectorAdapter::VectorAdapter(const TopoDS_Face &faceIn, const gp_Vec &pickedPointIn) :
   status(false), vector(), origin(pickedPointIn)
 {
-  Handle_Geom_Surface surface = BRep_Tool::Surface(faceIn);
+  Handle(Geom_Surface) surface = BRep_Tool::Surface(faceIn);
   if (surface->IsKind(STANDARD_TYPE(Geom_ElementarySurface)))
   {
-    Handle_Geom_ElementarySurface eSurface = Handle(Geom_ElementarySurface)::DownCast(surface);
+    Handle(Geom_ElementarySurface) eSurface = Handle(Geom_ElementarySurface)::DownCast(surface);
     gp_Dir direction = eSurface->Axis().Direction();
     vector = direction;
     vector.Normalize();
@@ -708,7 +708,7 @@ PartGui::VectorAdapter::VectorAdapter(const gp_Vec &vector1, const gp_Vec &vecto
 
 void PartGui::VectorAdapter::projectOriginOntoVector(const gp_Vec &pickedPointIn)
 {
-  Handle_Geom_Curve heapLine = new Geom_Line(origin.XYZ(), vector.XYZ());
+  Handle(Geom_Curve) heapLine = new Geom_Line(origin.XYZ(), vector.XYZ());
   gp_Pnt tempPoint(pickedPointIn.XYZ());
   GeomAPI_ProjectPointOnCurve projection(tempPoint, heapLine);
   if (projection.NbPoints() < 1)
@@ -869,7 +869,7 @@ void PartGui::goDimensionAngularNoTask(const VectorAdapter &vector1Adapter, cons
   if (vector1.IsParallel(vector2, Precision::Angular()))
   {
     //take first point project it onto second vector.
-    Handle_Geom_Curve heapLine2 = new Geom_Line(vector2Adapter);
+    Handle(Geom_Curve) heapLine2 = new Geom_Line(vector2Adapter);
     gp_Pnt tempPoint(vector1Adapter.getPickPoint().XYZ());
     
     GeomAPI_ProjectPointOnCurve projection(tempPoint, heapLine2);
@@ -926,8 +926,8 @@ void PartGui::goDimensionAngularNoTask(const VectorAdapter &vector1Adapter, cons
   }
   else
   {
-    Handle_Geom_Curve heapLine1 = new Geom_Line(vector1Adapter);
-    Handle_Geom_Curve heapLine2 = new Geom_Line(vector2Adapter);
+    Handle(Geom_Curve) heapLine1 = new Geom_Line(vector1Adapter);
+    Handle(Geom_Curve) heapLine2 = new Geom_Line(vector2Adapter);
     
     GeomAPI_ExtremaCurveCurve extrema(heapLine1, heapLine2);
     
@@ -1520,20 +1520,24 @@ PartGui::VectorAdapter PartGui::TaskMeasureAngular::buildAdapter(const PartGui::
     {
       TopoDS_Shape edgeShape;
       if (!getShapeFromStrings(edgeShape, current.documentName, current.objectName, current.subObjectName))
-	return VectorAdapter();
+        return VectorAdapter();
       TopoDS_Edge edge = TopoDS::Edge(edgeShape);
       // make edge orientation so that end of edge closest to pick is head of vector.
-      gp_Vec firstPoint = PartGui::convert(TopExp::FirstVertex(edge, Standard_True));
-      gp_Vec lastPoint = PartGui::convert(TopExp::LastVertex(edge, Standard_True));
+      TopoDS_Vertex firstVertex = TopExp::FirstVertex(edge, Standard_True);
+      TopoDS_Vertex lastVertex = TopExp::LastVertex(edge, Standard_True);
+      if (firstVertex.IsNull() || lastVertex.IsNull())
+        return VectorAdapter();
+      gp_Vec firstPoint = PartGui::convert(firstVertex);
+      gp_Vec lastPoint = PartGui::convert(lastVertex);
       gp_Vec pickPoint(current.x, current.y, current.z);
       double firstDistance = (firstPoint - pickPoint).Magnitude();
       double lastDistance = (lastPoint - pickPoint).Magnitude();
       if (lastDistance > firstDistance)
       {
-	if (edge.Orientation() == TopAbs_FORWARD)
-	  edge.Orientation(TopAbs_REVERSED);
-	else
-	  edge.Orientation(TopAbs_FORWARD);
+        if (edge.Orientation() == TopAbs_FORWARD)
+          edge.Orientation(TopAbs_REVERSED);
+        else
+          edge.Orientation(TopAbs_FORWARD);
       }
       return VectorAdapter(edge, pickPoint);
     }

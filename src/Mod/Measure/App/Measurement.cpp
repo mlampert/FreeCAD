@@ -140,7 +140,7 @@ MeasureType Measurement::getType()
             }
             catch (Standard_Failure) {
                 std::stringstream errorMsg;
-                Handle_Standard_Failure e = Standard_Failure::Caught();
+                Handle(Standard_Failure) e = Standard_Failure::Caught();
                 errorMsg << "Measurement - getType - " << e->GetMessageString() << std::endl;
                 throw Base::Exception(e->GetMessageString());
             }
@@ -222,7 +222,7 @@ TopoDS_Shape Measurement::getShape(App::DocumentObject *obj , const char *subNam
             refSubShape = refShape.getSubShape(subName);
         }
         catch (Standard_Failure) {
-            Handle_Standard_Failure e = Standard_Failure::Caught();
+            Handle(Standard_Failure) e = Standard_Failure::Caught();
             throw Base::Exception(e->GetMessageString());
         }
         return refSubShape;
@@ -370,7 +370,7 @@ Base::Vector3d Measurement::delta() const
 
     if(measureType == Points) {
         if(numRefs == 2) {
-            // Keep Seperate case for two points to reduce need for complex algorithm
+            // Keep separate case for two points to reduce need for complex algorithm
             TopoDS_Shape shape1 = getShape(objects.at(0), subElements.at(0).c_str());
             TopoDS_Shape shape2 = getShape(objects.at(1), subElements.at(1).c_str());
 

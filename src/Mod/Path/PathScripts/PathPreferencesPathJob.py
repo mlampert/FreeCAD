@@ -24,12 +24,18 @@
 
 import FreeCAD
 import FreeCADGui
+import PathScripts.PathLog as PathLog
+
+from FreeCAD import Units
 from PySide import QtCore, QtGui
 from PathScripts.PathPreferences import PathPreferences
 from PathScripts.PathPostProcessor import PostProcessor
 
 
-class Page:
+PathLog.setLevel(PathLog.Level.INFO, PathLog.thisModule())
+
+
+class JobPreferencesPage:
     def __init__(self, parent=None):
         self.form = FreeCADGui.PySideUic.loadUi(":preferences/PathJob.ui")
 
@@ -38,6 +44,11 @@ class Page:
         self.processor = { }
 
     def saveSettings(self):
+        filePath = self.form.leDefaultFilePath.text()
+        jobTemplate = self.form.leDefaultJobTemplate.text()
+        geometryTolerance = Units.Quantity(self.form.geometryTolerance.text())
+        PathPreferences.setJobDefaults(filePath, jobTemplate, geometryTolerance)
+
         processor = str(self.form.defaultPostProcessor.currentText())
         args = str(self.form.defaultPostProcessorArgs.text())
         blacklist = []
@@ -45,11 +56,11 @@ class Page:
             item = self.form.postProcessorList.item(i)
             if item.checkState() == QtCore.Qt.CheckState.Unchecked:
                 blacklist.append(item.text())
-        PathPreferences.savePostProcessorDefaults(processor, args, blacklist)
+        PathPreferences.setPostProcessorDefaults(processor, args, blacklist)
 
         path = str(self.form.leOutputFile.text())
         policy = str(self.form.cboOutputPolicy.currentText())
-        PathPreferences.saveOutputFileDefaults(path, policy)
+        PathPreferences.setOutputFileDefaults(path, policy)
 
     def selectComboEntry(self, widget, text):
         index = widget.findText(text, QtCore.Qt.MatchFixedString)
@@ -80,6 +91,9 @@ class Page:
         self.verifyAndUpdateDefaultPostProcessorWith(str(self.form.defaultPostProcessor.currentText()))
 
     def loadSettings(self):
+        self.form.leDefaultFilePath.setText(PathPreferences.defaultFilePath())
+        self.form.leDefaultJobTemplate.setText(PathPreferences.defaultJobTemplate())
+
         blacklist = PathPreferences.postProcessorBlacklist()
         for processor in PathPreferences.allAvailablePostProcessors():
             item = QtGui.QListWidgetItem(processor)
@@ -92,13 +106,19 @@ class Page:
         self.verifyAndUpdateDefaultPostProcessorWith(PathPreferences.defaultPostProcessor())
 
         self.form.defaultPostProcessorArgs.setText(PathPreferences.defaultPostProcessorArgs())
+
+        geomTol = Units.Quantity(PathPreferences.defaultGeometryTolerance(), Units.Length)
+        self.form.geometryTolerance.setText(geomTol.UserString)
+
         self.form.leOutputFile.setText(PathPreferences.defaultOutputFile())
         self.selectComboEntry(self.form.cboOutputPolicy, PathPreferences.defaultOutputPolicy())
 
+        self.form.tbDefaultFilePath.clicked.connect(self.browseDefaultFilePath)
+        self.form.tbDefaultJobTemplate.clicked.connect(self.browseDefaultJobTemplate)
         self.form.postProcessorList.itemEntered.connect(self.setProcessorListTooltip)
         self.form.postProcessorList.itemChanged.connect(self.verifyAndUpdateDefaultPostProcessor)
         self.form.defaultPostProcessor.currentIndexChanged.connect(self.updateDefaultPostProcessorToolTip)
-        self.form.pbBrowseFileSystem.clicked.connect(self.browseFileSystem)
+        self.form.tbOutputFile.clicked.connect(self.browseOutputFile)
 
     def getPostProcessor(self, name):
         if not name in self.processor.keys():
@@ -130,7 +150,35 @@ class Page:
             self.form.defaultPostProcessor.setToolTip(self.postProcessorDefaultTooltip)
             self.form.defaultPostProcessorArgs.setToolTip(self.postProcessorArgsDefaultTooltip)
 
-    def browseFileSystem(self):
-        foo = QtGui.QFileDialog.getExistingDirectory(QtGui.qApp.activeWindow(), "Path - Output File/Directory", self.form.leOutputFile.text())
+    def bestGuessForFilePath(self):
+        path = self.form.leDefaultFilePath.text()
+        if not path:
+            path = PathPreferences.filePath()
+        return path
+
+    def browseDefaultJobTemplate(self):
+        path = self.form.leDefaultJobTemplate.text()
+        if not path:
+            path = self.bestGuessForFilePath()
+        foo = QtGui.QFileDialog.getOpenFileName(QtGui.qApp.activeWindow(),
+                "Path - Job Template",
+                path,
+                "job_*.xml")[0]
+        if foo:
+            self.form.leDefaultJobTemplate.setText(foo)
+
+
+    def browseDefaultFilePath(self):
+        path = self.bestGuessForFilePath()
+        foo = QtGui.QFileDialog.getExistingDirectory(QtGui.qApp.activeWindow(), "Path - External File Directory", path)
+        if foo:
+            self.form.leDefaultFilePath.setText(foo)
+
+    def browseOutputFile(self):
+        path = self.form.leOutputFile.text()
+        foo = QtGui.QFileDialog.getExistingDirectory(QtGui.qApp.activeWindow(), "Path - Output File/Directory", path)
         if foo:
             self.form.leOutputFile.setText(foo)
+
+
+

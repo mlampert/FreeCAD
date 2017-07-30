@@ -23,25 +23,44 @@
 # ***************************************************************************
 
 import FreeCAD
-import os
 import glob
+import os
+import PathScripts.PathLog as PathLog
+
+PathLog.setLevel(PathLog.Level.INFO, PathLog.thisModule())
+#PathLog.trackModule()
 
 class PathPreferences:
-    PostProcessorDefault     = "PostProcessorDefault"
-    PostProcessorDefaultArgs = "PostProcessorDefaultArgs"
-    PostProcessorBlacklist   = "PostProcessorBlacklist"
+    DefaultFilePath           = "DefaultFilePath"
+    DefaultJobTemplate        = "DefaultJobTemplate"
+
+    PostProcessorDefault      = "PostProcessorDefault"
+    PostProcessorDefaultArgs  = "PostProcessorDefaultArgs"
+    PostProcessorBlacklist    = "PostProcessorBlacklist"
+    PostProcessorOutputFile   = "PostProcessorOutputFile"
+    PostProcessorOutputPolicy = "PostProcessorOutputPolicy"
+
+    # Linear tolerance to use when generating Paths, eg when tesselating geometry
+    GeometryTolerance   = "GeometryTolerance"
+
+    @classmethod
+    def preferences(cls):
+        return FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Path")
+
+    @classmethod
+    def pathScriptsSourcePath(cls):
+        return FreeCAD.getHomePath() + ("Mod/Path/PathScripts/")
+
+    @classmethod
+    def pathScriptsPostSourcePath(cls):
+        return cls.pathScriptsSourcePath() + ("/post/")
 
     @classmethod
     def allAvailablePostProcessors(cls):
-        path = FreeCAD.getHomePath() + ("Mod/Path/PathScripts/")
-        posts = glob.glob(path + '/*_post.py')
-        allposts = [ str(os.path.split(os.path.splitext(p)[0])[1][:-5]) for p in posts]
-
-        grp = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Macro")
-        path = grp.GetString("MacroPath", FreeCAD.getUserAppDataDir())
-        posts = glob.glob(path + '/*_post.py')
-
-        allposts.extend([ str(os.path.split(os.path.splitext(p)[0])[1][:-5]) for p in posts])
+        allposts = []
+        for path in cls.searchPaths():
+            posts = [ str(os.path.split(os.path.splitext(p)[0])[1][:-5]) for p in glob.glob(path + '/*_post.py')]
+            allposts.extend(posts)
         allposts.sort()
         return allposts
 
@@ -58,45 +77,86 @@ class PathPreferences:
 
     @classmethod
     def defaultPostProcessor(cls):
-        preferences = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Path")
-        return preferences.GetString(cls.PostProcessorDefault, "")
+        pref = cls.preferences()
+        return pref.GetString(cls.PostProcessorDefault, "")
 
     @classmethod
     def defaultPostProcessorArgs(cls):
-        preferences = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Path")
-        return preferences.GetString(cls.PostProcessorDefaultArgs, "")
+        pref = cls.preferences()
+        return pref.GetString(cls.PostProcessorDefaultArgs, "")
+
+    @classmethod
+    def defaultGeometryTolerance(cls):
+        return cls.preferences().GetFloat(cls.GeometryTolerance, 0.01)
+
+    @classmethod
+    def defaultFilePath(cls):
+        return cls.preferences().GetString(cls.DefaultFilePath)
+
+    @classmethod
+    def filePath(cls):
+        path = cls.defaultFilePath()
+        if not path:
+            path = cls.macroFilePath()
+        return path
+
+    @classmethod
+    def macroFilePath(cls):
+        grp = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Macro")
+        return grp.GetString("MacroPath", FreeCAD.getUserAppDataDir())
+
+    @classmethod
+    def searchPaths(cls):
+        paths = []
+        p = cls.defaultFilePath()
+        if p:
+            paths.append(p)
+        paths.append(cls.macroFilePath())
+        paths.append(cls.pathScriptsPostSourcePath())
+        paths.append(cls.pathScriptsSourcePath())
+        return paths
+
+    @classmethod
+    def defaultJobTemplate(cls):
+        return cls.preferences().GetString(cls.DefaultJobTemplate)
+
+    @classmethod
+    def setJobDefaults(cls, filePath, jobTemplate, geometryTolerance):
+        PathLog.track("(%s='%s', %s, %s)" % (cls.DefaultFilePath, filePath, jobTemplate, geometryTolerance))
+        pref = cls.preferences()
+        pref.SetString(cls.DefaultFilePath, filePath)
+        pref.SetString(cls.DefaultJobTemplate, jobTemplate)
+        pref.SetFloat(cls.GeometryTolerance, geometryTolerance)
 
     @classmethod
     def postProcessorBlacklist(cls):
-        preferences = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Path")
-        blacklist = preferences.GetString(cls.PostProcessorBlacklist, "")
+        pref = cls.preferences()
+        blacklist = pref.GetString(cls.PostProcessorBlacklist, "")
         if not blacklist:
             return []
         return eval(blacklist)
 
     @classmethod
-    def savePostProcessorDefaults(cls, processor, args, blacklist):
-        preferences = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Path")
-        preferences.SetString(cls.PostProcessorDefault, processor)
-        preferences.SetString(cls.PostProcessorDefaultArgs, args)
-        preferences.SetString(cls.PostProcessorBlacklist, "%s" % (blacklist))
+    def setPostProcessorDefaults(cls, processor, args, blacklist):
+        pref = cls.preferences()
+        pref.SetString(cls.PostProcessorDefault, processor)
+        pref.SetString(cls.PostProcessorDefaultArgs, args)
+        pref.SetString(cls.PostProcessorBlacklist, "%s" % (blacklist))
 
-
-    DefaultOutputFile = "DefaultOutputFile"
-    DefaultOutputPolicy = "DefaultOutputPolicy"
 
     @classmethod
-    def saveOutputFileDefaults(cls, file, policy):
-        preferences = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Path")
-        preferences.SetString(cls.DefaultOutputFile, file)
-        preferences.SetString(cls.DefaultOutputPolicy, policy)
+    def setOutputFileDefaults(cls, file, policy):
+        pref = cls.preferences()
+        pref.SetString(cls.PostProcessorOutputFile, file)
+        pref.SetString(cls.PostProcessorOutputPolicy, policy)
 
     @classmethod
     def defaultOutputFile(cls):
-        preferences = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Path")
-        return preferences.GetString(cls.DefaultOutputFile, "")
+        pref = cls.preferences()
+        return pref.GetString(cls.PostProcessorOutputFile, "")
 
     @classmethod
     def defaultOutputPolicy(cls):
-        preferences = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Path")
-        return preferences.GetString(cls.DefaultOutputPolicy, "")
+        pref = cls.preferences()
+        return pref.GetString(cls.PostProcessorOutputPolicy, "")
+

@@ -54,6 +54,7 @@
 #include "Inventor/SoDrawingGrid.h"
 #include "Inventor/SoAutoZoomTranslation.h"
 #include "Inventor/MarkerBitmaps.h"
+#include "Inventor/SmSwitchboard.h"
 #include "SoFCCSysDragger.h"
 
 #include "propertyeditor/PropertyItem.h"
@@ -91,6 +92,7 @@ void Gui::SoFCDB::init()
     SoFCSelectionAction             ::initClass();
     SoFCDocumentAction              ::initClass();
     SoGLWidgetNode                  ::initClass();
+    SoGLVBOActivatedElement         ::initClass();
     SoFCEnableSelectionAction       ::initClass();
     SoFCEnableHighlightAction       ::initClass();
     SoFCSelectionColorAction        ::initClass();
@@ -98,6 +100,7 @@ void Gui::SoFCDB::init()
     SoFCDocumentObjectAction        ::initClass();
     SoGLSelectAction                ::initClass();
     SoVisibleFaceAction             ::initClass();
+    SoUpdateVBOAction               ::initClass();
     SoBoxSelectionRenderAction      ::initClass();
     SoFCVectorizeSVGAction          ::initClass();
     SoFCVectorizeU3DAction          ::initClass();
@@ -116,6 +119,7 @@ void Gui::SoFCDB::init()
     SoAutoZoomTranslation           ::initClass();
     MarkerBitmaps                   ::initClass();
     SoFCCSysDragger                 ::initClass();
+    SmSwitchboard                   ::initClass();
 
     PropertyItem                    ::init();
     PropertySeparatorItem           ::init();
@@ -126,11 +130,14 @@ void Gui::SoFCDB::init()
     PropertyFloatItem               ::init();
     PropertyUnitItem                ::init();
     PropertyFloatConstraintItem     ::init();
+    PropertyPrecisionItem           ::init();
     PropertyUnitConstraintItem      ::init();
     PropertyAngleItem               ::init();
     PropertyBoolItem                ::init();
     PropertyVectorItem              ::init();
     PropertyVectorDistanceItem      ::init();
+    PropertyPositionItem            ::init();
+    PropertyDirectionItem           ::init();
     PropertyMatrixItem              ::init();
     PropertyPlacementItem           ::init();
     PropertyEnumItem                ::init();
@@ -189,6 +196,7 @@ void Gui::SoFCDB::finish()
     SoFCEnableSelectionAction       ::finish();
     SoFCEnableHighlightAction       ::finish();
     SoFCSelectionColorAction        ::finish();
+    SoUpdateVBOAction               ::finish();
     SoFCHighlightColorAction        ::finish();
     
     storage->unref();

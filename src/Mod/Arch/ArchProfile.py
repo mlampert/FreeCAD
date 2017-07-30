@@ -21,7 +21,7 @@
 #*                                                                         *
 #***************************************************************************
 
-import FreeCAD, Draft, Part, os
+import FreeCAD, Draft, os
 from FreeCAD import Vector
 import csv
 
@@ -59,7 +59,7 @@ def readPresets():
     for profilefile in profilefiles:
         if os.path.exists(profilefile):
             try:
-                with open(profilefile, 'rb') as csvfile:
+                with open(profilefile, "r") as csvfile:
                     beamreader = csv.reader(csvfile)
                     bid=1 #Unique index
                     for row in beamreader:
@@ -73,9 +73,9 @@ def readPresets():
                                 Presets.append(r)
                             bid=bid+1
                         except ValueError:
-                            print "Skipping bad line: "+str(row)
+                            print("Skipping bad line: "+str(row))
             except IOError:
-                print "Could not open ",profilefile
+                print("Could not open ",profilefile)
     return Presets
 
 def makeProfile(profile=[0,'REC','REC100x100','R',100,100]):
@@ -93,7 +93,7 @@ def makeProfile(profile=[0,'REC','REC100x100','R',100,100]):
     elif profile[3]=="U":
         _ProfileU(obj, profile)
     else :
-        print "Profile not supported"
+        print("Profile not supported")
     if FreeCAD.GuiUp:
         Draft._ViewProviderDraft(obj.ViewObject)
     return obj
@@ -115,6 +115,7 @@ class _ProfileC(_Profile):
         _Profile.__init__(self,obj,profile)
 
     def execute(self,obj):
+        import Part
         pl = obj.Placement
         c1=Part.Circle()
         c1.Radius=obj.OutDiameter.Value
@@ -137,6 +138,7 @@ class _ProfileH(_Profile):
         _Profile.__init__(self,obj,profile)
 
     def execute(self,obj):
+        import Part
         pl = obj.Placement
         p1 = Vector(-obj.Width.Value/2,-obj.Height.Value/2,0)
         p2 = Vector(obj.Width.Value/2,-obj.Height.Value/2,0)
@@ -152,7 +154,7 @@ class _ProfileH(_Profile):
         p12 = Vector(-obj.Width.Value/2,(-obj.Height.Value/2)+obj.FlangeThickness.Value,0)
         p = Part.makePolygon([p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p1])
         p = Part.Face(p)
-        p.reverse()
+        #p.reverse()
         obj.Shape = p
         obj.Placement = pl
 
@@ -165,6 +167,7 @@ class _ProfileR(_Profile):
         _Profile.__init__(self,obj,profile)
 
     def execute(self,obj):
+        import Part
         pl = obj.Placement
         p1 = Vector(-obj.Width.Value/2,-obj.Height.Value/2,0)
         p2 = Vector(obj.Width.Value/2,-obj.Height.Value/2,0)
@@ -172,7 +175,7 @@ class _ProfileR(_Profile):
         p4 = Vector(-obj.Width.Value/2,obj.Height.Value/2,0)
         p = Part.makePolygon([p1,p2,p3,p4,p1])
         p = Part.Face(p)
-        p.reverse()
+        #p.reverse()
         obj.Shape = p
         obj.Placement = pl
 
@@ -186,6 +189,7 @@ class _ProfileRH(_Profile):
         _Profile.__init__(self,obj,profile)
 
     def execute(self,obj):
+        import Part
         pl = obj.Placement
         p1 = Vector(-obj.Width.Value/2,-obj.Height.Value/2,0)
         p2 = Vector(obj.Width.Value/2,-obj.Height.Value/2,0)
@@ -198,7 +202,7 @@ class _ProfileRH(_Profile):
         p = Part.makePolygon([p1,p2,p3,p4,p1])
         q = Part.makePolygon([q1,q2,q3,q4,q1])
         r = Part.Face([p,q])
-        r.reverse()
+        #r.reverse()
         obj.Shape = r
         obj.Placement = pl
         
@@ -213,6 +217,7 @@ class _ProfileU(_Profile):
         _Profile.__init__(self,obj,profile)
 
     def execute(self,obj):
+        import Part
         pl = obj.Placement
         p1 = Vector(-obj.Width.Value/2,-obj.Height.Value/2,0)
         p2 = Vector(obj.Width.Value/2,-obj.Height.Value/2,0)
@@ -224,7 +229,7 @@ class _ProfileU(_Profile):
         p8 = Vector(-obj.Width.Value/2,obj.Height.Value/2,0)
         p = Part.makePolygon([p1,p2,p3,p4,p5,p6,p7,p8,p1])
         p = Part.Face(p)
-        p.reverse()
+        #p.reverse()
         obj.Shape = p
         obj.Placement = pl
         

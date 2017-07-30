@@ -39,6 +39,7 @@
 #include <Mod/TechDraw/App/DrawViewDimension.h>
 #include <Mod/TechDraw/App/DrawViewMulti.h>
 #include <Mod/TechDraw/App/DrawHatch.h>
+#include <Mod/TechDraw/App/DrawGeomHatch.h>
 
 #include<Mod/TechDraw/App/DrawPage.h>
 #include "ViewProviderViewPart.h"
@@ -117,20 +118,28 @@ std::vector<App::DocumentObject*> ViewProviderViewPart::claimChildren(void) cons
     // valid children of a ViewPart are:
     //    - Dimensions
     //    - Hatches
+    //    - GeomHatches
     std::vector<App::DocumentObject*> temp;
     const std::vector<App::DocumentObject *> &views = getViewPart()->getInList();
     try {
       for(std::vector<App::DocumentObject *>::const_iterator it = views.begin(); it != views.end(); ++it) {
           if((*it)->getTypeId().isDerivedFrom(TechDraw::DrawViewDimension::getClassTypeId())) {
-              TechDraw::DrawViewDimension *dim = dynamic_cast<TechDraw::DrawViewDimension *>(*it);
-              const std::vector<App::DocumentObject *> &refs = dim->References2D.getValues();
-              for(std::vector<App::DocumentObject *>::const_iterator it = refs.begin(); it != refs.end(); ++it) {
-                  if(strcmp(getViewPart()->getNameInDocument(), (*it)->getNameInDocument()) == 0) {        //wf: isn't this test redundant?
-                     temp.push_back(dim);                                                                  // if a dim is in the inlist,
-                                                                                                           // it's a child of this ViewPart??
+              //TODO: make a list, then prune it.  should be faster?
+              bool skip = false;
+              std::string dimName = (*it)->getNameInDocument();
+              for (auto& t: temp) {                              //only add dim once even if it references 2 geometries
+                  std::string tName = t->getNameInDocument();
+                  if (dimName == tName) {
+                      skip = true;
+                      break;
                   }
               }
+              if (!skip) {
+                  temp.push_back(*it);
+              }
           } else if ((*it)->getTypeId().isDerivedFrom(TechDraw::DrawHatch::getClassTypeId())) {
+              temp.push_back((*it));
+          } else if ((*it)->getTypeId().isDerivedFrom(TechDraw::DrawGeomHatch::getClassTypeId())) {
               temp.push_back((*it));
           }
       }

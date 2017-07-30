@@ -27,7 +27,7 @@
 #include "Util.h"
 #include <boost/graph/graph_concepts.hpp>
 
-//#define _GCS_EXTRACT_SOLVER_SUBSYSTEM_ // This enables debuging code intended to extract information to file bug reports against Eigen, not for production code
+//#define _GCS_EXTRACT_SOLVER_SUBSYSTEM_ // This enables debugging code intended to extract information to file bug reports against Eigen, not for production code
 
 #ifdef _GCS_EXTRACT_SOLVER_SUBSYSTEM_
 #define _PROTECTED_UNLESS_EXTRACT_MODE_ public
@@ -66,6 +66,8 @@ namespace GCS
         CurveValue = 20,
         PointOnHyperbola = 21,
         InternalAlignmentPoint2Hyperbola = 22,
+        PointOnParabola = 23,
+        EqualFocalDistance = 24
     };
     
     enum InternalAlignmentType {
@@ -114,7 +116,11 @@ namespace GCS
         virtual double grad(double *);
         // virtual void grad(MAP_pD_D &deriv);  --> TODO: vectorized grad version
         virtual double maxStep(MAP_pD_D &dir, double lim=1.);
-        int findParamInPvec(double* param);//finds first occurence of param in pvec. This is useful to test if a constraint depends on the parameter (it may not actually depend on it, e.g. angle-via-point doesn't depend on ellipse's b (radmin), but b will be included within the constraint anyway. Returns -1 if not found.
+        // Finds first occurrence of param in pvec. This is useful to test if a constraint depends 
+        // on the parameter (it may not actually depend on it, e.g. angle-via-point doesn't depend 
+        // on ellipse's b (radmin), but b will be included within the constraint anyway. 
+        // Returns -1 if not found.
+        int findParamInPvec(double* param); 
     };
 
     // Equal
@@ -462,7 +468,22 @@ namespace GCS
         virtual double error();
         virtual double grad(double *);
     };
-    
+
+    class ConstraintEqualFocalDistance : public Constraint
+    {
+    private:
+        ArcOfParabola * e1;
+        ArcOfParabola * e2;
+        void ReconstructGeomPointers(); //writes pointers in pvec to the parameters of crv1, crv2 and poa
+        void errorgrad(double* err, double* grad, double *param); //error and gradient combined. Values are returned through pointers.
+    public:
+        ConstraintEqualFocalDistance(ArcOfParabola * a1, ArcOfParabola * a2);
+        virtual ConstraintType getTypeId();
+        virtual void rescale(double coef=1.);
+        virtual double error();
+        virtual double grad(double *);
+    };
+
     class ConstraintCurveValue : public Constraint
     {
     private:
@@ -505,6 +526,27 @@ namespace GCS
         ConstraintPointOnHyperbola(Point &p, ArcOfHyperbola &a);
         #ifdef _GCS_EXTRACT_SOLVER_SUBSYSTEM_
         inline ConstraintPointOnHyperbola(){}
+        #endif
+        virtual ConstraintType getTypeId();
+        virtual void rescale(double coef=1.);
+        virtual double error();
+        virtual double grad(double *);
+    };
+
+    // PointOnParabola
+    class ConstraintPointOnParabola : public Constraint
+    {
+    private:
+        void errorgrad(double* err, double* grad, double *param); //error and gradient combined. Values are returned through pointers.
+        void ReconstructGeomPointers(); //writes pointers in pvec to the parameters of crv1, crv2 and poa
+        Parabola* parab;
+        Point p;
+    public:
+        ConstraintPointOnParabola(Point &p, Parabola &e);
+        ConstraintPointOnParabola(Point &p, ArcOfParabola &a);
+	~ConstraintPointOnParabola();
+        #ifdef _GCS_EXTRACT_SOLVER_SUBSYSTEM_
+        inline ConstraintPointOnParabola(){}
         #endif
         virtual ConstraintType getTypeId();
         virtual void rescale(double coef=1.);

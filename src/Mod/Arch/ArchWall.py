@@ -30,7 +30,7 @@ if FreeCAD.GuiUp:
     from PySide.QtCore import QT_TRANSLATE_NOOP
 else:
     # \cond
-    def translate(ctxt,txt):
+    def translate(ctxt,txt, utf8_decode=False):
         return txt
     def QT_TRANSLATE_NOOP(ctxt,txt):
         return txt
@@ -50,7 +50,7 @@ __author__ = "Yorik van Havre"
 __url__ = "http://www.freecadweb.org"
 
 # Possible roles for walls
-Roles = ['Wall','Wall Layer','Beam','Column','Curtain Wall']
+Roles = ['Undefined','Wall','Wall Layer','Beam','Column','Curtain Wall']
 
 def makeWall(baseobj=None,length=None,width=None,height=None,align="Center",face=None,name="Wall"):
     '''makeWall([obj],[length],[width],[height],[align],[face],[name]): creates a wall based on the
@@ -135,11 +135,11 @@ def mergeShapes(w1,w2):
     import DraftGeomUtils
     w = DraftGeomUtils.findWires(eds)
     if len(w) == 1:
-        #print "found common wire"
+        #print("found common wire")
         normal,length,width,height = w1.Proxy.getDefaultValues(w1)
-        print w[0].Edges
+        print(w[0].Edges)
         sh = w1.Proxy.getBase(w1,w[0],normal,width,height)
-        print sh
+        print(sh)
         return sh
     return None
 
@@ -174,6 +174,7 @@ class _CommandWall:
 
     def Activated(self):
         self.Align = "Center"
+        self.MultiMat = None
         self.Length = None
         self.lengthValue = 0
         self.continueCmd = False
@@ -198,12 +199,14 @@ class _CommandWall:
                         if selobj.HasSubObjects:
                             if "Face" in selobj.SubElementNames[0]:
                                 idx = int(selobj.SubElementNames[0][4:])
-                                FreeCADGui.doCommand("Arch.makeWall(FreeCAD.ActiveDocument."+selobj.Object.Name+",face="+str(idx)+")")
+                                FreeCADGui.doCommand("obj = Arch.makeWall(FreeCAD.ActiveDocument."+selobj.Object.Name+",face="+str(idx)+")")
                                 spacedone = True
                         if not spacedone:
-                            FreeCADGui.doCommand('Arch.makeWall(FreeCAD.ActiveDocument.'+selobj.Object.Name+')')
+                            FreeCADGui.doCommand('obj = Arch.makeWall(FreeCAD.ActiveDocument.'+selobj.Object.Name+')')
                     else:
-                        FreeCADGui.doCommand('Arch.makeWall(FreeCAD.ActiveDocument.'+selobj.Object.Name+')')
+                        FreeCADGui.doCommand('obj = Arch.makeWall(FreeCAD.ActiveDocument.'+selobj.Object.Name+')')
+                FreeCADGui.addModule("Draft")
+                FreeCADGui.doCommand("Draft.autogroup(obj)")
                 FreeCAD.ActiveDocument.commitTransaction()
                 FreeCAD.ActiveDocument.recompute()
                 done = True
@@ -273,6 +276,10 @@ class _CommandWall:
         FreeCADGui.doCommand('base.addGeometry(trace)')
         FreeCADGui.doCommand('wall = Arch.makeWall(base,width='+str(self.Width)+',height='+str(self.Height)+',align="'+str(self.Align)+'")')
         FreeCADGui.doCommand('wall.Normal = FreeCAD.DraftWorkingPlane.axis')
+        if self.MultiMat:
+            FreeCADGui.doCommand("wall.Material = FreeCAD.ActiveDocument."+self.MultiMat.Name)
+        FreeCADGui.addModule("Draft")
+        FreeCADGui.doCommand("Draft.autogroup(wall)")
 
     def update(self,point,info):
         "this function is called by the Snapper when the mouse is moved"
@@ -296,36 +303,51 @@ class _CommandWall:
         "sets up a taskbox widget"
         w = QtGui.QWidget()
         ui = FreeCADGui.UiLoader()
-        w.setWindowTitle(translate("Arch","Wall options").decode("utf8"))
+        w.setWindowTitle(translate("Arch","Wall options", utf8_decode=True))
         grid = QtGui.QGridLayout(w)
 
-        label5 = QtGui.QLabel(translate("Arch","Length").decode("utf8"))
+        matCombo = QtGui.QComboBox()
+        matCombo.addItem(translate("Arch","Wall Presets..."))
+        self.multimats = []
+        self.MultiMat = None
+        for o in FreeCAD.ActiveDocument.Objects:
+            if Draft.getType(o) == "MultiMaterial":
+                self.multimats.append(o)
+                matCombo.addItem(o.Label)
+        if hasattr(FreeCAD,"LastArchMultiMaterial"):
+            for i,o in enumerate(self.multimats):
+                if o.Name == FreeCAD.LastArchMultiMaterial:
+                    matCombo.setCurrentIndex(i+1)
+                    self.MultiMat = o
+        grid.addWidget(matCombo,0,0,1,2)
+
+        label5 = QtGui.QLabel(translate("Arch","Length", utf8_decode=True))
         self.Length = ui.createWidget("Gui::InputField")
         self.Length.setText("0.00 mm")
-        grid.addWidget(label5,0,0,1,1)
-        grid.addWidget(self.Length,0,1,1,1)
+        grid.addWidget(label5,1,0,1,1)
+        grid.addWidget(self.Length,1,1,1,1)
 
-        label1 = QtGui.QLabel(translate("Arch","Width").decode("utf8"))
+        label1 = QtGui.QLabel(translate("Arch","Width", utf8_decode=True))
         value1 = ui.createWidget("Gui::InputField")
         value1.setText(FreeCAD.Units.Quantity(self.Width,FreeCAD.Units.Length).UserString)
-        grid.addWidget(label1,1,0,1,1)
-        grid.addWidget(value1,1,1,1,1)
+        grid.addWidget(label1,2,0,1,1)
+        grid.addWidget(value1,2,1,1,1)
 
-        label2 = QtGui.QLabel(translate("Arch","Height").decode("utf8"))
+        label2 = QtGui.QLabel(translate("Arch","Height", utf8_decode=True))
         value2 = ui.createWidget("Gui::InputField")
         value2.setText(FreeCAD.Units.Quantity(self.Height,FreeCAD.Units.Length).UserString)
-        grid.addWidget(label2,2,0,1,1)
-        grid.addWidget(value2,2,1,1,1)
+        grid.addWidget(label2,3,0,1,1)
+        grid.addWidget(value2,3,1,1,1)
 
-        label3 = QtGui.QLabel(translate("Arch","Alignment").decode("utf8"))
+        label3 = QtGui.QLabel(translate("Arch","Alignment", utf8_decode=True))
         value3 = QtGui.QComboBox()
         items = ["Center","Left","Right"]
         value3.addItems(items)
         value3.setCurrentIndex(items.index(self.Align))
-        grid.addWidget(label3,3,0,1,1)
-        grid.addWidget(value3,3,1,1,1)
+        grid.addWidget(label3,4,0,1,1)
+        grid.addWidget(value3,4,1,1,1)
 
-        label4 = QtGui.QLabel(translate("Arch","Con&tinue").decode("utf8"))
+        label4 = QtGui.QLabel(translate("Arch","Con&tinue", utf8_decode=True))
         value4 = QtGui.QCheckBox()
         value4.setObjectName("ContinueCmd")
         value4.setLayoutDirection(QtCore.Qt.RightToLeft)
@@ -333,8 +355,8 @@ class _CommandWall:
         if hasattr(FreeCADGui,"draftToolBar"):
             value4.setChecked(FreeCADGui.draftToolBar.continueMode)
             self.continueCmd = FreeCADGui.draftToolBar.continueMode
-        grid.addWidget(label4,4,0,1,1)
-        grid.addWidget(value4,4,1,1,1)
+        grid.addWidget(label4,5,0,1,1)
+        grid.addWidget(value4,5,1,1,1)
 
         QtCore.QObject.connect(self.Length,QtCore.SIGNAL("valueChanged(double)"),self.setLength)
         QtCore.QObject.connect(value1,QtCore.SIGNAL("valueChanged(double)"),self.setWidth)
@@ -346,7 +368,16 @@ class _CommandWall:
         QtCore.QObject.connect(value1,QtCore.SIGNAL("returnPressed()"),value2.setFocus)
         QtCore.QObject.connect(value1,QtCore.SIGNAL("returnPressed()"),value2.selectAll)
         QtCore.QObject.connect(value2,QtCore.SIGNAL("returnPressed()"),self.createFromGUI)
+        QtCore.QObject.connect(matCombo,QtCore.SIGNAL("currentIndexChanged(int)"),self.setMat)
         return w
+        
+    def setMat(self,d):
+        if d == 0:
+            self.MultiMat = None
+            del FreeCAD.LastArchMultiMaterial
+        elif d <= len(self.multimats):
+            self.MultiMat = self.multimats[d-1]
+            FreeCAD.LastArchMultiMaterial = self.MultiMat.Name
         
     def setLength(self,d):
         self.lengthValue = d
@@ -370,7 +401,9 @@ class _CommandWall:
     def createFromGUI(self):
         FreeCAD.ActiveDocument.openTransaction(translate("Arch","Create Wall"))
         FreeCADGui.addModule("Arch")
-        FreeCADGui.doCommand('Arch.makeWall(length='+str(self.lengthValue)+',width='+str(self.Width)+',height='+str(self.Height)+',align="'+str(self.Align)+'")')
+        FreeCADGui.doCommand('wall = Arch.makeWall(length='+str(self.lengthValue)+',width='+str(self.Width)+',height='+str(self.Height)+',align="'+str(self.Align)+'")')
+        if self.MultiMat:
+            FreeCADGui.doCommand("wall.Material = FreeCAD.ActiveDocument."+self.MultiMat.Name)
         FreeCAD.ActiveDocument.commitTransaction()
         FreeCAD.ActiveDocument.recompute()
         if hasattr(FreeCADGui,"draftToolBar"):
@@ -432,6 +465,7 @@ class _Wall(ArchComponent.Component):
         obj.Align = ['Left','Right','Center']
         obj.Role = Roles
         self.Type = "Wall"
+        obj.Role = "Wall"
 
     def execute(self,obj):
         "builds the wall shape"
@@ -445,9 +479,17 @@ class _Wall(ArchComponent.Component):
         extdata = self.getExtrusionData(obj)
         if extdata:
             base = extdata[0]
-            base.Placement = extdata[2].multiply(base.Placement)
             extv = extdata[2].Rotation.multVec(extdata[1])
-            base = base.extrude(extv)
+            if isinstance(base,list):
+                shps = []
+                for b in base:
+                    b.Placement = extdata[2].multiply(b.Placement)
+                    b = b.extrude(extv)
+                    shps.append(b)
+                base = Part.makeCompound(shps)
+            else:
+                base.Placement = extdata[2].multiply(base.Placement)
+                base = base.extrude(extv)
         if obj.Base:
             if obj.Base.isDerivedFrom("Part::Feature"):
                 if obj.Base.Shape.isNull():
@@ -485,6 +527,24 @@ class _Wall(ArchComponent.Component):
                                 obj.Length = l
 
     def onChanged(self,obj,prop):
+        if prop == "Length":
+            if obj.Base and obj.Length.Value:
+                if obj.Base.isDerivedFrom("Part::Feature"):
+                    if len(obj.Base.Shape.Edges) == 1:
+                        import DraftGeomUtils
+                        e = obj.Base.Shape.Edges[0]
+                        if DraftGeomUtils.geomType(e) == "Line":
+                            if e.Length != obj.Length.Value:
+                                v = e.Vertexes[-1].Point.sub(e.Vertexes[0].Point)
+                                v.normalize()
+                                v.multiply(obj.Length.Value)
+                                p2 = e.Vertexes[0].Point.add(v)
+                                if Draft.getType(obj.Base) == "Wire":
+                                    obj.Base.End = p2
+                                elif Draft.getType(obj.Base) == "Sketch":
+                                    obj.Base.movePoint(0,2,p2,0)
+                                else:
+                                    FreeCAD.Console.PrintError(translate("Arch","Error: Unable to modify the base object of this wall")+"\n")
         self.hideSubobjects(obj,prop)
         ArchComponent.Component.onChanged(self,obj,prop)
         
@@ -502,7 +562,9 @@ class _Wall(ArchComponent.Component):
         import Part,DraftGeomUtils
         data = ArchComponent.Component.getExtrusionData(self,obj)
         if data:
-            return data
+            if not isinstance(data[0],list):
+                # multifuses not considered here
+                return data
         length  = obj.Length.Value
         width = obj.Width.Value
         height = obj.Height.Value
@@ -511,6 +573,8 @@ class _Wall(ArchComponent.Component):
                 if Draft.getType(p) == "Floor":
                     if p.Height.Value:
                         height = p.Height.Value
+        if not height:
+            return None
         if obj.Normal == Vector(0,0,0):
             normal = Vector(0,0,1)
         else:
@@ -518,6 +582,22 @@ class _Wall(ArchComponent.Component):
         base = None
         placement = None
         basewires = None
+        # build wall layers
+        layers = []
+        if hasattr(obj,"Material"):
+            if obj.Material:
+                if hasattr(obj.Material,"Materials"):
+                    varwidth = 0
+                    restwidth = width - sum(obj.Material.Thicknesses)
+                    if restwidth > 0:
+                        varwidth = [t for t in obj.Material.Thicknesses if t == 0]
+                        if varwidth:
+                            varwidth = restwidth/len(varwidth)
+                    for t in obj.Material.Thicknesses:
+                        if t:
+                            layers.append(t)
+                        elif varwidth:
+                            layers.append(varwidth)
         if obj.Base:
             if obj.Base.isDerivedFrom("Part::Feature"):
                 if obj.Base.Shape:
@@ -550,8 +630,11 @@ class _Wall(ArchComponent.Component):
                     elif len(obj.Base.Shape.Edges) == 1:
                         basewires = [Part.Wire(obj.Base.Shape.Edges)]
                     if basewires and width:
+                        if (len(basewires) == 1) and layers:
+                            basewires = [basewires[0] for l in layers]
+                        layeroffset = 0
                         baseface = None
-                        for wire in basewires:
+                        for i,wire in enumerate(basewires):
                             e = wire.Edges[0]
                             if isinstance(e.Curve,Part.Circle):
                                 dvec = e.Vertexes[0].Point.sub(e.Curve.Center)
@@ -561,45 +644,87 @@ class _Wall(ArchComponent.Component):
                                 dvec.normalize()
                             sh = None
                             if obj.Align == "Left":
-                                dvec.multiply(width)
-                                if obj.Offset.Value:
-                                    dvec2 = DraftVecUtils.scaleTo(dvec,obj.Offset.Value)
+                                off = obj.Offset.Value
+                                if layers:
+                                    off = off+layeroffset
+                                    dvec.multiply(layers[i])
+                                    layeroffset += layers[i]
+                                else:
+                                    dvec.multiply(width)
+                                if off:
+                                    dvec2 = DraftVecUtils.scaleTo(dvec,off)
                                     wire = DraftGeomUtils.offsetWire(wire,dvec2)
                                 w2 = DraftGeomUtils.offsetWire(wire,dvec)
                                 w1 = Part.Wire(Part.__sortEdges__(wire.Edges))
                                 sh = DraftGeomUtils.bind(w1,w2)
                             elif obj.Align == "Right":
-                                dvec.multiply(width)
                                 dvec = dvec.negative()
-                                if obj.Offset.Value:
-                                    dvec2 = DraftVecUtils.scaleTo(dvec,obj.Offset.Value)
+                                off = obj.Offset.Value
+                                if layers:
+                                    off = off+layeroffset
+                                    dvec.multiply(layers[i])
+                                    layeroffset += layers[i]
+                                else:
+                                    dvec.multiply(width)
+                                if off:                                
+                                    dvec2 = DraftVecUtils.scaleTo(dvec,off)
                                     wire = DraftGeomUtils.offsetWire(wire,dvec2)
                                 w2 = DraftGeomUtils.offsetWire(wire,dvec)
                                 w1 = Part.Wire(Part.__sortEdges__(wire.Edges))
                                 sh = DraftGeomUtils.bind(w1,w2)
                             elif obj.Align == "Center":
-                                dvec.multiply(width/2)
-                                w1 = DraftGeomUtils.offsetWire(wire,dvec)
-                                dvec = dvec.negative()
-                                w2 = DraftGeomUtils.offsetWire(wire,dvec)
+                                if layers:
+                                    off = width/2-layeroffset
+                                    d1 = Vector(dvec).multiply(off)
+                                    w1 = DraftGeomUtils.offsetWire(wire,d1)
+                                    layeroffset += layers[i]
+                                    off = width/2-layeroffset
+                                    d1 = Vector(dvec).multiply(off)
+                                    w2 = DraftGeomUtils.offsetWire(wire,d1)
+                                else:
+                                    dvec.multiply(width/2)
+                                    w1 = DraftGeomUtils.offsetWire(wire,dvec)
+                                    dvec = dvec.negative()
+                                    w2 = DraftGeomUtils.offsetWire(wire,dvec)
                                 sh = DraftGeomUtils.bind(w1,w2)
                             if sh:
                                 sh.fix(0.1,0,1) # fixes self-intersecting wires
                                 f = Part.Face(sh)
                                 if baseface:
-                                    baseface = baseface.fuse(f)
+                                    if layers:
+                                        baseface.append(f)
+                                    else:
+                                        baseface = baseface.fuse(f)
                                 else:
-                                    baseface = f
+                                    if layers:
+                                        baseface = [f]
+                                    else:
+                                        baseface = f
                         if baseface:
                             base,placement = self.rebase(baseface)
         else:
-            l2 = length/2 or 0.5
-            w2 = width/2 or 0.5
-            v1 = Vector(-l2,-w2,0)
-            v2 = Vector(l2,-w2,0)
-            v3 = Vector(l2,w2,0)
-            v4 = Vector(-l2,w2,0)
-            base = Part.Face(Part.makePolygon([v1,v2,v3,v4,v1]))
+            if layers:
+                totalwidth = sum(layers)
+                offset = 0
+                base = []
+                for l in layers:
+                    l2 = length/2 or 0.5
+                    w1 = -totalwidth/2 + offset
+                    w2 = w1 + l
+                    v1 = Vector(-l2,w1,0)
+                    v2 = Vector(l2,w1,0)
+                    v3 = Vector(l2,w2,0)
+                    v4 = Vector(-l2,w2,0)
+                    base.append(Part.Face(Part.makePolygon([v1,v2,v3,v4,v1])))
+                    offset += l
+            else:
+                l2 = length/2 or 0.5
+                w2 = width/2 or 0.5
+                v1 = Vector(-l2,-w2,0)
+                v2 = Vector(l2,-w2,0)
+                v3 = Vector(l2,w2,0)
+                v4 = Vector(-l2,w2,0)
+                base = Part.Face(Part.makePolygon([v1,v2,v3,v4,v1]))
             placement = FreeCAD.Placement()
         if base and placement:
             extrusion = normal.multiply(height)
@@ -638,18 +763,39 @@ class _ViewProviderWall(ArchComponent.ViewProviderComponent):
         sep.addChild(self.fcoords)
         sep.addChild(self.fset)
         vobj.RootNode.addChild(sep)
-        return
+        ArchComponent.ViewProviderComponent.attach(self,vobj)
 
     def updateData(self,obj,prop):
-        if prop in ["Placement","Shape"]:
+        if prop in ["Placement","Shape","Material"]:
             if obj.ViewObject.DisplayMode == "Footprint":
                 obj.ViewObject.Proxy.setDisplayMode("Footprint")
+            if hasattr(obj,"Material"):
+                if obj.Material and obj.Shape:
+                    if hasattr(obj.Material,"Materials"):
+                        if len(obj.Material.Materials) == len(obj.Shape.Solids):
+                            cols = []
+                            for i,mat in enumerate(obj.Material.Materials):
+                                c = obj.ViewObject.ShapeColor
+                                c = (c[0],c[1],c[2],obj.ViewObject.Transparency/100.0)
+                                if 'DiffuseColor' in mat.Material:
+                                    if "(" in mat.Material['DiffuseColor']:
+                                        c = tuple([float(f) for f in mat.Material['DiffuseColor'].strip("()").split(",")])
+                                if 'Transparency' in mat.Material:
+                                    c = (c[0],c[1],c[2],float(mat.Material['Transparency']))
+                                cols.extend([c for j in range(len(obj.Shape.Solids[i].Faces))])
+                            obj.ViewObject.DiffuseColor = cols
+        ArchComponent.ViewProviderComponent.updateData(self,obj,prop)
+        if len(obj.ViewObject.DiffuseColor) > 1:
+            # force-reset colors if changed
+            obj.ViewObject.DiffuseColor = obj.ViewObject.DiffuseColor
 
     def getDisplayModes(self,vobj):
-        modes=["Footprint"]
+        modes = ArchComponent.ViewProviderComponent.getDisplayModes(self,vobj)+["Footprint"]
         return modes
 
     def setDisplayMode(self,mode):
+        self.fset.coordIndex.deleteValues(0)
+        self.fcoords.point.deleteValues(0)
         if mode == "Footprint":
             if hasattr(self,"Object"):
                 faces = self.Object.Proxy.getFootprint(self.Object)
@@ -667,10 +813,7 @@ class _ViewProviderWall(ArchComponent.ViewProviderComponent):
                     self.fcoords.point.setValues(verts)
                     self.fset.coordIndex.setValues(0,len(fdata),fdata)
             return "Wireframe"
-        else:
-            self.fset.coordIndex.deleteValues(0)
-            self.fcoords.point.deleteValues(0)
-            return mode
+        return ArchComponent.ViewProviderComponent.setDisplayMode(self,mode)
 
 
 if FreeCAD.GuiUp:

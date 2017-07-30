@@ -22,7 +22,6 @@
 
 
 #include "PreCompiled.h"
-#include "PropertyPostDataObject.h"
 #include <Base/FileInfo.h>
 #include <Base/Console.h>
 #include <Base/Writer.h>
@@ -43,6 +42,7 @@
 #include <vtkXMLUnstructuredGridReader.h>
 #include <vtkXMLRectilinearGridReader.h>
 #include <vtkXMLImageDataReader.h>
+#include "PropertyPostDataObject.h"
 
 #ifndef _PreComp_
 
@@ -105,7 +105,7 @@ PyObject *PropertyPostDataObject::getPyObject(void)
     return new PyObject();
 }
 
-void PropertyPostDataObject::setPyObject(PyObject *value)
+void PropertyPostDataObject::setPyObject(PyObject * /*value*/)
 {
 }
 
@@ -167,7 +167,7 @@ unsigned int PropertyPostDataObject::getMemSize (void) const
     return m_dataObject->GetActualMemorySize();
 }
 
-void PropertyPostDataObject::getPaths(std::vector<App::ObjectIdentifier> &paths) const
+void PropertyPostDataObject::getPaths(std::vector<App::ObjectIdentifier> & /*paths*/) const
 {
 //     paths.push_back(App::ObjectIdentifier(getContainer()) << App::ObjectIdentifier::Component::SimpleComponent(getName())
 //                     << App::ObjectIdentifier::Component::SimpleComponent(App::ObjectIdentifier::String("ShapeType")));

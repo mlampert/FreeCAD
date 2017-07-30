@@ -24,8 +24,16 @@
 #include "PreCompiled.h"
 #include "PyExport.h"
 #include "Exception.h"
+#if defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wdeprecated-register"
+# pragma clang diagnostic ignored "-Wself-assign"
+#endif
 namespace Swig_1_3_25 {
 #include "swigpyrun_1.3.25.h"
 #include "swigpyrun.inl"
 }
+#if defined(__clang__)
+# pragma clang diagnostic pop
+#endif
 

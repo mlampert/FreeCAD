@@ -2,16 +2,271 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="sv-SE" sourcelanguage="en">
   <context>
-    <name>Fem_BeamSection</name>
+    <name>FEM_Analysis</name>
+    <message>
+      <location filename="_CommandFemAnalysis.py" line="41"/>
+      <source>Analysis container</source>
+      <translation>Analys behållare</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemAnalysis.py" line="43"/>
+      <source>Creates a analysis container with standard solver CalculiX</source>
+      <translation type="unfinished">Creates a analysis container with standard solver CalculiX</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_BeamSection</name>
     <message>
       <location filename="_CommandFemBeamSection.py" line="41"/>
-      <source>FEM Beam Cross Section Definition ...</source>
-      <translation type="unfinished">FEM Beam Cross Section Definition ...</translation>
+      <source>Beam cross section</source>
+      <translation type="unfinished">Beam cross section</translation>
     </message>
     <message>
       <location filename="_CommandFemBeamSection.py" line="43"/>
-      <source>Creates a FEM Beam Cross Section</source>
-      <translation type="unfinished">Creates a FEM Beam Cross Section</translation>
+      <source>Creates a FEM beam cross section</source>
+      <translation type="unfinished">Creates a FEM beam cross section</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_ConstraintSelfWeight</name>
+    <message>
+      <location filename="_CommandFemConstraintSelfWeight.py" line="41"/>
+      <source>Constraint self weigt</source>
+      <translation type="unfinished">Constraint self weigt</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemConstraintSelfWeight.py" line="43"/>
+      <source>Creates a FEM constraint self weigt</source>
+      <translation type="unfinished">Creates a FEM constraint self weigt</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_FEMMesh2Mesh</name>
+    <message>
+      <location filename="_CommandFemMesh2Mesh.py" line="42"/>
+      <source>FEM mesh to mesh</source>
+      <translation type="unfinished">FEM mesh to mesh</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemMesh2Mesh.py" line="43"/>
+      <source>Convert the surface of a FEM mesh to a mesh</source>
+      <translation type="unfinished">Convert the surface of a FEM mesh to a mesh</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_FluidSection</name>
+    <message>
+      <location filename="_CommandFemFluidSection.py" line="42"/>
+      <source>Fluid section for 1D flow</source>
+      <translation type="unfinished">Fluid section for 1D flow</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemFluidSection.py" line="44"/>
+      <source>Creates a FEM Fluid section for 1D flow</source>
+      <translation type="unfinished">Creates a FEM Fluid section for 1D flow</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_MaterialFluid</name>
+    <message>
+      <location filename="_CommandFemMaterialFluid.py" line="42"/>
+      <source>FEM material for Fluid</source>
+      <translation type="unfinished">FEM material for Fluid</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemMaterialFluid.py" line="44"/>
+      <source>Creates a FEM material for Fluid</source>
+      <translation type="unfinished">Creates a FEM material for Fluid</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_MaterialMechanicalNonlinear</name>
+    <message>
+      <location filename="_CommandFemMaterialMechanicalNonlinear.py" line="42"/>
+      <source>Nonlinear mechanical material</source>
+      <translation type="unfinished">Nonlinear mechanical material</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemMaterialMechanicalNonlinear.py" line="44"/>
+      <source>Creates a nonlinear mechanical material</source>
+      <translation type="unfinished">Creates a nonlinear mechanical material</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_MaterialSolid</name>
+    <message>
+      <location filename="_CommandFemMaterialSolid.py" line="42"/>
+      <source>FEM material for solid</source>
+      <translation type="unfinished">FEM material for solid</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemMaterialSolid.py" line="44"/>
+      <source>Creates a FEM material for solid</source>
+      <translation type="unfinished">Creates a FEM material for solid</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_MeshClear</name>
+    <message>
+      <location filename="_CommandFemMeshClear.py" line="41"/>
+      <source>Clear FEM mesh</source>
+      <translation type="unfinished">Clear FEM mesh</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemMeshClear.py" line="43"/>
+      <source>Clear the Mesh of a FEM mesh object</source>
+      <translation type="unfinished">Clear the Mesh of a FEM mesh object</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_MeshFromShape</name>
+    <message>
+      <location filename="_CommandFemMeshNetgenFromShape.py" line="42"/>
+      <source>FEM mesh from shape by Netgen</source>
+      <translation type="unfinished">FEM mesh from shape by Netgen</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemMeshNetgenFromShape.py" line="43"/>
+      <source>Create a FEM volume mesh from a solid or face shape by Netgen internal mesher</source>
+      <translation type="unfinished">Create a FEM volume mesh from a solid or face shape by Netgen internal mesher</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_MeshGmshFromShape</name>
+    <message>
+      <location filename="_CommandFemMeshGmshFromShape.py" line="42"/>
+      <source>FEM mesh from shape by GMSH</source>
+      <translation type="unfinished">FEM mesh from shape by GMSH</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemMeshGmshFromShape.py" line="43"/>
+      <source>Create a FEM mesh from a shape by GMSH mesher</source>
+      <translation type="unfinished">Create a FEM mesh from a shape by GMSH mesher</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_MeshGroup</name>
+    <message>
+      <location filename="_CommandFemMeshGroup.py" line="41"/>
+      <source>FEM mesh group</source>
+      <translation type="unfinished">FEM mesh group</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemMeshGroup.py" line="43"/>
+      <source>Creates a FEM mesh group</source>
+      <translation type="unfinished">Creates a FEM mesh group</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_MeshPrintInfo</name>
+    <message>
+      <location filename="_CommandFemMeshPrintInfo.py" line="43"/>
+      <source>Print FEM mesh info</source>
+      <translation type="unfinished">Print FEM mesh info</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_MeshRegion</name>
+    <message>
+      <location filename="_CommandFemMeshRegion.py" line="41"/>
+      <source>FEM mesh region</source>
+      <translation type="unfinished">FEM mesh region</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemMeshRegion.py" line="43"/>
+      <source>Creates a FEM mesh region</source>
+      <translation type="unfinished">Creates a FEM mesh region</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_ResultShow</name>
+    <message>
+      <location filename="_CommandFemResultShow.py" line="41"/>
+      <source>Show result</source>
+      <translation>Visa resultat</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemResultShow.py" line="43"/>
+      <source>Shows and visualizes selected result data</source>
+      <translation type="unfinished">Shows and visualizes selected result data</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_ResultsPurge</name>
+    <message>
+      <location filename="_CommandFemResultsPurge.py" line="41"/>
+      <source>Purge results</source>
+      <translation>Rensa resultaten</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemResultsPurge.py" line="43"/>
+      <source>Purges all results from active analysis</source>
+      <translation type="unfinished">Purges all results from active analysis</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_ShellThickness</name>
+    <message>
+      <location filename="_CommandFemShellThickness.py" line="41"/>
+      <source>Shell plate thickness</source>
+      <translation type="unfinished">Shell plate thickness</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemShellThickness.py" line="43"/>
+      <source>Creates a FEM shell plate thickness</source>
+      <translation type="unfinished">Creates a FEM shell plate thickness</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_SolverCalculix</name>
+    <message>
+      <location filename="_CommandFemSolverCalculix.py" line="42"/>
+      <source>Solver CalculiX</source>
+      <translation type="unfinished">Solver CalculiX</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemSolverCalculix.py" line="44"/>
+      <source>Creates a FEM solver CalculiX</source>
+      <translation type="unfinished">Creates a FEM solver CalculiX</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_SolverControl</name>
+    <message>
+      <location filename="_CommandFemSolverControl.py" line="40"/>
+      <source>Solver job control</source>
+      <translation type="unfinished">Solver job control</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemSolverControl.py" line="42"/>
+      <source>Changes solver attributes and runs the calculations for the selected solver</source>
+      <translation type="unfinished">Changes solver attributes and runs the calculations for the selected solver</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_SolverRun</name>
+    <message>
+      <location filename="_CommandFemSolverRun.py" line="40"/>
+      <source>Run solver calculations</source>
+      <translation type="unfinished">Run solver calculations</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemSolverRun.py" line="42"/>
+      <source>Runs the calculations for the selected solver</source>
+      <translation type="unfinished">Runs the calculations for the selected solver</translation>
+    </message>
+  </context>
+  <context>
+    <name>FEM_SolverZ88</name>
+    <message>
+      <location filename="_CommandFemSolverZ88.py" line="41"/>
+      <source>Solver Z88</source>
+      <translation type="unfinished">Solver Z88</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemSolverZ88.py" line="43"/>
+      <source>Creates a FEM solver Z88</source>
+      <translation type="unfinished">Creates a FEM solver Z88</translation>
     </message>
   </context>
   <context>
@@ -28,33 +283,17 @@
     </message>
   </context>
   <context>
-    <name>Fem_CreateFromShape</name>
+    <name>Fem_Analysis</name>
     <message>
-      <location filename="_CommandFemFromShape.py" line="39"/>
-      <source>Create FEM mesh</source>
-      <translation>Skapa FEM nät</translation>
+      <location filename="_CommandAnalysis.py" line="41"/>
+      <source>Analysis container</source>
+      <translation>Analys behållare</translation>
     </message>
     <message>
-      <location filename="_CommandFemFromShape.py" line="40"/>
-      <source>Create FEM mesh from shape</source>
-      <translation>Skapa FEM nät från form</translation>
+      <location filename="_CommandAnalysis.py" line="43"/>
+      <source>Creates a analysis container with standard solver CalculiX</source>
+      <translation type="unfinished">Creates a analysis container with standard solver CalculiX</translation>
     </message>
-  </context>
-  <context>
-    <name>Fem_MechanicalMaterial</name>
-    <message>
-      <location filename="_CommandMechanicalMaterial.py" line="42"/>
-      <source>Mechanical material...</source>
-      <translation type="unfinished">Mechanical material...</translation>
-    </message>
-    <message>
-      <location filename="_CommandMechanicalMaterial.py" line="44"/>
-      <source>Creates or edit the mechanical material definition.</source>
-      <translation type="unfinished">Creates or edit the mechanical material definition.</translation>
-    </message>
-  </context>
-  <context>
-    <name>Fem_NewMechanicalAnalysis</name>
     <message>
       <location filename="_CommandNewMechanicalAnalysis.py" line="40"/>
       <source>New mechanical analysis</source>
@@ -67,33 +306,206 @@
     </message>
   </context>
   <context>
+    <name>Fem_BeamSection</name>
+    <message>
+      <location filename="_CommandBeamSection.py" line="41"/>
+      <source>Beam cross section</source>
+      <translation type="unfinished">Beam cross section</translation>
+    </message>
+    <message>
+      <location filename="_CommandBeamSection.py" line="43"/>
+      <source>Creates a FEM beam cross section</source>
+      <translation type="unfinished">Creates a FEM beam cross section</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemBeamSection.py" line="41"/>
+      <source>FEM Beam Cross Section Definition ...</source>
+      <translation>FEM-Balk tvärsnittsdefinition ...</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemBeamSection.py" line="43"/>
+      <source>Creates a FEM Beam Cross Section</source>
+      <translation>Skapar en FEM-Balkstvärsnitt</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_ClearMesh</name>
+    <message>
+      <location filename="_CommandClearMesh.py" line="41"/>
+      <source>Clear FEM mesh</source>
+      <translation type="unfinished">Clear FEM mesh</translation>
+    </message>
+    <message>
+      <location filename="_CommandClearMesh.py" line="43"/>
+      <source>Clear the Mesh of a FEM mesh object</source>
+      <translation type="unfinished">Clear the Mesh of a FEM mesh object</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_ConstraintSelfWeight</name>
+    <message>
+      <location filename="_CommandConstraintSelfWeight.py" line="41"/>
+      <source>Constraint self weigt</source>
+      <translation type="unfinished">Constraint self weigt</translation>
+    </message>
+    <message>
+      <location filename="_CommandConstraintSelfWeight.py" line="43"/>
+      <source>Creates a FEM constraint self weigt</source>
+      <translation type="unfinished">Creates a FEM constraint self weigt</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_ControlSolver</name>
+    <message>
+      <location filename="_CommandControlSolver.py" line="40"/>
+      <source>Solver job control</source>
+      <translation type="unfinished">Solver job control</translation>
+    </message>
+    <message>
+      <location filename="_CommandControlSolver.py" line="42"/>
+      <source>Changes solver attributes and runs the calculations for the selected solver</source>
+      <translation type="unfinished">Changes solver attributes and runs the calculations for the selected solver</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_FemMesh2Mesh</name>
+    <message>
+      <location filename="_CommandFEMMesh2Mesh.py" line="42"/>
+      <source>FEM mesh to mesh</source>
+      <translation type="unfinished">FEM mesh to mesh</translation>
+    </message>
+    <message>
+      <location filename="_CommandFEMMesh2Mesh.py" line="43"/>
+      <source>Convert the surface of a FEM mesh to a mesh</source>
+      <translation type="unfinished">Convert the surface of a FEM mesh to a mesh</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_MaterialMechanicalNonlinear</name>
+    <message>
+      <location filename="_CommandMaterialMechanicalNonlinear.py" line="42"/>
+      <source>Nonlinear mechanical material</source>
+      <translation type="unfinished">Nonlinear mechanical material</translation>
+    </message>
+    <message>
+      <location filename="_CommandMaterialMechanicalNonlinear.py" line="44"/>
+      <source>Creates a nonlinear mechanical material</source>
+      <translation type="unfinished">Creates a nonlinear mechanical material</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_MechanicalMaterial</name>
+    <message>
+      <location filename="_CommandMechanicalMaterial.py" line="42"/>
+      <source>Mechanical material</source>
+      <translation>Mekaniskt material</translation>
+    </message>
+    <message>
+      <location filename="_CommandMechanicalMaterial.py" line="42"/>
+      <source>Mechanical material...</source>
+      <translation type="unfinished">Mechanical material...</translation>
+    </message>
+    <message>
+      <location filename="_CommandMechanicalMaterial.py" line="44"/>
+      <source>Creates a mechanical material</source>
+      <translation type="unfinished">Creates a mechanical material</translation>
+    </message>
+    <message>
+      <location filename="_CommandMechanicalMaterial.py" line="44"/>
+      <source>Creates or edit the mechanical material definition.</source>
+      <translation type="unfinished">Creates or edit the mechanical material definition.</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_MeshFromShape</name>
+    <message>
+      <location filename="_CommandMeshNetgenFromShape.py" line="41"/>
+      <source>FEM mesh from shape by Netgen</source>
+      <translation type="unfinished">FEM mesh from shape by Netgen</translation>
+    </message>
+    <message>
+      <location filename="_CommandMeshNetgenFromShape.py" line="42"/>
+      <source>Create a FEM volume mesh from a solid or face shape by Netgen internal mesher</source>
+      <translation type="unfinished">Create a FEM volume mesh from a solid or face shape by Netgen internal mesher</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_MeshGmshFromShape</name>
+    <message>
+      <location filename="_CommandMeshGmshFromShape.py" line="42"/>
+      <source>FEM mesh from shape by GMSH</source>
+      <translation type="unfinished">FEM mesh from shape by GMSH</translation>
+    </message>
+    <message>
+      <location filename="_CommandMeshGmshFromShape.py" line="43"/>
+      <source>Create a FEM mesh from a shape by GMSH mesher</source>
+      <translation type="unfinished">Create a FEM mesh from a shape by GMSH mesher</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_MeshRegion</name>
+    <message>
+      <location filename="_CommandMeshRegion.py" line="41"/>
+      <source>FEM mesh region</source>
+      <translation type="unfinished">FEM mesh region</translation>
+    </message>
+    <message>
+      <location filename="_CommandMeshRegion.py" line="43"/>
+      <source>Creates a FEM mesh region</source>
+      <translation type="unfinished">Creates a FEM mesh region</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_PrintMeshInfo</name>
+    <message>
+      <location filename="_CommandPrintMeshInfo.py" line="44"/>
+      <source>Print FEM mesh info</source>
+      <translation type="unfinished">Print FEM mesh info</translation>
+    </message>
+  </context>
+  <context>
     <name>Fem_PurgeResults</name>
     <message>
       <location filename="_CommandPurgeFemResults.py" line="40"/>
       <source>Purge results</source>
-      <translation type="unfinished">Purge results</translation>
+      <translation>Rensa resultaten</translation>
     </message>
     <message>
       <location filename="_CommandPurgeFemResults.py" line="42"/>
       <source>Purge results from an analysis</source>
-      <translation type="unfinished">Purge results from an analysis</translation>
+      <translation>Rensa resultaten från analysen</translation>
+    </message>
+    <message>
+      <location filename="_CommandPurgeResults.py" line="43"/>
+      <source>Purges all results from active analysis</source>
+      <translation type="unfinished">Purges all results from active analysis</translation>
     </message>
   </context>
   <context>
-    <name>Fem_Quick_Analysis</name>
+    <name>Fem_RunAnalysis</name>
     <message>
-      <location filename="_CommandQuickAnalysis.py" line="40"/>
-      <source>Run CalculiX ccx</source>
-      <translation type="unfinished">Run CalculiX ccx</translation>
+      <location filename="_CommandRunSolver.py" line="40"/>
+      <source>Run solver calculations</source>
+      <translation type="unfinished">Run solver calculations</translation>
     </message>
     <message>
-      <location filename="_CommandQuickAnalysis.py" line="42"/>
-      <source>Write .inp file and run CalculiX ccx</source>
-      <translation type="unfinished">Write .inp file and run CalculiX ccx</translation>
+      <location filename="_CommandRunSolver.py" line="42"/>
+      <source>Runs the calculations for the selected solver</source>
+      <translation type="unfinished">Runs the calculations for the selected solver</translation>
     </message>
   </context>
   <context>
     <name>Fem_ShellThickness</name>
+    <message>
+      <location filename="_CommandShellThickness.py" line="41"/>
+      <source>Shell plate thickness</source>
+      <translation type="unfinished">Shell plate thickness</translation>
+    </message>
+    <message>
+      <location filename="_CommandShellThickness.py" line="43"/>
+      <source>Creates a FEM shell plate thickness</source>
+      <translation type="unfinished">Creates a FEM shell plate thickness</translation>
+    </message>
     <message>
       <location filename="_CommandFemShellThickness.py" line="41"/>
       <source>FEM Shell Plate Thickness Definition ...</source>
@@ -117,9 +529,24 @@
       <source>Show result information of an analysis</source>
       <translation type="unfinished">Show result information of an analysis</translation>
     </message>
+    <message>
+      <location filename="_CommandShowResult.py" line="42"/>
+      <source>Shows and visualizes selected result data</source>
+      <translation type="unfinished">Shows and visualizes selected result data</translation>
+    </message>
   </context>
   <context>
     <name>Fem_SolverCalculix</name>
+    <message>
+      <location filename="_CommandSolverCalculix.py" line="42"/>
+      <source>Solver CalculiX</source>
+      <translation type="unfinished">Solver CalculiX</translation>
+    </message>
+    <message>
+      <location filename="_CommandSolverCalculix.py" line="44"/>
+      <source>Creates a FEM solver CalculiX</source>
+      <translation type="unfinished">Creates a FEM solver CalculiX</translation>
+    </message>
     <message>
       <location filename="_CommandFemSolverCalculix.py" line="41"/>
       <source>Create FEM Solver CalculiX ...</source>
@@ -129,6 +556,58 @@
       <location filename="_CommandFemSolverCalculix.py" line="43"/>
       <source>Creates FEM Solver CalculiX</source>
       <translation type="unfinished">Creates FEM Solver CalculiX</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_SolverZ88</name>
+    <message>
+      <location filename="_CommandSolverZ88.py" line="41"/>
+      <source>Solver Z88</source>
+      <translation type="unfinished">Solver Z88</translation>
+    </message>
+    <message>
+      <location filename="_CommandSolverZ88.py" line="43"/>
+      <source>Creates a FEM solver Z88</source>
+      <translation type="unfinished">Creates a FEM solver Z88</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_CreateFromShape</name>
+    <message>
+      <location filename="_CommandFemFromShape.py" line="39"/>
+      <source>Create FEM mesh</source>
+      <translation>Skapa FEM nät</translation>
+    </message>
+    <message>
+      <location filename="_CommandFemFromShape.py" line="40"/>
+      <source>Create FEM mesh from shape</source>
+      <translation>Skapa FEM nät från form</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_NewMechanicalAnalysis</name>
+    <message>
+      <location filename="_CommandNewMechanicalAnalysis.py" line="40"/>
+      <source>New mechanical analysis</source>
+      <translation type="unfinished">New mechanical analysis</translation>
+    </message>
+    <message>
+      <location filename="_CommandNewMechanicalAnalysis.py" line="42"/>
+      <source>Create a new mechanical analysis</source>
+      <translation type="unfinished">Create a new mechanical analysis</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fem_Quick_Analysis</name>
+    <message>
+      <location filename="_CommandQuickAnalysis.py" line="40"/>
+      <source>Run CalculiX ccx</source>
+      <translation>Kör CalculiX ccx</translation>
+    </message>
+    <message>
+      <location filename="_CommandQuickAnalysis.py" line="42"/>
+      <source>Write .inp file and run CalculiX ccx</source>
+      <translation>Skriv .inp-fil och kör CalculiX ccx</translation>
     </message>
   </context>
   <context>
@@ -142,19 +621,6 @@
       <location filename="_CommandSolverJobControl.py" line="42"/>
       <source>Dialog to start the calculation of the selected solver</source>
       <translation type="unfinished">Dialog to start the calculation of the selected solver</translation>
-    </message>
-  </context>
-  <context>
-    <name>Fem_Analysis</name>
-    <message>
-      <location filename="_CommandNewMechanicalAnalysis.py" line="40"/>
-      <source>New mechanical analysis</source>
-      <translation type="unfinished">New mechanical analysis</translation>
-    </message>
-    <message>
-      <location filename="_CommandNewMechanicalAnalysis.py" line="42"/>
-      <source>Create a new mechanical analysis</source>
-      <translation type="unfinished">Create a new mechanical analysis</translation>
     </message>
   </context>
   <context>
@@ -433,7 +899,7 @@
     <message>
       <location filename="../../DlgSettingsFem.ui" line="51"/>
       <source>Use internal editor for .inp files</source>
-      <translation type="unfinished">Use internal editor for .inp files</translation>
+      <translation>Använd intern editor för .inp-filer</translation>
     </message>
     <message>
       <location filename="../../DlgSettingsFem.ui" line="78"/>
@@ -453,7 +919,7 @@
     <message>
       <location filename="../../DlgSettingsFem.ui" line="157"/>
       <source>Working directory</source>
-      <translation type="unfinished">Working directory</translation>
+      <translation>Arbetskatalog</translation>
     </message>
     <message>
       <location filename="../../DlgSettingsFem.ui" line="199"/>
@@ -473,7 +939,7 @@
     <message>
       <location filename="../../DlgSettingsFem.ui" line="232"/>
       <source>Frequency</source>
-      <translation type="unfinished">Frequency</translation>
+      <translation>Frekvens</translation>
     </message>
     <message>
       <location filename="../../DlgSettingsFem.ui" line="244"/>
@@ -504,12 +970,12 @@
     <message>
       <location filename="../../DlgSettingsFem.ui" line="354"/>
       <source>Materials</source>
-      <translation type="unfinished">Materials</translation>
+      <translation>Material</translation>
     </message>
     <message>
       <location filename="../../DlgSettingsFem.ui" line="362"/>
       <source>Use built-in materials</source>
-      <translation type="unfinished">Use built-in materials</translation>
+      <translation>Använd inbyggda material</translation>
     </message>
     <message>
       <location filename="../../DlgSettingsFem.ui" line="378"/>
@@ -524,7 +990,7 @@
     <message>
       <location filename="../../DlgSettingsFem.ui" line="449"/>
       <source>User directory</source>
-      <translation type="unfinished">User directory</translation>
+      <translation>Användarkatalog</translation>
     </message>
   </context>
   <context>
@@ -915,7 +1381,7 @@
     <message>
       <location filename="../../ViewProviderAnalysis.cpp" line="84"/>
       <source>Activate analysis</source>
-      <translation type="unfinished">Activate analysis</translation>
+      <translation>Aktivera analys</translation>
     </message>
   </context>
   <context>
@@ -942,7 +1408,7 @@
     <message>
       <location filename="../../../TaskPanelFemBeamSection.ui" line="26"/>
       <source>Cross Section</source>
-      <translation type="unfinished">Cross Section</translation>
+      <translation>Tvärsnitt</translation>
     </message>
     <message>
       <location filename="../../../TaskPanelFemBeamSection.ui" line="32"/>
@@ -959,7 +1425,7 @@
       <location filename="../../../TaskPanelFemBeamSection.ui" line="49"/>
       <location filename="../../../TaskPanelFemShellThickness.ui" line="49"/>
       <source>References</source>
-      <translation type="unfinished">References</translation>
+      <translation>Referenser</translation>
     </message>
     <message>
       <location filename="../../../TaskPanelFemBeamSection.ui" line="55"/>
@@ -1000,7 +1466,7 @@
     <message>
       <location filename="../../../TaskPanelFemSolverCalculix.ui" line="20"/>
       <source>Working directory</source>
-      <translation type="unfinished">Working directory</translation>
+      <translation>Arbetskatalog</translation>
     </message>
     <message>
       <location filename="../../../TaskPanelFemSolverCalculix.ui" line="45"/>
@@ -1010,7 +1476,7 @@
     <message>
       <location filename="../../../TaskPanelFemSolverCalculix.ui" line="55"/>
       <source>Analysis type</source>
-      <translation type="unfinished">Analysis type</translation>
+      <translation>Analystyp</translation>
     </message>
     <message>
       <location filename="../../../TaskPanelFemSolverCalculix.ui" line="67"/>
@@ -1020,12 +1486,12 @@
     <message>
       <location filename="../../../TaskPanelFemSolverCalculix.ui" line="77"/>
       <source>Frequency</source>
-      <translation type="unfinished">Frequency</translation>
+      <translation>Frekvens</translation>
     </message>
     <message>
       <location filename="../../../TaskPanelFemSolverCalculix.ui" line="89"/>
       <source>Write .inp file</source>
-      <translation type="unfinished">Write .inp file</translation>
+      <translation>Skriv .inp-fil</translation>
     </message>
     <message>
       <location filename="../../../TaskPanelFemSolverCalculix.ui" line="99"/>
@@ -1073,7 +1539,7 @@
     <message>
       <location filename="../../../TaskPanelMechanicalMaterial.ui" line="54"/>
       <source>References</source>
-      <translation type="unfinished">References</translation>
+      <translation>Referenser</translation>
     </message>
     <message>
       <location filename="../../../TaskPanelMechanicalMaterial.ui" line="60"/>
@@ -1093,7 +1559,7 @@
     <message>
       <location filename="../../../TaskPanelMechanicalMaterial.ui" line="96"/>
       <source>Properties</source>
-      <translation type="unfinished">Properties</translation>
+      <translation>Egenskaper</translation>
     </message>
     <message>
       <location filename="../../../TaskPanelMechanicalMaterial.ui" line="107"/>
@@ -1260,7 +1726,7 @@
     <message>
       <location filename="../../../TaskPanelShowDisplacement.ui" line="22"/>
       <source>Result type</source>
-      <translation type="unfinished">Result type</translation>
+      <translation>Resultattyp</translation>
     </message>
     <message>
       <location filename="../../../TaskPanelShowDisplacement.ui" line="30"/>
@@ -1685,7 +2151,7 @@
     <message>
       <location filename="../../TaskFemConstraintPressure.ui" line="39"/>
       <source>1 MPa</source>
-      <translation type="unfinished">1 MPa</translation>
+      <translation>1 MPa</translation>
     </message>
     <message>
       <location filename="../../TaskFemConstraintPressure.ui" line="51"/>

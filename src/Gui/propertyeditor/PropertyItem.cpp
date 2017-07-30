@@ -32,6 +32,9 @@
 # include <QPixmap>
 # include <QTextStream>
 # include <QTimer>
+# include <QApplication>
+# include <QPalette>
+# include <QtGlobal>
 #endif
 
 #include <Base/Tools.h>
@@ -259,6 +262,11 @@ int PropertyItem::decimals() const
     return precision;
 }
 
+QVariant PropertyItem::displayName() const
+{
+    return QVariant(displayText);
+}
+
 QVariant PropertyItem::toolTip(const App::Property* prop) const
 {
     QString str = QApplication::translate("App::Property",
@@ -333,7 +341,7 @@ QVariant PropertyItem::editorData(QWidget * /*editor*/) const
 QString PropertyItem::propertyName() const
 {
     if (propName.isEmpty())
-        return QLatin1String("<empty>");
+        return QLatin1String(QT_TRANSLATE_NOOP("App::Property", "<empty>"));
     return propName;
 }
 
@@ -353,6 +361,9 @@ void PropertyItem::setPropertyName(const QString& name)
     }
 
     propName = display;
+
+    QString str = QApplication::translate("App::Property", propName.toLatin1());
+    displayText = str;
 }
 
 void PropertyItem::setPropertyValue(const QString& value)
@@ -384,7 +395,7 @@ QVariant PropertyItem::data(int column, int role) const
     // property name
     if (column == 0) {
         if (role == Qt::DisplayRole)
-            return propertyName();
+            return displayName();
         // no properties set
         if (propertyItems.empty())
             return QVariant();
@@ -1009,6 +1020,15 @@ QVariant PropertyFloatConstraintItem::editorData(QWidget *editor) const
 
 // --------------------------------------------------------------------
 
+PROPERTYITEM_SOURCE(Gui::PropertyEditor::PropertyPrecisionItem)
+
+PropertyPrecisionItem::PropertyPrecisionItem()
+{
+    setDecimals(16);
+}
+
+// --------------------------------------------------------------------
+
 PROPERTYITEM_SOURCE(Gui::PropertyEditor::PropertyAngleItem)
 
 PropertyAngleItem::PropertyAngleItem()
@@ -1324,6 +1344,9 @@ void PropertyVectorDistanceItem::propertyBound() {
     };
 }
 
+PROPERTYITEM_SOURCE(Gui::PropertyEditor::PropertyPositionItem)
+
+PROPERTYITEM_SOURCE(Gui::PropertyEditor::PropertyDirectionItem)
 
 // ---------------------------------------------------------------
 
@@ -1754,16 +1777,16 @@ PropertyPlacementItem::PropertyPlacementItem() : init_axis(false), changed_value
 {
     m_a = static_cast<PropertyUnitItem*>(PropertyUnitItem::create());
     m_a->setParent(this);
-    m_a->setPropertyName(QLatin1String("Angle"));
+    m_a->setPropertyName(QLatin1String(QT_TRANSLATE_NOOP("App::Property", "Angle")));
     this->appendChild(m_a);
     m_d = static_cast<PropertyVectorItem*>(PropertyVectorItem::create());
     m_d->setParent(this);
-    m_d->setPropertyName(QLatin1String("Axis"));
+    m_d->setPropertyName(QLatin1String(QT_TRANSLATE_NOOP("App::Property", "Axis")));
     m_d->setReadOnly(true);
     this->appendChild(m_d);
     m_p = static_cast<PropertyVectorDistanceItem*>(PropertyVectorDistanceItem::create());
     m_p->setParent(this);
-    m_p->setPropertyName(QLatin1String("Position"));
+    m_p->setPropertyName(QLatin1String(QT_TRANSLATE_NOOP("App::Property", "Position")));
     m_p->setReadOnly(true);
     this->appendChild(m_p);
 }
@@ -3347,11 +3370,27 @@ void LinkSelection::select()
 
 // ---------------------------------------------------------------
 
-LinkLabel::LinkLabel (QWidget * parent) : QLabel(parent)
-{
-    setTextFormat(Qt::RichText);
-    connect(this, SIGNAL(linkActivated(const QString&)),
+LinkLabel::LinkLabel (QWidget * parent) : QWidget(parent)
+{   
+    QHBoxLayout *layout = new QHBoxLayout(this);
+    layout->setMargin(0);
+    layout->setSpacing(1);
+
+    label = new QLabel(this);
+    label->setAutoFillBackground(true);
+    label->setTextFormat(Qt::RichText);
+    layout->addWidget(label);
+
+    editButton = new QPushButton(QLatin1String("..."), this);
+    editButton->setToolTip(tr("Change the linked object"));
+    layout->addWidget(editButton);
+    
+    // setLayout(layout);
+    
+    connect(label, SIGNAL(linkActivated(const QString&)),
             this, SLOT(onLinkActivated(const QString&)));
+    connect(editButton, SIGNAL(clicked()),
+            this, SLOT(onEditClicked()));
 }
 
 LinkLabel::~LinkLabel()
@@ -3361,22 +3400,20 @@ LinkLabel::~LinkLabel()
 void LinkLabel::setPropertyLink(const QStringList& o)
 {
     link = o;
-
+    QString linkcolor = QApplication::palette().color(QPalette::Link).name();
     QString text = QString::fromLatin1(
         "<html><head><style type=\"text/css\">"
         "p, li { white-space: pre-wrap; }"
         "</style></head><body>"
         "<p>"
-        "<a href=\"%1.%2\"><span style=\" text-decoration: underline; color:#0000ff;\">%3</span></a>"
-        "<span>	</span>"
-        "<a href=\"@__edit_link_prop__@\"><span style=\" text-decoration: underline; color:#0000ff;\">%4</span></a>"
+        "<a href=\"%1.%2\"><span style=\" text-decoration: underline; color:%3;\">%4</span></a>"
         "</p></body></html>"
     )
     .arg(link[0])
     .arg(link[1])
-    .arg(link[2])
-    .arg(tr("Edit..."));
-    setText(text);
+    .arg(linkcolor)
+    .arg(link[2]);
+    label->setText(text);
 }
 
 QStringList LinkLabel::propertyLink() const
@@ -3386,18 +3423,25 @@ QStringList LinkLabel::propertyLink() const
 
 void LinkLabel::onLinkActivated (const QString& s)
 {
-    if (s == QLatin1String("@__edit_link_prop__@")) {
-        Gui::Dialog::DlgPropertyLink dlg(link, this);
-        if (dlg.exec() == QDialog::Accepted) {
-            setPropertyLink(dlg.propertyLink());
-            /*emit*/ linkChanged(link);
-        }
-    }
-    else {
-        LinkSelection* select = new LinkSelection(link);
-        QTimer::singleShot(50, select, SLOT(select()));
+    Q_UNUSED(s);
+    LinkSelection* select = new LinkSelection(link);
+    QTimer::singleShot(50, select, SLOT(select()));
+}
+
+void LinkLabel::onEditClicked ()
+{
+    Gui::Dialog::DlgPropertyLink dlg(link, this);
+    if (dlg.exec() == QDialog::Accepted) {
+        setPropertyLink(dlg.propertyLink());
+        /*emit*/ linkChanged(link);
     }
 }
+
+void LinkLabel::resizeEvent(QResizeEvent* e)
+{
+    editButton->setFixedWidth(e->size().height());
+}
+
 
 PROPERTYITEM_SOURCE(Gui::PropertyEditor::PropertyLinkItem)
 
@@ -3462,7 +3506,11 @@ void PropertyLinkItem::setValue(const QVariant& value)
     if (items.size() > 1) {
         QString d = items[0];
         QString o = items[1];
-        QString data = QString::fromLatin1("App.getDocument('%1').getObject('%2')").arg(d).arg(o);
+        QString data;
+        if ( o.isEmpty() )
+            data = QString::fromLatin1("None");
+        else
+            data = QString::fromLatin1("App.getDocument('%1').getObject('%2')").arg(d).arg(o);
         setPropertyValue(data);
     }
 }
@@ -3499,6 +3547,19 @@ PropertyItemEditorFactory::~PropertyItemEditorFactory()
 {
 }
 
+#if (QT_VERSION >= 0x050300)
+QWidget * PropertyItemEditorFactory::createEditor (int /*type*/, QWidget * /*parent*/) const
+{
+    // do not allow to create any editor widgets because we do that in subclasses of PropertyItem
+    return 0;
+}
+
+QByteArray PropertyItemEditorFactory::valuePropertyName (int /*type*/) const
+{
+    // do not allow to set properties because we do that in subclasses of PropertyItem
+    return "";
+}
+#else
 QWidget * PropertyItemEditorFactory::createEditor (QVariant::Type /*type*/, QWidget * /*parent*/) const
 {
     // do not allow to create any editor widgets because we do that in subclasses of PropertyItem
@@ -3510,6 +3571,7 @@ QByteArray PropertyItemEditorFactory::valuePropertyName (QVariant::Type /*type*/
     // do not allow to set properties because we do that in subclasses of PropertyItem
     return "";
 }
+#endif
 
 #include "moc_PropertyItem.cpp"
 

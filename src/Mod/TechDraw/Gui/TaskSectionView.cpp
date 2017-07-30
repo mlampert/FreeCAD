@@ -121,20 +121,19 @@ void TaskSectionView::resetValues()
 bool TaskSectionView::calcValues()
 {
     bool result = true;
-    Base::Vector3d view = m_base->Direction.getValue();
 
     if (ui->pb_Up->isChecked()) {
         sectionDir = "Up";
-        sectionProjDir = DrawViewSection::getSectionVector(view,sectionDir);
+        sectionProjDir = m_section->getSectionVector(sectionDir);
     } else if (ui->pb_Down->isChecked()) {
         sectionDir = "Down";
-        sectionProjDir = DrawViewSection::getSectionVector(view,sectionDir);
+        sectionProjDir = m_section->getSectionVector(sectionDir);
     } else if (ui->pb_Left->isChecked()) {
         sectionDir = "Left";
-        sectionProjDir = DrawViewSection::getSectionVector(view,sectionDir);
+        sectionProjDir = m_section->getSectionVector(sectionDir);
     } else if (ui->pb_Right->isChecked()) {
         sectionDir = "Right";
-        sectionProjDir = DrawViewSection::getSectionVector(view,sectionDir);
+        sectionProjDir = m_section->getSectionVector(sectionDir);
     } else {
         Base::Console().Message("Select a direction\n");
         result = false;
@@ -286,10 +285,10 @@ bool TaskSectionView::accept()
 {
     if (strcmp(sectionDir,"unset") == 0) {
         Base::Console().Message("No direction selected!\n");
-        reject();
-        return false;
+        return reject();
     } else {
         updateValues();
+        Gui::Command::doCommand(Gui::Command::Gui,"Gui.ActiveDocument.resetEdit()");
         return true;
     }
 }
@@ -302,6 +301,9 @@ bool TaskSectionView::reject()
     Gui::Command::doCommand(Gui::Command::Gui,"App.activeDocument().%s.removeView(App.activeDocument().%s)",
                             PageName.c_str(),SectionName.c_str());
     Gui::Command::doCommand(Gui::Command::Gui,"App.activeDocument().removeObject('%s')",SectionName.c_str());
+    Gui::Command::doCommand(Gui::Command::Gui,"Gui.ActiveDocument.resetEdit()");
+    m_base->touch();
+    m_base->getDocument()->recompute();
     return false;
 }
 

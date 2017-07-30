@@ -85,9 +85,9 @@ PyObject* SketchObjectPy::addGeometry(PyObject *args)
         int ret;
         // An arc created with Part.Arc will be converted into a Part.ArcOfCircle
         if (geo->getTypeId() == Part::GeomTrimmedCurve::getClassTypeId()) {
-            Handle_Geom_TrimmedCurve trim = Handle_Geom_TrimmedCurve::DownCast(geo->handle());
-            Handle_Geom_Circle circle = Handle_Geom_Circle::DownCast(trim->BasisCurve());
-            Handle_Geom_Ellipse ellipse = Handle_Geom_Ellipse::DownCast(trim->BasisCurve());
+            Handle(Geom_TrimmedCurve) trim = Handle(Geom_TrimmedCurve)::DownCast(geo->handle());
+            Handle(Geom_Circle) circle = Handle(Geom_Circle)::DownCast(trim->BasisCurve());
+            Handle(Geom_Ellipse) ellipse = Handle(Geom_Ellipse)::DownCast(trim->BasisCurve());
             if (!circle.IsNull()) {
                 // create the definition struct for that geom
                 Part::GeomArcOfCircle aoc;
@@ -113,6 +113,8 @@ PyObject* SketchObjectPy::addGeometry(PyObject *args)
                  geo->getTypeId() == Part::GeomArcOfCircle::getClassTypeId() ||
                  geo->getTypeId() == Part::GeomArcOfEllipse::getClassTypeId() ||
                  geo->getTypeId() == Part::GeomArcOfHyperbola::getClassTypeId() ||
+                 geo->getTypeId() == Part::GeomArcOfParabola::getClassTypeId() ||
+                 geo->getTypeId() == Part::GeomBSplineCurve::getClassTypeId() ||
                  geo->getTypeId() == Part::GeomLineSegment::getClassTypeId()) {
             ret = this->getSketchObjectPtr()->addGeometry(geo,isConstruction);
         }
@@ -122,7 +124,7 @@ PyObject* SketchObjectPy::addGeometry(PyObject *args)
             PyErr_SetString(PyExc_TypeError, str.str().c_str());
             return 0;
         }
-        return Py::new_reference_to(Py::Int(ret));
+        return Py::new_reference_to(Py::Long(ret));
     }
     else if (PyObject_TypeCheck(pcObj, &(PyList_Type)) ||
              PyObject_TypeCheck(pcObj, &(PyTuple_Type))) {
@@ -135,9 +137,9 @@ PyObject* SketchObjectPy::addGeometry(PyObject *args)
 
                 // An arc created with Part.Arc will be converted into a Part.ArcOfCircle
                 if (geo->getTypeId() == Part::GeomTrimmedCurve::getClassTypeId()) {
-                    Handle_Geom_TrimmedCurve trim = Handle_Geom_TrimmedCurve::DownCast(geo->handle());
-                    Handle_Geom_Circle circle = Handle_Geom_Circle::DownCast(trim->BasisCurve());
-                    Handle_Geom_Ellipse ellipse = Handle_Geom_Ellipse::DownCast(trim->BasisCurve());
+                    Handle(Geom_TrimmedCurve) trim = Handle(Geom_TrimmedCurve)::DownCast(geo->handle());
+                    Handle(Geom_Circle) circle = Handle(Geom_Circle)::DownCast(trim->BasisCurve());
+                    Handle(Geom_Ellipse) ellipse = Handle(Geom_Ellipse)::DownCast(trim->BasisCurve());
                     if (!circle.IsNull()) {
                         // create the definition struct for that geom
                         boost::shared_ptr<Part::GeomArcOfCircle> aoc(new Part::GeomArcOfCircle());
@@ -165,6 +167,8 @@ PyObject* SketchObjectPy::addGeometry(PyObject *args)
                          geo->getTypeId() == Part::GeomArcOfCircle::getClassTypeId() ||
                          geo->getTypeId() == Part::GeomArcOfEllipse::getClassTypeId() ||
                          geo->getTypeId() == Part::GeomArcOfHyperbola::getClassTypeId() ||
+                         geo->getTypeId() == Part::GeomArcOfParabola::getClassTypeId() ||
+                         geo->getTypeId() == Part::GeomBSplineCurve::getClassTypeId() ||
                          geo->getTypeId() == Part::GeomLineSegment::getClassTypeId()) {
                     geoList.push_back(geo);
                 }
@@ -182,7 +186,7 @@ PyObject* SketchObjectPy::addGeometry(PyObject *args)
         Py::Tuple tuple(numGeo);
         for (std::size_t i=0; i<numGeo; ++i) {
             int geoId = ret - int(numGeo - i);
-            tuple.setItem(i, Py::Int(geoId));
+            tuple.setItem(i, Py::Long(geoId));
         }
 
         return Py::new_reference_to(tuple);
@@ -260,7 +264,7 @@ PyObject* SketchObjectPy::addConstraint(PyObject *args)
         // 2. This solve happens before the command is committed
         // 3. A constraint, may effect a geometry change (think of coincident,
         // a line's point moves to meet the other line's point
-        // 4. The transaction is comitted before any other solve, for example
+        // 4. The transaction is committed before any other solve, for example
         // the one of execute() triggered by a recompute (UpdateActive) is generated.
         // 5. Upon "undo", the constraint is removed (it was before the command was committed)
         //    however, the geometry changed after the command was committed, so the point that
@@ -274,7 +278,7 @@ PyObject* SketchObjectPy::addConstraint(PyObject *args)
         // this forces recalculation of the initial solution (not a full solve)
         if(this->getSketchObjectPtr()->noRecomputes)
             this->getSketchObjectPtr()->setUpSketch(); 
-        return Py::new_reference_to(Py::Int(ret));
+        return Py::new_reference_to(Py::Long(ret));
     }
     else if (PyObject_TypeCheck(pcObj, &(PyList_Type)) ||
              PyObject_TypeCheck(pcObj, &(PyTuple_Type))) {
@@ -298,7 +302,7 @@ PyObject* SketchObjectPy::addConstraint(PyObject *args)
         Py::Tuple tuple(numCon);
         for (std::size_t i=0; i<numCon; ++i) {
             int conId = ret - int(numCon - i);
-            tuple.setItem(i, Py::Int(conId));
+            tuple.setItem(i, Py::Long(conId));
         }
         return Py::new_reference_to(tuple);
     }
@@ -367,6 +371,41 @@ PyObject* SketchObjectPy::renameConstraint(PyObject *args)
         this->getSketchObjectPtr()->Constraints.set1Value(Index, copy);
         delete copy;
     }
+    Py_Return;
+}
+
+PyObject* SketchObjectPy::carbonCopy(PyObject *args)
+{
+    char *ObjectName;
+    PyObject *construction = Py_True;
+    if (!PyArg_ParseTuple(args, "s|O!:Give an object", &ObjectName, &PyBool_Type, &construction))
+        return 0;
+
+    Sketcher::SketchObject* skObj = this->getSketchObjectPtr();
+    App::DocumentObject * Obj = skObj->getDocument()->getObject(ObjectName);
+    
+    if (!Obj) {
+        std::stringstream str;
+        str << ObjectName << " does not exist in the document";
+        PyErr_SetString(PyExc_ValueError, str.str().c_str());
+        return 0;
+    }
+    // check if this type of external geometry is allowed
+    if (!skObj->isExternalAllowed(Obj->getDocument(), Obj) && (Obj->getTypeId() != Sketcher::SketchObject::getClassTypeId())) {
+        std::stringstream str;
+        str << ObjectName << " is not allowed for a carbon copy operation in this sketch";
+        PyErr_SetString(PyExc_ValueError, str.str().c_str());
+        return 0;
+    }
+    
+    // add the external
+    if (skObj->carbonCopy(Obj, PyObject_IsTrue(construction) ? true : false) < 0) {
+        std::stringstream str;
+        str << "Not able to add the requested geometry";
+        PyErr_SetString(PyExc_ValueError, str.str().c_str());
+        return 0;
+    }
+    
     Py_Return;
 }
 
@@ -784,6 +823,27 @@ PyObject* SketchObjectPy::trim(PyObject *args)
     Py_Return;
 }
 
+PyObject* SketchObjectPy::extend(PyObject *args)
+{
+    double increment;
+    int endPoint;
+    int GeoId;
+
+    if (PyArg_ParseTuple(args, "idi", &GeoId, &increment, &endPoint)) {
+        if (this->getSketchObjectPtr()->extend(GeoId, increment, endPoint)) {
+            std::stringstream str;
+            str << "Not able to extend geometry with id : (" << GeoId  << ") for increment (" << increment << ") and point position (" << endPoint << ")";
+            PyErr_SetString(PyExc_ValueError, str.str().c_str());
+            return 0;
+        }
+        Py_Return;
+    }
+
+    PyErr_SetString(PyExc_TypeError, "extend() method accepts:\n"
+        "-- int,float,int\n");
+    return 0;
+}
+
 PyObject* SketchObjectPy::addSymmetric(PyObject *args)
 {
     PyObject *pcObj;
@@ -798,8 +858,13 @@ PyObject* SketchObjectPy::addSymmetric(PyObject *args)
         std::vector<int> geoIdList;
         Py::Sequence list(pcObj);
         for (Py::Sequence::iterator it = list.begin(); it != list.end(); ++it) {
+#if PY_MAJOR_VERSION >= 3
+            if (PyLong_Check((*it).ptr()))
+                geoIdList.push_back(PyLong_AsLong((*it).ptr()));
+#else
             if (PyInt_Check((*it).ptr()))
                 geoIdList.push_back(PyInt_AsLong((*it).ptr()));
+#endif
         }
 
         int ret = this->getSketchObjectPtr()->addSymmetric(geoIdList,refGeoId,(Sketcher::PointPos) refPosId) + 1;
@@ -811,7 +876,7 @@ PyObject* SketchObjectPy::addSymmetric(PyObject *args)
         Py::Tuple tuple(numGeo);
         for (std::size_t i=0; i<numGeo; ++i) {
             int geoId = ret - int(numGeo - i);
-            tuple.setItem(i, Py::Int(geoId));
+            tuple.setItem(i, Py::Long(geoId));
         }
 
         return Py::new_reference_to(tuple);
@@ -837,8 +902,13 @@ PyObject* SketchObjectPy::addCopy(PyObject *args)
         std::vector<int> geoIdList;
         Py::Sequence list(pcObj);
         for (Py::Sequence::iterator it = list.begin(); it != list.end(); ++it) {
+#if PY_MAJOR_VERSION >= 3
+            if (PyLong_Check((*it).ptr()))
+                geoIdList.push_back(PyLong_AsLong((*it).ptr()));
+#else
             if (PyInt_Check((*it).ptr()))
                 geoIdList.push_back(PyInt_AsLong((*it).ptr()));
+#endif
         }
 
         int ret = this->getSketchObjectPtr()->addCopy(geoIdList, vect, PyObject_IsTrue(clone) ? true : false) + 1;
@@ -850,7 +920,7 @@ PyObject* SketchObjectPy::addCopy(PyObject *args)
         Py::Tuple tuple(numGeo);
         for (std::size_t i=0; i<numGeo; ++i) {
             int geoId = ret - int(numGeo - i);
-            tuple.setItem(i, Py::Int(geoId));
+            tuple.setItem(i, Py::Long(geoId));
         }
 
         return Py::new_reference_to(tuple);
@@ -880,17 +950,20 @@ PyObject* SketchObjectPy::addRectangularArray(PyObject *args)
         std::vector<int> geoIdList;
         Py::Sequence list(pcObj);
         for (Py::Sequence::iterator it = list.begin(); it != list.end(); ++it) {
-	    if (PyInt_Check((*it).ptr()))
-		geoIdList.push_back(PyInt_AsLong((*it).ptr()));
+#if PY_MAJOR_VERSION >= 3
+	    if (PyLong_Check((*it).ptr()))
+		geoIdList.push_back(PyLong_AsLong((*it).ptr()));
+#else
+            if (PyInt_Check((*it).ptr()))
+                geoIdList.push_back(PyInt_AsLong((*it).ptr()));
+#endif
         }
 
         int ret = this->getSketchObjectPtr()->addCopy(geoIdList,vect, PyObject_IsTrue(clone) ? true : false, 
                                                       rows, cols, PyObject_IsTrue(constraindisplacement) ? true : false, perpscale) + 1;
     
-	if(ret == -1)
-	    throw Py::TypeError("Copy operation unsuccessful!");    
-    
-
+        if(ret == -1)
+            throw Py::TypeError("Copy operation unsuccessful!");
         Py_Return;
     }
 
@@ -959,9 +1032,10 @@ PyObject* SketchObjectPy::changeConstraintsLocking(PyObject *args)
 
     int naff = obj->changeConstraintsLocking((bool)bLock);
 
-    return Py::new_reference_to(Py::Int(naff));
+    return Py::new_reference_to(Py::Long(naff));
 }
 
+//Deprecated
 PyObject* SketchObjectPy::ExposeInternalGeometry(PyObject *args)
 {
     int GeoId;
@@ -969,7 +1043,7 @@ PyObject* SketchObjectPy::ExposeInternalGeometry(PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &GeoId))
         return 0;
 
-    if (this->getSketchObjectPtr()->ExposeInternalGeometry(GeoId)==-1) {
+    if (this->getSketchObjectPtr()->exposeInternalGeometry(GeoId)==-1) {
         std::stringstream str;
         str << "Object does not support internal geometry: " << GeoId;
         PyErr_SetString(PyExc_ValueError, str.str().c_str());
@@ -979,6 +1053,7 @@ PyObject* SketchObjectPy::ExposeInternalGeometry(PyObject *args)
     Py_Return;
 }
 
+//Deprecated
 PyObject* SketchObjectPy::DeleteUnusedInternalGeometry(PyObject *args)
 {
     int GeoId;
@@ -986,7 +1061,7 @@ PyObject* SketchObjectPy::DeleteUnusedInternalGeometry(PyObject *args)
     if (!PyArg_ParseTuple(args, "i", &GeoId))
         return 0;
 
-    if (this->getSketchObjectPtr()->DeleteUnusedInternalGeometry(GeoId)==-1) {
+    if (this->getSketchObjectPtr()->deleteUnusedInternalGeometry(GeoId)==-1) {
         std::stringstream str;
         str << "Object does not support internal geometry: " << GeoId;
         PyErr_SetString(PyExc_ValueError, str.str().c_str());
@@ -996,19 +1071,107 @@ PyObject* SketchObjectPy::DeleteUnusedInternalGeometry(PyObject *args)
     Py_Return;
 }
 
-Py::Int SketchObjectPy::getConstraintCount(void) const
+PyObject* SketchObjectPy::exposeInternalGeometry(PyObject *args)
 {
-    return Py::Int(this->getSketchObjectPtr()->Constraints.getSize());
+    int GeoId;
+
+    if (!PyArg_ParseTuple(args, "i", &GeoId))
+        return 0;
+
+    if (this->getSketchObjectPtr()->exposeInternalGeometry(GeoId)==-1) {
+        std::stringstream str;
+        str << "Object does not support internal geometry: " << GeoId;
+        PyErr_SetString(PyExc_ValueError, str.str().c_str());
+        return 0;
+    }
+
+    Py_Return;
 }
 
-Py::Int SketchObjectPy::getGeometryCount(void) const
+PyObject* SketchObjectPy::deleteUnusedInternalGeometry(PyObject *args)
 {
-    return Py::Int(this->getSketchObjectPtr()->Geometry.getSize());
+    int GeoId;
+
+    if (!PyArg_ParseTuple(args, "i", &GeoId))
+        return 0;
+
+    if (this->getSketchObjectPtr()->deleteUnusedInternalGeometry(GeoId)==-1) {
+        std::stringstream str;
+        str << "Object does not support internal geometry: " << GeoId;
+        PyErr_SetString(PyExc_ValueError, str.str().c_str());
+        return 0;
+    }
+
+    Py_Return;
 }
 
-Py::Int SketchObjectPy::getAxisCount(void) const
+PyObject* SketchObjectPy::convertToNURBS(PyObject *args)
 {
-    return Py::Int(this->getSketchObjectPtr()->getAxisCount());
+    int GeoId;
+
+    if (!PyArg_ParseTuple(args, "i", &GeoId))
+        return 0;
+
+    if (this->getSketchObjectPtr()->convertToNURBS(GeoId)==false) {
+        std::stringstream str;
+        str << "Object does not support NURBS conversion: " << GeoId;
+        PyErr_SetString(PyExc_ValueError, str.str().c_str());
+        return 0;
+    }
+
+    Py_Return;
+}
+
+PyObject* SketchObjectPy::increaseBSplineDegree(PyObject *args)
+{
+    int GeoId;
+    int incr = 1;
+    
+    if (!PyArg_ParseTuple(args, "i|i", &GeoId, &incr))
+        return 0;
+    
+    if (this->getSketchObjectPtr()->increaseBSplineDegree(GeoId, incr)==false) {
+        std::stringstream str;
+        str << "Degree increase failed for: " << GeoId;
+        PyErr_SetString(PyExc_ValueError, str.str().c_str());
+        return 0;
+    }
+    
+    Py_Return;
+}
+
+PyObject* SketchObjectPy::modifyBSplineKnotMultiplicity(PyObject *args)
+{
+    int GeoId;
+    int knotIndex;
+    int multiplicity = 1;
+
+    if (!PyArg_ParseTuple(args, "ii|i", &GeoId, &knotIndex, &multiplicity))
+        return 0;
+
+    if (this->getSketchObjectPtr()->modifyBSplineKnotMultiplicity(GeoId, knotIndex, multiplicity)==false) {
+        std::stringstream str;
+        str << "Multiplicity modification failed for: " << GeoId;
+        PyErr_SetString(PyExc_ValueError, str.str().c_str());
+        return 0;
+    }
+    
+    Py_Return;
+}
+
+Py::Long SketchObjectPy::getConstraintCount(void) const
+{
+    return Py::Long(this->getSketchObjectPtr()->Constraints.getSize());
+}
+
+Py::Long SketchObjectPy::getGeometryCount(void) const
+{
+    return Py::Long(this->getSketchObjectPtr()->Geometry.getSize());
+}
+
+Py::Long SketchObjectPy::getAxisCount(void) const
+{
+    return Py::Long(this->getSketchObjectPtr()->getAxisCount());
 }
 
 PyObject *SketchObjectPy::getCustomAttributes(const char* /*attr*/) const

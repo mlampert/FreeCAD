@@ -38,6 +38,7 @@
 #include <QtGui/QCursor>
 #include <QtCore/QList>
 #include <QtCore/QUrl>
+#include <QtOpenGL.h>
 
 class SoNode;
 class SoCamera;
@@ -45,7 +46,6 @@ class SoRenderManager;
 class SoEventManager;
 class SoDirectionalLight;
 class QuarterWidgetP_cachecontext;
-class QGLWidget;
 class QAction;
 class QActionGroup;
 class QMenu;
@@ -62,7 +62,7 @@ class ContextMenu;
 class QuarterWidgetP {
 public:
 
-  QuarterWidgetP(class QuarterWidget * master, const QGLWidget * sharewidget);
+  QuarterWidgetP(class QuarterWidget * master, const QtGLWidget * sharewidget);
   ~QuarterWidgetP();
 
   SoCamera * searchForCamera(SoNode * root);
@@ -92,6 +92,7 @@ public:
   bool processdelayqueue;
   QUrl navigationModeFile;
   SoScXMLStateMachine * currentStateMachine;
+  qreal device_pixel_ratio;
 
   static void rendercb(void * userdata, SoRenderManager *);
   static void prerendercb(void * userdata, SoRenderManager * manager);
@@ -109,10 +110,11 @@ public:
   mutable ContextMenu * contextmenu;
 
   static bool nativeEventFilter(void * message, long * result);
+  void replaceGLWidget(const QtGLWidget * newviewport);
 
  private:
-  QuarterWidgetP_cachecontext * findCacheContext(QuarterWidget * widget, const QGLWidget * sharewidget);
-  static void removeFromCacheContext(QuarterWidgetP_cachecontext * context, const QGLWidget * widget);
+  QuarterWidgetP_cachecontext * findCacheContext(QuarterWidget * widget, const QtGLWidget * sharewidget);
+  static void removeFromCacheContext(QuarterWidgetP_cachecontext * context, const QtGLWidget * widget);
 };
 
 #endif // QUARTER_QUARTERWIDGETP_H

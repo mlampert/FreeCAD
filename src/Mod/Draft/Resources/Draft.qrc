@@ -71,11 +71,18 @@
         <file>icons/Draft_Grid.svg</file>
         <file>icons/Draft_Slope.svg</file>
         <file>icons/DraftWorkbench.svg</file>
+        <file>icons/Draft_Stretch.svg</file>
+        <file>icons/Draft_AutoGroup.svg</file>
+        <file>icons/Draft_AutoGroup_on.svg</file>
+        <file>icons/Draft_AutoGroup_off.svg</file>
+        <file>icons/Draft_Label.svg</file>
         <file>patterns/concrete.svg</file>
         <file>patterns/cross.svg</file>
         <file>patterns/line.svg</file>
         <file>patterns/simple.svg</file>
         <file>patterns/square.svg</file>
+        <file>patterns/wood.svg</file>
+        <file>patterns/woodgrain.svg</file>
         <file>translations/Draft_af.qm</file>
         <file>translations/Draft_de.qm</file>
         <file>translations/Draft_fi.qm</file>
@@ -102,6 +109,11 @@
         <file>translations/Draft_sr.qm</file>
         <file>translations/Draft_el.qm</file>
         <file>translations/Draft_sl.qm</file>
+        <file>translations/Draft_eu.qm</file>
+        <file>translations/Draft_ca.qm</file>
+        <file>translations/Draft_gl.qm</file>
+        <file>translations/Draft_kab.qm</file>
+        <file>translations/Draft_ko.qm</file>
         <file>ui/preferences-draft.ui</file>
         <file>ui/preferences-draftsnap.ui</file>
         <file>ui/preferences-drafttexts.ui</file>

@@ -122,10 +122,49 @@ void PropertyExpressionEngine::Paste(const Property &from)
     const PropertyExpressionEngine * fromee = static_cast<const PropertyExpressionEngine*>(&from);
 
     AtomicPropertyChange signaller(*this);
+
+#ifndef USE_OLD_DAG
+    //maintain backlinks
+    ExpressionMap::const_iterator i = expressions.begin();
+    while (i != expressions.end()) {
+        std::set<ObjectIdentifier> deps;
+        i->second.expression->getDeps(deps);
+
+        std::set<ObjectIdentifier>::const_iterator j = deps.begin();
+        while (j != deps.end()) {
+            const ObjectIdentifier & p = *j;
+            DocumentObject* docObj = p.getDocumentObject();
+
+            if (docObj)
+                docObj->_removeBackLink(static_cast<App::DocumentObject*>(getContainer()));
+
+            ++j;
+        }
+        ++i;
+    }
+#endif
     expressions.clear();
 
     for (ExpressionMap::const_iterator it = fromee->expressions.begin(); it != fromee->expressions.end(); ++it) {
         expressions[it->first] = ExpressionInfo(boost::shared_ptr<Expression>(it->second.expression->copy()), it->second.comment.c_str());
+        
+#ifndef USE_OLD_DAG
+        //maintain backlinks
+        std::set<ObjectIdentifier> deps;
+        it->second.expression->getDeps(deps);
+
+        std::set<ObjectIdentifier>::const_iterator j = deps.begin();
+        while (j != deps.end()) {
+            const ObjectIdentifier & p = *j;
+            DocumentObject* docObj = p.getDocumentObject();
+
+            if (docObj)
+                docObj->_addBackLink(static_cast<App::DocumentObject*>(getContainer()));
+
+            ++j;
+        }
+#endif
+        
         expressionChanged(it->first);
     }
 
@@ -169,7 +208,7 @@ void PropertyExpressionEngine::Restore(Base::XMLReader &reader)
 }
 
 /**
- * @brief Update graph stucture with given path and expression.
+ * @brief Update graph structure with given path and expression.
  * @param path Path
  * @param expression Expression to query for dependencies
  * @param nodes Map with nodes of graph
@@ -230,17 +269,17 @@ const ObjectIdentifier PropertyExpressionEngine::canonicalPath(const ObjectIdent
 
     // Am I owned by a DocumentObject?
     if (!docObj)
-        throw Base::Exception("PropertyExpressionEngine must be owned by a DocumentObject.");
+        throw Base::RuntimeError("PropertyExpressionEngine must be owned by a DocumentObject.");
 
     Property * prop = p.getProperty();
 
     // p pointing to a property...?
     if (!prop)
-        throw Base::Exception("Property not found");
+        throw Base::RuntimeError("Property not found");
 
     // ... in the same container as I?
     if (prop->getContainer() != getContainer())
-        throw Base::Exception("Property does not belong to same container as PropertyExpressionEngine");
+        throw Base::RuntimeError("Property does not belong to same container as PropertyExpressionEngine");
 
     // In case someone calls this with p pointing to a PropertyExpressionEngine for some reason
     if (prop->isDerivedFrom(PropertyExpressionEngine::classTypeId))
@@ -360,15 +399,47 @@ void PropertyExpressionEngine::setValue(const ObjectIdentifier & path, boost::sh
         std::string error = validateExpression(usePath, expr);
 
         if (error.size() > 0)
-            throw Base::Exception(error.c_str());
+            throw Base::RuntimeError(error.c_str());
 
         AtomicPropertyChange signaller(*this);
         expressions[usePath] = ExpressionInfo(expr, comment);
+        
+#ifndef USE_OLD_DAG
+        //maintain the backlinks in the documentobject graph datastructure
+        std::set<ObjectIdentifier> deps;
+        expr->getDeps(deps);
+        std::set<ObjectIdentifier>::const_iterator j = deps.begin();
+        while (j != deps.end()) {
+            const ObjectIdentifier & p = *j;
+            DocumentObject* docObj = p.getDocumentObject();
+            if (docObj)
+                docObj->_addBackLink(static_cast<App::DocumentObject*>(getContainer()));
+
+            ++j;
+        }
+#endif
+        
         expressionChanged(usePath);
     }
     else {
         AtomicPropertyChange signaller(*this);
         expressions.erase(usePath);
+        
+#ifndef USE_OLD_DAG
+        //maintain the backlinks in the documentobject graph datastructure
+        std::set<ObjectIdentifier> deps;
+        expressions[usePath].expression->getDeps(deps);
+        std::set<ObjectIdentifier>::const_iterator j = deps.begin();
+        while (j != deps.end()) {
+            const ObjectIdentifier & p = *j;
+            DocumentObject* docObj = p.getDocumentObject();
+            if (docObj)
+                docObj->_removeBackLink(static_cast<App::DocumentObject*>(getContainer()));
+
+            ++j;
+        }
+#endif
+
         expressionChanged(usePath);
     }
 }
@@ -425,7 +496,7 @@ void PropertyExpressionEngine::buildGraph(const ExpressionMap & exprs,
     if (has_cycle) {
         std::string s =  revNodes[src].toString() + " reference creates a cyclic dependency.";
 
-        throw Base::Exception(s.c_str());
+        throw Base::RuntimeError(s.c_str());
     }
 }
 
@@ -465,7 +536,7 @@ DocumentObjectExecReturn *App::PropertyExpressionEngine::execute()
     DocumentObject * docObj = freecad_dynamic_cast<DocumentObject>(getContainer());
 
     if (!docObj)
-        throw Base::Exception("PropertyExpressionEngine must be owned by a DocumentObject.");
+        throw Base::RuntimeError("PropertyExpressionEngine must be owned by a DocumentObject.");
 
     if (running)
         return DocumentObject::StdReturn;
@@ -500,13 +571,13 @@ DocumentObjectExecReturn *App::PropertyExpressionEngine::execute()
         Property * prop = it->getProperty();
 
         if (!prop)
-            throw Base::Exception("Path does not resolve to a property.");
+            throw Base::RuntimeError("Path does not resolve to a property.");
 
         DocumentObject* parent = freecad_dynamic_cast<DocumentObject>(prop->getContainer());
 
         /* Make sure property belongs to the same container as this PropertyExpressionEngine */
         if (parent != docObj)
-            throw Base::Exception("Invalid property owner.");
+            throw Base::RuntimeError("Invalid property owner.");
 
         // Evaluate expression
         std::unique_ptr<Expression> e(expressions[*it].expression->eval());
@@ -622,7 +693,7 @@ boost::unordered_map<const ObjectIdentifier, const PropertyExpressionEngine::Exp
 
 /**
  * @brief Validate the given path and expression.
- * @param path Object Indentifier for expression.
+ * @param path Object Identifier for expression.
  * @param expr Expression tree.
  * @return Empty string on success, error message on failure.
  */

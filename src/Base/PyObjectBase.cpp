@@ -30,6 +30,7 @@
 
 #include "PyObjectBase.h"
 #include "Console.h"
+#include "Interpreter.h"
 
 using namespace Base;
 
@@ -37,26 +38,25 @@ PyObject* Base::BaseExceptionFreeCADError = 0;
 
 // Constructor
 PyObjectBase::PyObjectBase(void* p,PyTypeObject *T)
-  : _pcTwinPointer(p), parent(0), attribute(0)
+  : _pcTwinPointer(p), attrDict(0)
 {
-    this->ob_type = T;
+    Py_TYPE(this) = T;
     _Py_NewReference(this);
 #ifdef FC_LOGPYOBJECTS
     Base::Console().Log("PyO+: %s (%p)\n",T->tp_name, this);
 #endif
-    StatusBits.set(0); // valid, the second bit is NOT set, i.e. it's mutable
+    StatusBits.set(Valid); // valid, the second bit is NOT set, i.e. it's mutable
+    StatusBits.set(Notify);
 }
 
 /// destructor
 PyObjectBase::~PyObjectBase() 
 {
+    PyGILStateLocker lock;
 #ifdef FC_LOGPYOBJECTS
-    Base::Console().Log("PyO-: %s (%p)\n",this->ob_type->tp_name, this);
+    Base::Console().Log("PyO-: %s (%p)\n",Py_TYPE(this)->tp_name, this);
 #endif
-    if (this->parent)
-        this->parent->DecRef();
-    if (this->attribute)
-        free(this->attribute); /* it's a strdup */
+    Py_XDECREF(attrDict);
 }
 
 /*------------------------------
@@ -73,16 +73,15 @@ PyObjectBase::~PyObjectBase()
  */
 
 PyTypeObject PyObjectBase::Type = {
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                                                      /*ob_size*/
+    PyVarObject_HEAD_INIT(&PyType_Type,0)
     "PyObjectBase",                                         /*tp_name*/
     sizeof(PyObjectBase),                                   /*tp_basicsize*/
     0,                                                      /*tp_itemsize*/
     /* --- methods ---------------------------------------------- */
     PyDestructor,                                           /*tp_dealloc*/
     0,                                                      /*tp_print*/
-    __getattr,                                              /*tp_getattr*/
-    __setattr,                                              /*tp_setattr*/
+    0,                                                      /*tp_getattr*/
+    0,                                                      /*tp_setattr*/
     0,                                                      /*tp_compare*/
     __repr,                                                 /*tp_repr*/
     0,                                                      /*tp_as_number*/
@@ -91,12 +90,16 @@ PyTypeObject PyObjectBase::Type = {
     0,                                                      /*tp_hash*/
     0,                                                      /*tp_call */
     0,                                                      /*tp_str  */
-    0,                                                      /*tp_getattro*/
-    0,                                                      /*tp_setattro*/
+    __getattro,                                             /*tp_getattro*/
+    __setattro,                                             /*tp_setattro*/
     /* --- Functions to access object as input/output buffer ---------*/
     0,                                                      /* tp_as_buffer */
     /* --- Flags to define presence of optional/expanded features */
+#if PY_MAJOR_VERSION >= 3
+    Py_TPFLAGS_BASETYPE|Py_TPFLAGS_DEFAULT,                 /*tp_flags */
+#else
     Py_TPFLAGS_BASETYPE|Py_TPFLAGS_HAVE_CLASS,              /*tp_flags */
+#endif
     "The most base class for Python binding",               /*tp_doc */
     0,                                                      /*tp_traverse */
     0,                                                      /*tp_clear */
@@ -124,6 +127,9 @@ PyTypeObject PyObjectBase::Type = {
     0,                                                      /*tp_weaklist */
     0,                                                      /*tp_del */
     0                                                       /*tp_version_tag */
+#if PY_MAJOR_VERSION >= 3
+    ,0                                                      /*tp_finalize */
+#endif
 };
 
 /*------------------------------
@@ -133,8 +139,15 @@ PyMethodDef PyObjectBase::Methods[] = {
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
-PyObject* PyObjectBase::__getattr(PyObject * obj, char *attr)
+PyObject* PyObjectBase::__getattro(PyObject * obj, PyObject *attro)
 {
+    char *attr;
+#if PY_MAJOR_VERSION >= 3
+    attr = PyUnicode_AsUTF8(attro);
+#else
+    attr = PyString_AsString(attro);
+#endif
+
     // This should be the entry in Type
     PyObjectBase* pyObj = static_cast<PyObjectBase*>(obj);
     if (!pyObj->isValid()){
@@ -142,18 +155,53 @@ PyObject* PyObjectBase::__getattr(PyObject * obj, char *attr)
         return NULL;
     }
 
+    // If an attribute references this as parent then reset it (bug #0002902)
+    PyObject* cur = pyObj->getTrackedAttribute(attr);
+    if (cur) {
+        if (PyObject_TypeCheck(cur, &(PyObjectBase::Type))) {
+            PyObjectBase* base = static_cast<PyObjectBase*>(cur);
+            base->resetAttribute();
+            pyObj->untrackAttribute(attr);
+        }
+    }
+
     PyObject* value = pyObj->_getattr(attr);
 #if 1
     if (value && PyObject_TypeCheck(value, &(PyObjectBase::Type))) {
-        if (!static_cast<PyObjectBase*>(value)->isConst())
+        if (!static_cast<PyObjectBase*>(value)->isConst()) {
             static_cast<PyObjectBase*>(value)->setAttributeOf(attr, pyObj);
+            pyObj->trackAttribute(attr, value);
+        }
+    }
+    else if (value && PyCFunction_Check(value)) {
+        // ExtensionContainerPy::initialization() transfers the methods of an
+        // extension object by creating PyCFunction objects.
+        // At this point no 'self' object is passed but is handled and determined
+        // in ExtensionContainerPy::getCustomAttributes().
+        // So, if we come through this section then it's an indication that
+        // something is wrong with the Python types. For example, a C++ class
+        // that adds an extension uses the same Python type as a wrapper than
+        // another C++ class without this extension.
+        PyCFunctionObject* cfunc = reinterpret_cast<PyCFunctionObject*>(value);
+        if (!cfunc->m_self) {
+            Py_DECREF(cfunc);
+            value = 0;
+            PyErr_Format(PyExc_AttributeError, "<no object bound to built-in method %s>", attr);
+        }
     }
 #endif
     return value;
 }
 
-int PyObjectBase::__setattr(PyObject *obj, char *attr, PyObject *value)
+int PyObjectBase::__setattro(PyObject *obj, PyObject *attro, PyObject *value)
 {
+    char *attr;
+#if PY_MAJOR_VERSION >= 3
+    attr = PyUnicode_AsUTF8(attro);
+#else
+    attr = PyString_AsString(attro);
+#endif
+
     //FIXME: In general we don't allow to delete attributes (i.e. value=0). However, if we want to allow
     //we must check then in _setattr() of all subclasses whether value is 0.
     if ( value==0 ) {
@@ -163,6 +211,17 @@ int PyObjectBase::__setattr(PyObject *obj, char *attr, PyObject *value)
     else if (!static_cast<PyObjectBase*>(obj)->isValid()){
         PyErr_Format(PyExc_ReferenceError, "Cannot access attribute '%s' of deleted object", attr);
         return -1;
+    }
+
+    // If an attribute references this as parent then reset it
+    // before setting the new attribute
+    PyObject* cur = static_cast<PyObjectBase*>(obj)->getTrackedAttribute(attr);
+    if (cur) {
+        if (PyObject_TypeCheck(cur, &(PyObjectBase::Type))) {
+            PyObjectBase* base = static_cast<PyObjectBase*>(cur);
+            base->resetAttribute();
+            static_cast<PyObjectBase*>(obj)->untrackAttribute(attr);
+        }
     }
 
     int ret = static_cast<PyObjectBase*>(obj)->_setattr(attr, value);
@@ -182,8 +241,8 @@ PyObject *PyObjectBase::_getattr(char *attr)
     if (streq(attr, "__class__")) {
         // Note: We must return the type object here, 
         // so that our own types feel as really Python objects 
-        Py_INCREF(this->ob_type);
-        return (PyObject *)(this->ob_type);
+        Py_INCREF(Py_TYPE(this));
+        return (PyObject *)(Py_TYPE(this));
     }
     else if (streq(attr, "__members__")) {
         // Use __dict__ instead as __members__ is deprecated
@@ -191,7 +250,7 @@ PyObject *PyObjectBase::_getattr(char *attr)
     }
     else if (streq(attr,"__dict__")) {
         // Return the default dict
-        PyTypeObject *tp = this->ob_type;
+        PyTypeObject *tp = Py_TYPE(this);
         Py_XINCREF(tp->tp_dict);
         return tp->tp_dict;
     }
@@ -202,14 +261,18 @@ PyObject *PyObjectBase::_getattr(char *attr)
     else {
         // As fallback solution use Python's default method to get generic attributes
         PyObject *w, *res;
+#if PY_MAJOR_VERSION >= 3
+        w = PyUnicode_InternFromString(attr);
+#else
         w = PyString_InternFromString(attr);
+#endif
         if (w != NULL) {
             res = PyObject_GenericGetAttr(this, w);
             Py_XDECREF(w);
             return res;
         } else {
             // Throw an exception for unknown attributes
-            PyTypeObject *tp = this->ob_type;
+            PyTypeObject *tp = Py_TYPE(this);
             PyErr_Format(PyExc_AttributeError, "%.50s instance has no attribute '%.400s'", tp->tp_name, attr);
             return NULL;
         }
@@ -222,7 +285,11 @@ int PyObjectBase::_setattr(char *attr, PyObject *value)
         return -1; // filter out softspace
     PyObject *w;
     // As fallback solution use Python's default method to get generic attributes
+#if PY_MAJOR_VERSION >= 3
+    w = PyUnicode_InternFromString(attr); // new reference
+#else
     w = PyString_InternFromString(attr); // new reference
+#endif
     if (w != NULL) {
         // call methods from tp_getset if defined
         int res = PyObject_GenericSetAttr(this, w, value);
@@ -230,7 +297,7 @@ int PyObjectBase::_setattr(char *attr, PyObject *value)
         return res;
     } else {
         // Throw an exception for unknown attributes
-        PyTypeObject *tp = this->ob_type;
+        PyTypeObject *tp = Py_TYPE(this);
         PyErr_Format(PyExc_AttributeError, "%.50s instance has no attribute '%.400s'", tp->tp_name, attr);
         return -1;
     }
@@ -249,38 +316,113 @@ PyObject *PyObjectBase::_repr(void)
     return Py_BuildValue("s", a.str().c_str());
 }
 
-void PyObjectBase::setAttributeOf(const char* attr, const PyObjectBase* par)
+void PyObjectBase::resetAttribute()
 {
-    if (this->parent != par) {
-        Py_XDECREF(this->parent);
-        this->parent = const_cast<PyObjectBase*>(par);
-        Py_XINCREF(this->parent);
-    }
-
-    if (this->attribute) {
-        if (strcmp(this->attribute, attr) != 0) {
-            free(this->attribute);
-#if defined (__GNUC__)
-            this->attribute =  strdup(attr);
+    if (attrDict) {
+        // This is the attribute name to the parent structure
+        // which we search for in the dict
+#if PY_MAJOR_VERSION < 3
+        PyObject* key1 = PyString_FromString("__attribute_of_parent__");
+        PyObject* key2 = PyString_FromString("__instance_of_parent__");
 #else
-            this->attribute = _strdup(attr);
+        PyObject* key1 = PyBytes_FromString("__attribute_of_parent__");
+        PyObject* key2 = PyBytes_FromString("__instance_of_parent__");
 #endif
+        PyObject* attr = PyDict_GetItem(attrDict, key1);
+        PyObject* inst = PyDict_GetItem(attrDict, key2);
+        if (attr) {
+            PyDict_DelItem(attrDict, key1);
         }
+        if (inst) {
+            PyDict_DelItem(attrDict, key2);
+        }
+        Py_DECREF(key1);
+        Py_DECREF(key2);
     }
-    else {
-#if defined (__GNUC__)
-        this->attribute =  strdup(attr);
+}
+
+void PyObjectBase::setAttributeOf(const char* attr, PyObject* par)
+{
+    if (!attrDict) {
+        attrDict = PyDict_New();
+    }
+#if PY_MAJOR_VERSION < 3
+    PyObject* key1 = PyString_FromString("__attribute_of_parent__");
+    PyObject* key2 = PyString_FromString("__instance_of_parent__");
+    PyObject* attro = PyString_FromString(attr);
 #else
-        this->attribute = _strdup(attr);
+    PyObject* key1 = PyBytes_FromString("__attribute_of_parent__");
+    PyObject* key2 = PyBytes_FromString("__instance_of_parent__");
+    PyObject* attro = PyUnicode_FromString(attr);
 #endif
-    }
+    PyDict_SetItem(attrDict, key1, attro);
+    PyDict_SetItem(attrDict, key2, par);
+    Py_DECREF(attro);
+    Py_DECREF(key1);
+    Py_DECREF(key2);
 }
 
 void PyObjectBase::startNotify()
 {
-    if (this->attribute && this->parent) {
-        __setattr(this->parent, this->attribute, this);
-        if (PyErr_Occurred())
-            PyErr_Clear();
+    if (!shouldNotify())
+        return;
+
+    if (attrDict) {
+        // This is the attribute name to the parent structure
+        // which we search for in the dict
+#if PY_MAJOR_VERSION < 3
+        PyObject* key1 = PyString_FromString("__attribute_of_parent__");
+        PyObject* key2 = PyString_FromString("__instance_of_parent__");
+#else
+        PyObject* key1 = PyBytes_FromString("__attribute_of_parent__");
+        PyObject* key2 = PyBytes_FromString("__instance_of_parent__");
+#endif
+        PyObject* attr = PyDict_GetItem(attrDict, key1);
+        PyObject* parent = PyDict_GetItem(attrDict, key2);
+        if (attr && parent) {
+            // Inside __setattr of the parent structure the 'attr'
+            // is being removed from the dict and thus its reference
+            // counter will be decremented. To avoid to be deleted we
+            // must tmp. increment it and afterwards decrement it again.
+            Py_INCREF(parent);
+            Py_INCREF(attr);
+            Py_INCREF(this);
+
+            __setattro(parent, attr, this);
+
+            Py_DECREF(parent); // might be destroyed now
+            Py_DECREF(attr); // might be destroyed now
+            Py_DECREF(this); // might be destroyed now
+
+            if (PyErr_Occurred())
+                PyErr_Clear();
+        }
+        Py_DECREF(key1);
+        Py_DECREF(key2);
+    }
+}
+
+PyObject* PyObjectBase::getTrackedAttribute(const char* attr)
+{
+    PyObject* obj = 0;
+    if (attrDict) {
+        obj = PyDict_GetItemString(attrDict, attr);
+    }
+    return obj;
+}
+
+void PyObjectBase::trackAttribute(const char* attr, PyObject* obj)
+{
+    if (!attrDict) {
+        attrDict = PyDict_New();
+    }
+
+    PyDict_SetItemString(attrDict, attr, obj);
+}
+
+void PyObjectBase::untrackAttribute(const char* attr)
+{
+    if (attrDict) {
+        PyDict_DelItemString(attrDict, attr);
     }
 }

@@ -206,9 +206,9 @@ private:
 };
 
 /** Constraint integer properties
- * This property fullfill the need of constraint integer. It holds basicly a 
+ * This property fulfills the need of a constraint integer. It holds basically a 
  * state (integer) and a struct of boundaries. If the boundaries
- * is not set it act basicly like a IntegerProperty and do no checking.
+ * is not set it act basically like a IntegerProperty and do no checking.
  * The constraints struct can be created on the heap or build in.
  */
 class AppExport PropertyIntegerConstraint: public PropertyInteger
@@ -227,11 +227,38 @@ public:
     /// the boundary struct
     struct Constraints {
         long LowerBound, UpperBound, StepSize;
+        Constraints()
+            : LowerBound(0)
+            , UpperBound(0)
+            , StepSize(0)
+            , candelete(false)
+        {
+        }
+        Constraints(long l, long u, long s)
+            : LowerBound(l)
+            , UpperBound(u)
+            , StepSize(s)
+            , candelete(false)
+        {
+        }
+        ~Constraints()
+        {
+        }
+        void setDeletable(bool on)
+        {
+            candelete = on;
+        }
+        bool isDeletable() const
+        {
+            return candelete;
+        }
+    private:
+        bool candelete;
     };
     /** setting the boundaries
-     * This sets the constraint struct. It can be dynamcly 
+     * This sets the constraint struct. It can be dynamically 
      * allocated or set as an static in the class the property
-     * blongs to:
+     * belongs to:
      * \code
      * const Constraints percent = {0,100,1}
      * \endcode
@@ -249,7 +276,7 @@ protected:
 };
 
 /** Percent property
- * This property is a special interger property and holds only
+ * This property is a special integer property and holds only
  * numbers between 0 and 100.
  */
 
@@ -467,9 +494,9 @@ protected:
 };
 
 /** Constraint float properties
- * This property fullfill the need of constraint float. It holds basicly a
+ * This property fulfills the need of a constraint float. It holds basically a
  * state (float) and a struct of boundaries. If the boundaries
- * is not set it acts basicly like a PropertyFloat and does no checking
+ * is not set it acts basically like a PropertyFloat and does no checking
  * The constraints struct can be created on the heap or built-in.
  */
 class AppExport PropertyFloatConstraint: public PropertyFloat
@@ -495,6 +522,33 @@ public:
     /// the boundary struct
     struct Constraints {
         double LowerBound, UpperBound, StepSize;
+        Constraints()
+            : LowerBound(0)
+            , UpperBound(0)
+            , StepSize(0)
+            , candelete(false)
+        {
+        }
+        Constraints(double l, double u, double s)
+            : LowerBound(l)
+            , UpperBound(u)
+            , StepSize(s)
+            , candelete(false)
+        {
+        }
+        ~Constraints()
+        {
+        }
+        void setDeletable(bool on)
+        {
+            candelete = on;
+        }
+        bool isDeletable() const
+        {
+            return candelete;
+        }
+    private:
+        bool candelete;
     };
     /** setting the boundaries
      * This sets the constraint struct. It can be dynamcly 
@@ -517,6 +571,23 @@ public:
 protected:
     const Constraints* _ConstStruct;
 };
+
+
+/** Precision properties
+ * This property fulfills the need of a floating value with many decimal points,
+ * e.g. for holding values like Precision::Confusion(). The value has a default
+ * constraint for non-negative, but can be overidden
+ */
+class AppExport PropertyPrecision: public PropertyFloatConstraint
+{
+    TYPESYSTEM_HEADER();
+public:
+    PropertyPrecision(void);
+    virtual ~PropertyPrecision();
+    virtual const char* getEditorName(void) const
+    { return "Gui::PropertyEditor::PropertyPrecisionItem"; }
+};
+
 
 class AppExport PropertyFloatList: public PropertyLists
 {

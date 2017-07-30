@@ -139,7 +139,9 @@ class _CommandRoof:
                     idx = int(sel.SubElementNames[0][4:])
                     FreeCAD.ActiveDocument.openTransaction(translate("Arch","Create Roof"))
                     FreeCADGui.addModule("Arch")
-                    FreeCADGui.doCommand("Arch.makeRoof(FreeCAD.ActiveDocument."+obj.Name+","+str(idx)+")")
+                    FreeCADGui.doCommand("obj = Arch.makeRoof(FreeCAD.ActiveDocument."+obj.Name+","+str(idx)+")")
+                    FreeCADGui.addModule("Draft")
+                    FreeCADGui.doCommand("Draft.autogroup(obj)")
                     FreeCAD.ActiveDocument.commitTransaction()
                     FreeCAD.ActiveDocument.recompute()
                     return
@@ -147,7 +149,9 @@ class _CommandRoof:
                 if obj.Shape.Wires:
                     FreeCAD.ActiveDocument.openTransaction(translate("Arch","Create Roof"))
                     FreeCADGui.addModule("Arch")
-                    FreeCADGui.doCommand("Arch.makeRoof(FreeCAD.ActiveDocument."+obj.Name+")")
+                    FreeCADGui.doCommand("obj = Arch.makeRoof(FreeCAD.ActiveDocument."+obj.Name+")")
+                    FreeCADGui.addModule("Draft")
+                    FreeCADGui.doCommand("Draft.autogroup(obj)")
                     FreeCAD.ActiveDocument.commitTransaction()
                     FreeCAD.ActiveDocument.recompute()
                     return
@@ -173,6 +177,7 @@ class _Roof(ArchComponent.Component):
         obj.addProperty("App::PropertyInteger","Face","Base",        QT_TRANSLATE_NOOP("App::Property","The face number of the base object used to build this roof"))
         obj.addProperty("App::PropertyLength","RidgeLength","Arch",  QT_TRANSLATE_NOOP("App::Property","The total length of ridges and hips of this roof"))
         obj.addProperty("App::PropertyLength","BorderLength","Arch", QT_TRANSLATE_NOOP("App::Property","The total length of borders of this roof"))
+        obj.addProperty("App::PropertyBool","Flip","Arch",QT_TRANSLATE_NOOP("App::Property","Flip the roof direction if going the wrong way"))
         self.Type = "Roof"
         obj.Proxy = self
         obj.setEditorMode("RidgeLength",1)
@@ -196,6 +201,9 @@ class _Roof(ArchComponent.Component):
     def getPerpendicular(self, vec, rotEdge, l):
         " Get the perpendicular vec of given edge on xy plane "
         norm = FreeCAD.Vector(0,0,1)
+        if hasattr(self,"normal"):
+            if self.normal:
+                norm = FreeCAD.Vector(self.normal)
         perpendicular = vec.cross(norm)
         if  -180. <= rotEdge < -90.:
             perpendicular[0] = abs(perpendicular[0])*-1
@@ -214,6 +222,9 @@ class _Roof(ArchComponent.Component):
         perpendicular[2] = abs(perpendicular[2])
         perpendicular.normalize()
         perpendicular = perpendicular.multiply(l)
+        if hasattr(self,"flip"):
+            if self.flip:
+                return perpendicular.negative()
         return perpendicular
 
     def makeRoofProfilsDic(self, id, angle, run, idrel, overhang, thickness,):
@@ -514,7 +525,10 @@ class _Roof(ArchComponent.Component):
         import Part, math, DraftGeomUtils
         pl = obj.Placement
         #self.baseface = None
-
+        self.flip = False
+        if hasattr(obj,"Flip"):
+            if obj.Flip:
+                self.flip = True
         base = None
         w = None
         if obj.Base:
@@ -647,10 +661,10 @@ class _Roof(ArchComponent.Component):
                                         rn += 1
             if obj.RidgeLength.Value != rl:
                 obj.RidgeLength = rl
-                print str(rn)+" ridge edges in roof "+obj.Name
+                print(str(rn)+" ridge edges in roof "+obj.Name)
             if obj.BorderLength.Value != bl:
                 obj.BorderLength = bl
-                print str(bn)+" border edges in roof "+obj.Name
+                print(str(bn)+" border edges in roof "+obj.Name)
         ArchComponent.Component.computeAreas(self,obj)
 
 
@@ -775,15 +789,15 @@ class _RoofTaskPanel:
         return True
 
     def retranslateUi(self, TaskPanel):
-        TaskPanel.setWindowTitle(QtGui.QApplication.translate("Arch", "Roof", None, QtGui.QApplication.UnicodeUTF8))
-        self.title.setText(QtGui.QApplication.translate("Arch", "Parameters of the profiles of the roof:\n* Angle : slope in degrees compared to the horizontal one.\n* Run : outdistance between the wall and the ridge sheathing.\n* Thickness : thickness of the side of roof.\n* Overhang : outdistance between the sewer and the wall.\n* Height : height of the ridge sheathing (calculated automatically)\n* IdRel : Relative Id for calculations automatic.\n---\nIf Angle = 0 and Run = 0 then profile is identical to the relative profile.\nIf Angle = 0 then angle is calculated so that the height is the same one as the relative profile.\nIf Run = 0 then Run is calculated so that the height is the same one as the relative profile.", None, QtGui.QApplication.UnicodeUTF8))
-        self.tree.setHeaderLabels([QtGui.QApplication.translate("Arch", "Id", None, QtGui.QApplication.UnicodeUTF8),
-                                    QtGui.QApplication.translate("Arch", "Angle (deg)", None, QtGui.QApplication.UnicodeUTF8),
-                                    QtGui.QApplication.translate("Arch", "Run (mm)", None, QtGui.QApplication.UnicodeUTF8),
-                                    QtGui.QApplication.translate("Arch", "IdRel", None, QtGui.QApplication.UnicodeUTF8),
-                                    QtGui.QApplication.translate("Arch", "Thickness (mm)", None, QtGui.QApplication.UnicodeUTF8),
-                                    QtGui.QApplication.translate("Arch", "Overhang (mm)", None, QtGui.QApplication.UnicodeUTF8),
-                                    QtGui.QApplication.translate("Arch", "Height (mm)", None, QtGui.QApplication.UnicodeUTF8)])
+        TaskPanel.setWindowTitle(QtGui.QApplication.translate("Arch", "Roof", None))
+        self.title.setText(QtGui.QApplication.translate("Arch", "Parameters of the profiles of the roof:\n* Angle : slope in degrees compared to the horizontal one.\n* Run : outdistance between the wall and the ridge sheathing.\n* Thickness : thickness of the side of roof.\n* Overhang : outdistance between the sewer and the wall.\n* Height : height of the ridge sheathing (calculated automatically)\n* IdRel : Relative Id for calculations automatic.\n---\nIf Angle = 0 and Run = 0 then profile is identical to the relative profile.\nIf Angle = 0 then angle is calculated so that the height is the same one as the relative profile.\nIf Run = 0 then Run is calculated so that the height is the same one as the relative profile.", None))
+        self.tree.setHeaderLabels([QtGui.QApplication.translate("Arch", "Id", None),
+                                    QtGui.QApplication.translate("Arch", "Angle (deg)", None),
+                                    QtGui.QApplication.translate("Arch", "Run (mm)", None),
+                                    QtGui.QApplication.translate("Arch", "IdRel", None),
+                                    QtGui.QApplication.translate("Arch", "Thickness (mm)", None),
+                                    QtGui.QApplication.translate("Arch", "Overhang (mm)", None),
+                                    QtGui.QApplication.translate("Arch", "Height (mm)", None)])
 
 if FreeCAD.GuiUp:
     FreeCADGui.addCommand('Arch_Roof',_CommandRoof())

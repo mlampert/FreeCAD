@@ -20,6 +20,7 @@
 # *   USA                                                                   *
 # *                                                                         *
 # ***************************************************************************
+from __future__ import print_function
 
 import FreeCAD
 import FreeCADGui
@@ -29,24 +30,18 @@ from PySide import QtCore, QtGui
 """Path Compound Extended object and FreeCAD command"""
 
 # Qt tanslation handling
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-
-    def translate(context, text, disambig=None):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def translate(context, text, disambig=None):
-        return QtGui.QApplication.translate(context, text, disambig)
-
+def translate(context, text, disambig=None):
+    return QtCore.QCoreApplication.translate(context, text, disambig)
 
 class ObjectCompoundExtended:
 
     def __init__(self,obj):
-        obj.addProperty("App::PropertyString","Description",  "Path",QtCore.QT_TRANSLATE_NOOP("App::Property","An ptional description of this compounded operation"))
+        obj.addProperty("App::PropertyString","Description",  "Path",QtCore.QT_TRANSLATE_NOOP("App::Property","An optional description of this compounded operation"))
 #        obj.addProperty("App::PropertySpeed", "FeedRate",     "Path",QtCore.QT_TRANSLATE_NOOP("App::Property","The feed rate of the paths in these compounded operations"))
 #        obj.addProperty("App::PropertyFloat", "SpindleSpeed", "Path",QtCore.QT_TRANSLATE_NOOP("App::Property","The spindle speed, in revolutions per minute, of the tool used in these compounded operations"))
         obj.addProperty("App::PropertyLength","SafeHeight",   "Path",QtCore.QT_TRANSLATE_NOOP("App::Property","The safe height for this operation"))
         obj.addProperty("App::PropertyLength","RetractHeight","Path",QtCore.QT_TRANSLATE_NOOP("App::Property","The retract height, above top surface of part, between compounded operations inside clamping area"))
+        obj.addProperty("App::PropertyLink", "ToolController", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property", "The tool controller that will be used to calculate the path"))
         obj.Proxy = self
 
     def __getstate__(self):
@@ -57,7 +52,7 @@ class ObjectCompoundExtended:
 
     def onChanged(self, obj, prop):
         if prop == "Group":
-            print 'check order'
+            print('check order')
         for child in obj.Group:
             if child.isDerivedFrom("Path::Feature"):
                 child.touch()
@@ -112,8 +107,7 @@ class CommandCompoundExtended:
 
     def Activated(self):
 
-        FreeCAD.ActiveDocument.openTransaction(
-            translate("Path_CompoundExtended", "Create Compound"))
+        FreeCAD.ActiveDocument.openTransaction(translate("Path_CompoundExtended", "Create Compound"))
         FreeCADGui.addModule("PathScripts.PathCompoundExtended")
         snippet = '''
 import Path
@@ -121,12 +115,14 @@ import PathScripts
 from PathScripts import PathUtils
 incl = []
 prjexists = False
+tc = None
 sel = FreeCADGui.Selection.getSelection()
 for s in sel:
     if s.isDerivedFrom("Path::Feature"):
         incl.append(s)
 
 obj = FreeCAD.ActiveDocument.addObject("Path::FeatureCompoundPython","Compound")
+
 PathScripts.PathCompoundExtended.ObjectCompoundExtended(obj)
 PathScripts.PathCompoundExtended.ViewProviderCompoundExtended(obj.ViewObject)
 project = PathUtils.addToJob(obj)
@@ -137,10 +133,15 @@ if incl:
     g = obj.Group
     for child in incl:
         p.remove(child)
-        children.append(FreeCAD.ActiveDocument.getObject(child.Name))
+        childobj = FreeCAD.ActiveDocument.getObject(child.Name)
+        if hasattr(childobj, 'ToolController'):
+            tc = childobj.ToolController
+        children.append(childobj)
+
     project.Group = p
     g.append(children)
     obj.Group = children
+    obj.ToolController = tc
 '''
         FreeCADGui.doCommand(snippet)
         FreeCAD.ActiveDocument.commitTransaction()

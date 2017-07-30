@@ -31,7 +31,6 @@ SET(Arch_SRCS
     ArchPanel.py
     ArchEquipment.py
     ArchCutPlane.py
-    ArchServer.py
     ArchMaterial.py
     ArchSchedule.py
     ArchProfile.py
@@ -39,6 +38,7 @@ SET(Arch_SRCS
     ArchPrecast.py
     importSH3D.py
     ArchPipe.py
+    ArchNesting.py
 )
 
 SET(Dice3DS_SRCS

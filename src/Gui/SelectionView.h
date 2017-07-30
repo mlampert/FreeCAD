@@ -30,6 +30,11 @@
 #include "Selection.h"
 
 class QListWidget;
+class QLabel;
+
+namespace App {
+class DocumentObject;
+}
 
 namespace Gui {
 namespace DockWnd {
@@ -67,6 +72,7 @@ public:
     virtual void onUpdate(void);
 
     QListWidget* selectionView;
+    QLabel*      countLabel;
 
 public Q_SLOTS:
     /// get called when text is entered in the search box
@@ -80,7 +86,12 @@ public Q_SLOTS:
     void treeSelect(void);
     void toPython(void);
     void touch(void);
+    void showPart(void);
 
+private:
+    QString getModule(const char* type) const;
+    QString getProperty(App::DocumentObject* obj) const;
+    bool supportPart(App::DocumentObject* obj, const QString& part) const;
 };
 
 } // namespace DockWnd

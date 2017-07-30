@@ -27,7 +27,8 @@ __url__ = ["http://www.freecadweb.org"]
 
 ## \defgroup DRAFTGEOMUTILS DraftGeomUtils
 #  \ingroup DRAFT
-#
+#  \brief Shape manipulation utilities for the Draft workbench
+# 
 # Shapes manipulation utilities
 
 ## \addtogroup DRAFTGEOMUTILS
@@ -96,10 +97,14 @@ def isNull(something):
 def isPtOnEdge(pt,edge) :
     '''isPtOnEdge(Vector,edge): Tests if a point is on an edge'''
     v = Part.Vertex(pt)
-    d = v.distToShape(edge)
-    if d:
-        if round(d[0],precision()) == 0:
-            return True
+    try:
+        d = v.distToShape(edge)
+    except:
+        return False
+    else:
+        if d:
+            if round(d[0],precision()) == 0:
+                return True
     return False
 
 def hasCurves(shape):
@@ -284,14 +289,21 @@ def findIntersection(edge1,edge2,infinite1=False,infinite2=False,ex1=False,ex2=F
         else :
             return [] # Lines aren't on same plane
 
+    # First, check bound boxes
+    if isinstance(edge1,Part.Edge) and isinstance(edge2,Part.Edge) \
+        and (not infinite1) and (not infinite2):
+        if not edge1.BoundBox.intersect(edge2.BoundBox):
+            return [] # bound boxes don't intersect
+
     # First, try to use distToShape if possible
     if dts and isinstance(edge1,Part.Edge) and isinstance(edge2,Part.Edge) \
-            and (not infinite1) and (not infinite2) and \
-            edge1.BoundBox.intersect(edge2.BoundBox):
+            and (not infinite1) and (not infinite2):
         dist, pts, geom = edge1.distToShape(edge2)
         sol = []
-        for p in pts:
-            sol.append(p[0])
+        if round(dist,precision()) == 0:
+            for p in pts:
+                if not p in sol:
+                    sol.append(p[0])
         return sol
 
     pt1 = None
@@ -403,6 +415,10 @@ def findIntersection(edge1,edge2,infinite1=False,infinite2=False,ex1=False,ex2=F
         rad1 , rad2  = edge1.Curve.Radius, edge2.Curve.Radius
         axis1, axis2 = edge1.Curve.Axis  , edge2.Curve.Axis
         c2c          = cent2.sub(cent1)
+        
+        if cent1.sub(cent2).Length == 0:
+            # circles are concentric
+            return []
 
         if DraftVecUtils.isNull(axis1.cross(axis2)) :
             if round(c2c.dot(axis1),precision()) == 0 :
@@ -454,7 +470,7 @@ def findIntersection(edge1,edge2,infinite1=False,infinite2=False,ex1=False,ex2=F
 
         return int
     else:
-    #    print("DraftGeomUtils: Unsupported curve type: (" + str(edge1.Curve) + ", " + str(edge2.Curve) + ")")
+        print("DraftGeomUtils: Unsupported curve type: (" + str(edge1.Curve) + ", " + str(edge2.Curve) + ")")
         return []
 
 def wiresIntersect(wire1,wire2):
@@ -531,7 +547,7 @@ def pocket2d(shape,offset):
     offsetWires = [o for o in offsetWires if o != None]
     return offsetWires
 
-def orientEdge(edge, normal=None):
+def orientEdge(edge, normal=None, make_arc=False):
     """Re-orients 'edge' such that it is in the x-y plane. If 'normal' is passed, this
     is used as the basis for the rotation, otherwise the Placement property of 'edge'
     is used"""
@@ -551,6 +567,9 @@ def orientEdge(edge, normal=None):
         edge.rotate(base, axis, angle)
     if isinstance(edge.Curve,Part.Line):
         return Part.LineSegment(edge.Curve,edge.FirstParameter,edge.LastParameter)
+    elif make_arc and isinstance(edge.Curve,Part.Circle) and not edge.Closed:
+        return Part.ArcOfCircle(edge.Curve, edge.FirstParameter,
+                                    edge.LastParameter,edge.Curve.Axis.z>0)
     return edge.Curve
 
 def mirror (point, edge):
@@ -687,7 +706,7 @@ def sortEdges(edges):
                 edict.setdefault( e.Vertexes[-1].hashCode(),[] ).append(e)
                 nedges.append(e)
     if not nedges:
-        print "DraftGeomUtils.sortEdges: zero-length edges"
+        print("DraftGeomUtils.sortEdges: zero-length edges")
         return edges
     # Find the start of the path.  The start is the vertex that appears
     # in the sdict dictionary but not in the edict dictionary, and has
@@ -849,7 +868,7 @@ def invert(edge):
     elif geomType(edge) in ["BSplineCurve","BezierCurve"]:
         if isLine(edge.Curve):
             return Part.LineSegment(edge.Vertexes[-1].Point,edge.Vertexes[0].Point).toShape()
-    print "DraftGeomUtils.invert: unable to invert ",edge.Curve
+    print("DraftGeomUtils.invert: unable to invert ",edge.Curve)
     return edge
 
 
@@ -870,8 +889,10 @@ def flattenWire(wire):
     w = Part.makePolygon(verts)
     return w
 
-
 def findWires(edgeslist):
+    return [ Part.Wire(e) for e in Part.sortEdges(edgeslist)]
+    
+def findWiresOld2(edgeslist):
     '''finds connected wires in the given list of edges'''
 
     def touches(e1,e2):
@@ -1167,7 +1188,7 @@ def offsetWire(wire,dvec,bind=False,occ=False):
                 v = vec(curredge)
             angle = DraftVecUtils.angle(vec(edges[0]),v,norm)
             delta = DraftVecUtils.rotate(delta,angle,norm)
-        #print "edge ",i,": ",curredge.Curve," ",curredge.Orientation," parameters:",curredge.ParameterRange," vector:",delta
+        #print("edge ",i,": ",curredge.Curve," ",curredge.Orientation," parameters:",curredge.ParameterRange," vector:",delta)
         nedge = offset(curredge,delta,trim=True)
         if not nedge:
             return None
@@ -1231,17 +1252,35 @@ def connect(edges,closed=False):
         except:
             print("DraftGeomUtils.connect: unable to connect edges")
             for e in nedges:
-                print e.Curve, " ",e.Vertexes[0].Point, " ", e.Vertexes[-1].Point
+                print(e.Curve, " ",e.Vertexes[0].Point, " ", e.Vertexes[-1].Point)
             return None
 
 def findDistance(point,edge,strict=False):
     '''
     findDistance(vector,edge,[strict]) - Returns a vector from the point to its
     closest point on the edge. If strict is True, the vector will be returned
-    only if its endpoint lies on the edge.
+    only if its endpoint lies on the edge. Edge can also be a list of 2 points.
     '''
     if isinstance(point, FreeCAD.Vector):
-        if geomType(edge) == "Line":
+        if isinstance(edge,list):
+            segment = edge[1].sub(edge[0])
+            chord = edge[0].sub(point)
+            norm = segment.cross(chord)
+            perp = segment.cross(norm)
+            dist = DraftVecUtils.project(chord,perp)
+            if not dist: return None
+            newpoint = point.add(dist)
+            if (dist.Length == 0):
+                return None
+            if strict:
+                s1 = newpoint.sub(edge[0])
+                s2 = newpoint.sub(edge[1])
+                if (s1.Length <= segment.Length) and (s2.Length <= segment.Length):
+                    return dist
+                else:
+                    return None
+            else: return dist
+        elif geomType(edge) == "Line":
             segment = vec(edge)
             chord = edge.Vertexes[0].Point.sub(point)
             norm = segment.cross(chord)
@@ -1669,10 +1708,12 @@ def fillet(lEdges,r,chamfer=False):
     Returns a list of sorted edges describing a round corner'''
 
     def getCurveType(edge,existingCurveType = None):
-            '''Builds or completes a dictionnary containing edges with keys "Arc" and "Line"'''
+            '''Builds or completes a dictionary containing edges with keys "Arc" and "Line"'''
             if not existingCurveType :
                     existingCurveType = { 'Line' : [], 'Arc' : [] }
             if issubclass(type(edge.Curve),Part.LineSegment) :
+                    existingCurveType['Line'] += [edge]
+            elif issubclass(type(edge.Curve),Part.Line) :
                     existingCurveType['Line'] += [edge]
             elif issubclass(type(edge.Curve),Part.Circle) :
                     existingCurveType['Arc']  += [edge]
@@ -2525,7 +2566,7 @@ def circleFrom3CircleTangents(circle1, circle2, circle3):
             # @todo Calc. the intersection points (max. 8) of 4 lines (trough each inversion pole and the radical center) with the circle.
             #       This gives us all the tangent points.
         else:
-            # Some circles are inside each other or an error has occured.
+            # Some circles are inside each other or an error has occurred.
             return None
 
     else:
@@ -2799,4 +2840,4 @@ def circleInversion(circle, circle2):
         FreeCAD.Console.PrintMessage("debug: circleInversion bad parameters!\n")
         return None
 
-#  @}
+##  @}

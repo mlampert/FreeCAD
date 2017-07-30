@@ -34,6 +34,7 @@
 #include "ViewProviderOrigin.h"
 #include "View3DInventorViewer.h"
 #include "View3DInventor.h"
+#include "Command.h"
 #include <App/OriginGroupExtension.h>
 #include <App/Document.h>
 #include <App/Origin.h>
@@ -48,7 +49,7 @@ EXTENSION_PROPERTY_SOURCE(Gui::ViewProviderOriginGroupExtension, Gui::ViewProvid
 
 ViewProviderOriginGroupExtension::ViewProviderOriginGroupExtension()
 {
-    initExtension(ViewProviderOriginGroupExtension::getExtensionClassTypeId());
+    initExtensionType(ViewProviderOriginGroupExtension::getExtensionClassTypeId());
 }
 
 ViewProviderOriginGroupExtension::~ViewProviderOriginGroupExtension()
@@ -147,12 +148,14 @@ void ViewProviderOriginGroupExtension::updateOriginSize () {
 
         Gui::ViewProvider *vp = Gui::Application::Instance->getViewProvider(origin);
         if (!vp) {
-            throw Base::Exception ("No view provider linked to the Origin");
+            throw Base::RuntimeError ("No view provider linked to the Origin");
         }
         assert ( vp->isDerivedFrom ( Gui::ViewProviderOrigin::getClassTypeId () ) );
         vpOrigin = static_cast <Gui::ViewProviderOrigin *> ( vp );
     } catch (const Base::Exception &ex) {
-        Base::Console().Error ("%s\n", ex.what() );
+        // if is restoring it is normal that the origin property is null until after restored, so no need to report this.
+        if(!getExtendedViewProvider()->getDocument()->getDocument()->testStatus(App::Document::Restoring))
+            Base::Console().Error ("%s\n", ex.what() );
         return;
     }
 
@@ -170,7 +173,7 @@ void ViewProviderOriginGroupExtension::updateOriginSize () {
 
     // calculate the bounding box for out content
     SbBox3f bbox(0,0,0, 0,0,0);
-    for(App::DocumentObject* obj : group->getGeoSubObjects()) {
+    for(App::DocumentObject* obj : group->Group.getValues()) {
         ViewProvider *vp = Gui::Application::Instance->getViewProvider(obj);
         if (!vp) {
             continue;
@@ -195,7 +198,6 @@ void ViewProviderOriginGroupExtension::updateOriginSize () {
 
     vpOrigin->Size.setValue ( size * 1.3 );
 }
-
 
 namespace Gui {
 EXTENSION_PROPERTY_SOURCE_TEMPLATE(Gui::ViewProviderOriginGroupExtensionPython, Gui::ViewProviderOriginGroupExtension)

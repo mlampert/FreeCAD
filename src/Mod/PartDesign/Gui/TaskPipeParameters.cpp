@@ -67,7 +67,7 @@ using namespace Gui;
 // Task Parameter
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-TaskPipeParameters::TaskPipeParameters(ViewProviderPipe *PipeView,bool /*newObj*/, QWidget *parent)
+TaskPipeParameters::TaskPipeParameters(ViewProviderPipe *PipeView, bool /*newObj*/, QWidget *parent)
     : TaskSketchBasedParameters(PipeView, parent, "PartDesign_Additive_Pipe",tr("Pipe parameters"))
 {
     // we need a separate container widget to add all controls to
@@ -84,15 +84,15 @@ TaskPipeParameters::TaskPipeParameters(ViewProviderPipe *PipeView,bool /*newObj*
             this, SLOT(onButtonRefRemove(bool)));
     connect(ui->buttonProfileBase, SIGNAL(toggled(bool)),
             this, SLOT(onBaseButton(bool)));
-    
+
     this->groupLayout()->addWidget(proxy);
-    
+
     PartDesign::Pipe* pipe = static_cast<PartDesign::Pipe*>(PipeView->getObject());
-    Gui::Document* doc = Gui::Application::Instance->activeDocument(); 
-    
-    //make sure th euser sees al important things: the 
-    //spine/auxillery spine he already selected 
-    if(pipe->Spine.getValue()) {
+    Gui::Document* doc = PipeView->getDocument();
+
+    //make sure the user sees all important things: the
+    //spine/auxiliary spine he already selected
+    if (pipe->Spine.getValue()) {
         auto* svp = doc->getViewProvider(pipe->Spine.getValue());
         spineShow = svp->isShow();
         svp->setVisible(true);
@@ -104,9 +104,9 @@ TaskPipeParameters::TaskPipeParameters(ViewProviderPipe *PipeView,bool /*newObj*
     std::vector<std::string> strings = pipe->Spine.getSubValues();
     for (std::vector<std::string>::const_iterator i = strings.begin(); i != strings.end(); i++)
         ui->listWidgetReferences->addItem(QString::fromStdString(*i));
-        
+
     ui->comboBoxTransition->setCurrentIndex(pipe->Transition.getValue());
- 
+
     updateUI();
 }
 
@@ -151,18 +151,21 @@ void TaskPipeParameters::onSelectionChanged(const Gui::SelectionChanges& msg)
 
 TaskPipeParameters::~TaskPipeParameters()
 {
-    PartDesign::Pipe* pipe = static_cast<PartDesign::Pipe*>(vp->getObject());
-    Gui::Document* doc = Gui::Application::Instance->activeDocument(); 
-    
-    //make sure th euser sees al important things: the 
-    //spine/auxillery spine he already selected 
-    if(pipe->Spine.getValue()) {
-        auto* svp = doc->getViewProvider(pipe->Spine.getValue());
-        svp->setVisible(spineShow);
-        spineShow = false;
+    if (vp) {
+        PartDesign::Pipe* pipe = static_cast<PartDesign::Pipe*>(vp->getObject());
+        Gui::Document* doc = vp->getDocument();
+
+        //make sure the user sees all important things: the
+        //spine/auxiliary spine he already selected
+        if (pipe->Spine.getValue()) {
+            auto* svp = doc->getViewProvider(pipe->Spine.getValue());
+            svp->setVisible(spineShow);
+            spineShow = false;
+        }
+
+        static_cast<ViewProviderPipe*>(vp)->highlightReferences(false, false);
     }
-    static_cast<ViewProviderPipe*>(vp)->highlightReferences(false, false);
-    
+
     delete ui;
 }
 
@@ -340,20 +343,22 @@ TaskPipeOrientation::TaskPipeOrientation(ViewProviderPipe* PipeView, bool /*newO
     updateUI(pipe->Mode.getValue());
 }
 
-TaskPipeOrientation::~TaskPipeOrientation() {
+TaskPipeOrientation::~TaskPipeOrientation()
+{
+    if (vp) {
+        PartDesign::Pipe* pipe = static_cast<PartDesign::Pipe*>(vp->getObject());
+        Gui::Document* doc = vp->getDocument();
 
-    PartDesign::Pipe* pipe = static_cast<PartDesign::Pipe*>(vp->getObject());
-    Gui::Document* doc = Gui::Application::Instance->activeDocument(); 
-    
-    //make sure th euser sees al important things: the base feature to select edges and the 
-    //spine/auxillery spine he already selected 
-    if(pipe->AuxillerySpine.getValue()) {
-        auto* svp = doc->getViewProvider(pipe->AuxillerySpine.getValue());
-        svp->setVisible(auxSpineShow);
-        auxSpineShow = false;
+        //make sure the user sees al important things: the base feature to select edges and the
+        //spine/auxiliary spine he already selected
+        if (pipe->AuxillerySpine.getValue()) {
+            auto* svp = doc->getViewProvider(pipe->AuxillerySpine.getValue());
+            svp->setVisible(auxSpineShow);
+            auxSpineShow = false;
+        }
+
+        static_cast<ViewProviderPipe*>(vp)->highlightReferences(false, true);
     }
-    
-    static_cast<ViewProviderPipe*>(vp)->highlightReferences(false, true);
 }
 
 void TaskPipeOrientation::onOrientationChanged(int idx) {
@@ -720,13 +725,14 @@ bool TaskDlgPipeParameters::accept()
     std::vector<App::DocumentObject*> copies;
 
     bool ext = false;
-    if(!pcActiveBody->hasFeature(pcPipe->Spine.getValue()) && !pcActiveBody->getOrigin()->hasObject(pcPipe->Spine.getValue()))
+    if(!pcActiveBody->hasObject(pcPipe->Spine.getValue()) && !pcActiveBody->getOrigin()->hasObject(pcPipe->Spine.getValue()))
         ext = true;
-    else if(!pcActiveBody->hasFeature(pcPipe->AuxillerySpine.getValue()) && !pcActiveBody->getOrigin()->hasObject(pcPipe->AuxillerySpine.getValue()))
+    else if(pcPipe->AuxillerySpine.getValue() && !pcActiveBody->hasObject(pcPipe->AuxillerySpine.getValue()) && 
+            !pcActiveBody->getOrigin()->hasObject(pcPipe->AuxillerySpine.getValue()))
             ext = true;
     else {
         for(App::DocumentObject* obj : pcPipe->Sections.getValues()) {
-            if(!pcActiveBody->hasFeature(obj) && !pcActiveBody->getOrigin()->hasObject(obj))
+            if(!pcActiveBody->hasObject(obj) && !pcActiveBody->getOrigin()->hasObject(obj))
                 ext = true;
         }
     }
@@ -741,12 +747,12 @@ bool TaskDlgPipeParameters::accept()
             return false;
         else if(!dlg.radioXRef->isChecked()) {
 
-            if(!pcActiveBody->hasFeature(pcPipe->Spine.getValue()) && !pcActiveBody->getOrigin()->hasObject(pcPipe->Spine.getValue())) {
+            if(!pcActiveBody->hasObject(pcPipe->Spine.getValue()) && !pcActiveBody->getOrigin()->hasObject(pcPipe->Spine.getValue())) {
                 pcPipe->Spine.setValue(PartDesignGui::TaskFeaturePick::makeCopy(pcPipe->Spine.getValue(), "", dlg.radioIndependent->isChecked()),
                                         pcPipe->Spine.getSubValues());
                 copies.push_back(pcPipe->Spine.getValue());
             }
-            else if(!pcActiveBody->hasFeature(pcPipe->AuxillerySpine.getValue()) && !pcActiveBody->getOrigin()->hasObject(pcPipe->AuxillerySpine.getValue())){
+            else if(!pcActiveBody->hasObject(pcPipe->AuxillerySpine.getValue()) && !pcActiveBody->getOrigin()->hasObject(pcPipe->AuxillerySpine.getValue())){
                 pcPipe->AuxillerySpine.setValue(PartDesignGui::TaskFeaturePick::makeCopy(pcPipe->AuxillerySpine.getValue(), "", dlg.radioIndependent->isChecked()),
                                         pcPipe->AuxillerySpine.getSubValues());
                 copies.push_back(pcPipe->AuxillerySpine.getValue());
@@ -756,7 +762,7 @@ bool TaskDlgPipeParameters::accept()
             int index = 0;
             for(App::DocumentObject* obj : pcPipe->Sections.getValues()) {
 
-                if(!pcActiveBody->hasFeature(obj) && !pcActiveBody->getOrigin()->hasObject(obj)) {
+                if(!pcActiveBody->hasObject(obj) && !pcActiveBody->getOrigin()->hasObject(obj)) {
                     objs.push_back(PartDesignGui::TaskFeaturePick::makeCopy(obj, "", dlg.radioIndependent->isChecked()));
                     copies.push_back(objs.back());
                 }
@@ -781,7 +787,7 @@ bool TaskDlgPipeParameters::accept()
         for(auto obj : copies) {
             //Dead code: pcActiveBody was previously used without checking for null, so it won't be null here either.
             //if(pcActiveBody)
-            pcActiveBody->addFeature(obj);
+            pcActiveBody->addObject(obj);
             //else if (pcActivePart)
             //    pcActivePart->addObject(obj);
         }

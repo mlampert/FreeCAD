@@ -28,6 +28,9 @@
 #endif
 
 #include <Base/Console.h>
+#include <Base/PyObjectBase.h>
+#include <Base/Interpreter.h>
+
 #include <Gui/Application.h>
 #include <Gui/Language/Translator.h>
 #include <Gui/WidgetFactory.h>
@@ -48,6 +51,7 @@
 #include "ViewProviderSymbol.h"
 #include "ViewProviderViewClip.h"
 #include "ViewProviderHatch.h"
+#include "ViewProviderGeomHatch.h"
 #include "ViewProviderSpreadsheet.h"
 #include "ViewProviderImage.h"
 
@@ -64,21 +68,28 @@ void loadTechDrawResource()
     Gui::Translator::instance()->refresh();
 }
 
-/* registration table  */
-extern struct PyMethodDef TechDrawGui_Import_methods[];
-
+namespace TechDrawGui {
+    extern PyObject* initModule();
+}
 
 /* Python entry */
-extern "C" {
-void TechDrawGuiExport initTechDrawGui()
+PyMOD_INIT_FUNC(TechDrawGui)
 {
     if (!Gui::Application::Instance) {
         PyErr_SetString(PyExc_ImportError, "Cannot load Gui module in console application.");
-        return;
+        PyMOD_Return(0);
     }
+    // load dependent module
+    try {
+        Base::Interpreter().loadModule("TechDraw");
+    }
+    catch(const Base::Exception& e) {
+        PyErr_SetString(PyExc_ImportError, e.what());
+        PyMOD_Return(0);
+    }
+    PyObject* mod = TechDrawGui::initModule();
 
-    (void) Py_InitModule("TechDrawGui", TechDrawGui_Import_methods);   /* mod name, table ptr */
-    Base::Console().Log("Loading GUI of TechDraw module... done\n");
+    Base::Console().Log("Loading TechDrawGui module... done\n");
 
     // instantiating the commands
     CreateTechDrawCommands();
@@ -102,6 +113,7 @@ void TechDrawGuiExport initTechDrawGui()
     TechDrawGui::ViewProviderDraft::init();
     TechDrawGui::ViewProviderArch::init();
     TechDrawGui::ViewProviderHatch::init();
+    TechDrawGui::ViewProviderGeomHatch::init();
     TechDrawGui::ViewProviderSpreadsheet::init();
     TechDrawGui::ViewProviderImage::init();
 
@@ -111,6 +123,6 @@ void TechDrawGuiExport initTechDrawGui()
 
     // add resources and reloads the translators
     loadTechDrawResource();
-}
 
-} // extern "C" {
+    PyMOD_Return(mod);
+}

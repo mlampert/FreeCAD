@@ -53,6 +53,7 @@
 #include <boost/bind.hpp>
 #include <Gui/Command.h>
 #include <Gui/MainWindow.h>
+#include <Gui/PrefWidgets.h>
 
 using namespace SketcherGui;
 using namespace Gui::TaskView;
@@ -101,6 +102,12 @@ public:
             return QVariant();
 
         const Sketcher::Constraint * constraint = sketch->Constraints[ConstraintNbr];
+
+        // it can happen that the geometry of the sketch is tmp. invalid and thus
+        // the index operator returns null.
+        if (!constraint) {
+            return QVariant();
+        }
 
         if (role == Qt::EditRole) {
             if (value.isValid())
@@ -314,13 +321,17 @@ protected:
     }
 
     void paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const {
+#if QT_VERSION >= 0x050000
+        QStyleOptionViewItem options = option;
+#else
         QStyleOptionViewItemV4 options = option;
+#endif
         initStyleOption(&options, index);
 
         options.widget->style()->drawControl(QStyle::CE_ItemViewItem, &options, painter);
 
         ConstraintItem * item = dynamic_cast<ConstraintItem*>(view->item(index.row()));
-        if (!item)
+        if (!item || item->sketch->Constraints.getSize() < item->ConstraintNbr)
             return;
 
         App::ObjectIdentifier path = item->sketch->Constraints.createPath(item->ConstraintNbr);
@@ -537,17 +548,24 @@ TaskSketcherConstrains::TaskSketcherConstrains(ViewProviderSketch *sketchView)
         ui->listWidgetConstraints, SIGNAL(onUpdateDrivingStatus(QListWidgetItem *, bool)),
         this                     , SLOT  (on_listWidgetConstraints_updateDrivingStatus(QListWidgetItem *, bool))
        );
+    QObject::connect(
+        ui->filterInternalAlignment, SIGNAL(stateChanged(int)),
+        this                     , SLOT  (on_filterInternalAlignment_stateChanged(int))
+    );
 
     connectionConstraintsChanged = sketchView->signalConstraintsChanged.connect(
         boost::bind(&SketcherGui::TaskSketcherConstrains::slotConstraintsChanged, this));
 
     this->groupLayout()->addWidget(proxy);
 
+    this->ui->filterInternalAlignment->onRestore();
+
     slotConstraintsChanged();
 }
 
 TaskSketcherConstrains::~TaskSketcherConstrains()
 {
+    this->ui->filterInternalAlignment->onSave();
     connectionConstraintsChanged.disconnect();
     delete ui;
 }
@@ -597,6 +615,12 @@ void TaskSketcherConstrains::onSelectionChanged(const Gui::SelectionChanges& msg
 
 void TaskSketcherConstrains::on_comboBoxFilter_currentIndexChanged(int)
 {
+    slotConstraintsChanged();
+}
+
+void TaskSketcherConstrains::on_filterInternalAlignment_stateChanged(int state)
+{
+    Q_UNUSED(state);
     slotConstraintsChanged();
 }
 
@@ -730,6 +754,7 @@ void TaskSketcherConstrains::slotConstraintsChanged(void)
         bool showDatums = (Filter < 3);
         bool showNamed = (Filter == 3 && !(constraint->Name.empty()));
         bool showNonDriving = (Filter == 4 && !constraint->isDriving);
+        bool hideInternalAligment = this->ui->filterInternalAlignment->isChecked();
 
         switch(constraint->Type) {
         case Sketcher::Horizontal:
@@ -752,7 +777,7 @@ void TaskSketcherConstrains::slotConstraintsChanged(void)
             visible = (showDatums || showNamed || showNonDriving);
             break;
         case Sketcher::InternalAlignment:
-            visible = (showNormal || showNamed);
+            visible = ((showNormal || showNamed) && !hideInternalAligment);
         default:
             break;
         }

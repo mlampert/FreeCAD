@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 
 #***************************************************************************
 #*                                                                         *
@@ -117,12 +117,16 @@ class _CommandPipe:
                     if len(obj.Shape.Wires) == 1:
                         FreeCAD.ActiveDocument.openTransaction(translate("Arch","Create Pipe"))
                         FreeCADGui.addModule("Arch")
-                        FreeCADGui.doCommand("Arch.makePipe(FreeCAD.ActiveDocument."+obj.Name+")")
+                        FreeCADGui.doCommand("obj = Arch.makePipe(FreeCAD.ActiveDocument."+obj.Name+")")
+                        FreeCADGui.addModule("Draft")
+                        FreeCADGui.doCommand("Draft.autogroup(obj)")
                         FreeCAD.ActiveDocument.commitTransaction()
         else:
             FreeCAD.ActiveDocument.openTransaction(translate("Arch","Create Pipe"))
             FreeCADGui.addModule("Arch")
-            FreeCADGui.doCommand("Arch.makePipe()")
+            FreeCADGui.doCommand("obj = Arch.makePipe()")
+            FreeCADGui.addModule("Draft")
+            FreeCADGui.doCommand("Draft.autogroup(obj)")
             FreeCAD.ActiveDocument.commitTransaction()
         FreeCAD.ActiveDocument.recompute()
 
@@ -159,7 +163,9 @@ class _CommandPipeConnector:
         o += "]"
         FreeCAD.ActiveDocument.openTransaction(translate("Arch","Create Connector"))
         FreeCADGui.addModule("Arch")
-        FreeCADGui.doCommand("Arch.makePipeConnector("+o+")")
+        FreeCADGui.doCommand("obj = Arch.makePipeConnector("+o+")")
+        FreeCADGui.addModule("Draft")
+        FreeCADGui.doCommand("Draft.autogroup(obj)")
         FreeCAD.ActiveDocument.commitTransaction()
         FreeCAD.ActiveDocument.recompute()
 
@@ -252,10 +258,10 @@ class _ArchPipe(ArchComponent.Component):
             if len(obj.Profile.Shape.Wires) != 1:
                 FreeCAD.Console.PrintError(translate("Arch","Too many wires in the profile\n"))
                 return
-            if not obj.Base.Profile.Wires[0].isClosed():
+            if not obj.Profile.Shape.Wires[0].isClosed():
                 FreeCAD.Console.PrintError(translate("Arch","The profile is not closed\n"))
                 return
-            p = obj.Base.Profile.Wires[0]
+            p = obj.Profile.Shape.Wires[0]
         else:
             if obj.Diameter.Value == 0:
                 return
@@ -297,6 +303,7 @@ class _ArchPipeConnector(ArchComponent.Component):
     def execute(self,obj):
         
         tol = 1 # tolerance for alignment. This is only visual, we can keep it low...
+        ptol = 0.001 # tolerance for coincident points
 
         import math,Part,DraftGeomUtils,ArchCommands
         if len(obj.Pipes) < 2:
@@ -309,16 +316,16 @@ class _ArchPipeConnector(ArchComponent.Component):
         order = []
         for o in obj.Pipes:
             wires.append(o.Proxy.getWire(o))
-        if wires[0].Vertexes[0].Point == wires[1].Vertexes[0].Point:
+        if wires[0].Vertexes[0].Point.sub(wires[1].Vertexes[0].Point).Length <= ptol:
             order = ["start","start"]
             point = wires[0].Vertexes[0].Point
-        elif wires[0].Vertexes[0].Point == wires[1].Vertexes[-1].Point:
+        elif wires[0].Vertexes[0].Point.sub(wires[1].Vertexes[-1].Point).Length <= ptol:
             order = ["start","end"]
             point = wires[0].Vertexes[0].Point
-        elif wires[0].Vertexes[-1].Point == wires[1].Vertexes[-1].Point:
+        elif wires[0].Vertexes[-1].Point.sub(wires[1].Vertexes[-1].Point).Length <= ptol:
             order = ["end","end"]
             point = wires[0].Vertexes[-1].Point
-        elif wires[0].Vertexes[-1].Point == wires[1].Vertexes[0].Point:
+        elif wires[0].Vertexes[-1].Point.sub(wires[1].Vertexes[0].Point).Length <= ptol:
             order = ["end","start"]
             point = wires[0].Vertexes[-1].Point
         else:

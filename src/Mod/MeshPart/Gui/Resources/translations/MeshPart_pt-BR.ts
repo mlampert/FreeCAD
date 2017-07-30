@@ -2,9 +2,27 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="pt-BR" sourcelanguage="en">
 <context>
+    <name>CmdMeshPartCurveOnMesh</name>
+    <message>
+        <location filename="../../Command.cpp" line="+245"/>
+        <source>Mesh</source>
+        <translation type="unfinished">Malha</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Curve on mesh...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Curve on mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>CmdMeshPartMesher</name>
     <message>
-        <location filename="../../Command.cpp" line="+46"/>
+        <location line="-191"/>
         <source>Mesh</source>
         <translation>Malha</translation>
     </message>
@@ -17,6 +35,129 @@
         <location line="+1"/>
         <source>Tessellate shape</source>
         <translation>Paginar forma</translation>
+    </message>
+</context>
+<context>
+    <name>CmdMeshPartSection</name>
+    <message>
+        <location line="+106"/>
+        <source>Mesh</source>
+        <translation>Malha</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Create section from mesh and plane</source>
+        <translation>Criar a seção a partir da malha e plano</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Section</source>
+        <translation>Seção</translation>
+    </message>
+</context>
+<context>
+    <name>CmdMeshPartTrimByPlane</name>
+    <message>
+        <location line="-85"/>
+        <source>Mesh</source>
+        <translation>Malha</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Trim mesh with a plane</source>
+        <translation>Aparar malha numa superfície plana</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+1"/>
+        <source>Trims a mesh with a plane</source>
+        <translation>Apare uma malha numa superfície plana</translation>
+    </message>
+</context>
+<context>
+    <name>MeshPartGui::CurveOnMeshHandler</name>
+    <message>
+        <location filename="../../CurveOnMesh.cpp" line="+353"/>
+        <source>Create</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Close wire</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Clear</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+208"/>
+        <source>Wrong mesh picked</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+40"/>
+        <source>No point was picked</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MeshPartGui::TaskCurveOnMesh</name>
+    <message>
+        <location filename="../../TaskCurveOnMesh.ui" line="+14"/>
+        <source>Curve on mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Wire</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Snap tolerance to vertexes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source> px</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Split threshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Spline Approximation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Tolerance to mesh</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Continuity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Maximum curve degree</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Start</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -54,12 +195,12 @@
     <message>
         <location line="+54"/>
         <source>Define segments by face colors</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Define segments by face colors</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Apply face colors to mesh</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Apply face colors to mesh</translation>
     </message>
     <message>
         <location line="+13"/>
@@ -153,6 +294,32 @@
         <location line="+7"/>
         <source>No such document &apos;%1&apos;.</source>
         <translation>Não há tal documento &apos;%1&apos;.</translation>
+    </message>
+</context>
+<context>
+    <name>MeshPart_Section</name>
+    <message>
+        <location filename="../../Command.cpp" line="+93"/>
+        <source>Select plane</source>
+        <translation>Selecionar plano</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Please select a plane at which you section the mesh.</source>
+        <translation type="unfinished">Please select a plane at which you section the mesh.</translation>
+    </message>
+</context>
+<context>
+    <name>MeshPart_TrimByPlane</name>
+    <message>
+        <location line="-85"/>
+        <source>Select plane</source>
+        <translation>Selecionar plano</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Please select a plane at which you trim the mesh.</source>
+        <translation>Favor selecionar um plano em que possa aparar a malha.</translation>
     </message>
 </context>
 <context>

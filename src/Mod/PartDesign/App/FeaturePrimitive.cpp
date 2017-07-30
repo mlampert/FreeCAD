@@ -30,10 +30,13 @@
 #include "DatumPoint.h"
 #include "DatumCS.h"
 #include <Mod/Part/App/modelRefine.h>
+#include "FeaturePy.h"
 #include <Base/Exception.h>
 #include <Base/Tools.h>
 #include <App/Document.h>
 #include <App/Application.h>
+#include <App/FeaturePythonPyImp.h>
+
 #include <BRepPrimAPI_MakeBox.hxx>
 #include <BRepBuilderAPI_GTransform.hxx>
 #include <BRepAlgoAPI_Fuse.hxx>
@@ -72,9 +75,14 @@ TopoDS_Shape FeaturePrimitive::refineShapeIfActive(const TopoDS_Shape& oldShape)
     Base::Reference<ParameterGrp> hGrp = App::GetApplication().GetUserParameter()
         .GetGroup("BaseApp")->GetGroup("Preferences")->GetGroup("Mod/PartDesign");
     if (hGrp->GetBool("RefineModel", false)) {
-        Part::BRepBuilderAPI_RefineModel mkRefine(oldShape);
-        TopoDS_Shape resShape = mkRefine.Shape();
-        return resShape;
+        try {
+            Part::BRepBuilderAPI_RefineModel mkRefine(oldShape);
+            TopoDS_Shape resShape = mkRefine.Shape();
+            return resShape;
+        }
+        catch (Standard_Failure) {
+            return oldShape;
+        }
     }
 
     return oldShape;
@@ -140,7 +148,7 @@ App::DocumentObjectExecReturn* FeaturePrimitive::execute(const TopoDS_Shape& pri
         
     }
     catch (Standard_Failure) {
-        Handle_Standard_Failure e = Standard_Failure::Caught();
+        Handle(Standard_Failure) e = Standard_Failure::Caught();
         return new App::DocumentObjectExecReturn(e->GetMessageString());
     }
 
@@ -150,6 +158,18 @@ App::DocumentObjectExecReturn* FeaturePrimitive::execute(const TopoDS_Shape& pri
 void FeaturePrimitive::onChanged(const App::Property* prop)
 {
     FeatureAddSub::onChanged(prop);
+}
+
+PYTHON_TYPE_DEF(PrimitivePy, PartDesign::FeaturePy)
+PYTHON_TYPE_IMP(PrimitivePy, PartDesign::FeaturePy)
+
+PyObject* FeaturePrimitive::getPyObject()
+{
+    if (PythonObject.is(Py::_None())){
+        // ref counter is set to 1
+        PythonObject = Py::Object(new PrimitivePy(this),true);
+    }
+    return Py::new_reference_to(PythonObject);
 }
 
 PROPERTY_SOURCE(PartDesign::Box, PartDesign::FeaturePrimitive)
@@ -187,7 +207,7 @@ App::DocumentObjectExecReturn* Box::execute(void)
         return FeaturePrimitive::execute(mkBox.Shape());
     }
     catch (Standard_Failure) {
-        Handle_Standard_Failure e = Standard_Failure::Caught();
+        Handle(Standard_Failure) e = Standard_Failure::Caught();
         return new App::DocumentObjectExecReturn(e->GetMessageString());
     }
 }
@@ -235,7 +255,7 @@ App::DocumentObjectExecReturn* Cylinder::execute(void)
         return FeaturePrimitive::execute(mkCylr.Shape());
     }
     catch (Standard_Failure) {
-        Handle_Standard_Failure e = Standard_Failure::Caught();
+        Handle(Standard_Failure) e = Standard_Failure::Caught();
         return new App::DocumentObjectExecReturn(e->GetMessageString());
     }
 
@@ -285,7 +305,7 @@ App::DocumentObjectExecReturn* Sphere::execute(void)
         return FeaturePrimitive::execute(mkSphere.Shape());
     }
     catch (Standard_Failure) {
-        Handle_Standard_Failure e = Standard_Failure::Caught();
+        Handle(Standard_Failure) e = Standard_Failure::Caught();
         return new App::DocumentObjectExecReturn(e->GetMessageString());
     }
 
@@ -341,7 +361,7 @@ App::DocumentObjectExecReturn* Cone::execute(void)
         return FeaturePrimitive::execute(mkCone.Shape());
     }
     catch (Standard_Failure) {
-        Handle_Standard_Failure e = Standard_Failure::Caught();
+        Handle(Standard_Failure) e = Standard_Failure::Caught();
         return new App::DocumentObjectExecReturn(e->GetMessageString());
     }
 
@@ -423,7 +443,7 @@ App::DocumentObjectExecReturn* Ellipsoid::execute(void)
         return FeaturePrimitive::execute(mkTrsf.Shape());
     }
     catch (Standard_Failure) {
-        Handle_Standard_Failure e = Standard_Failure::Caught();
+        Handle(Standard_Failure) e = Standard_Failure::Caught();
         return new App::DocumentObjectExecReturn(e->GetMessageString());
     }
 
@@ -486,7 +506,7 @@ App::DocumentObjectExecReturn* Torus::execute(void)
         return FeaturePrimitive::execute(mkTorus.Solid());
     }
     catch (Standard_Failure) {
-        Handle_Standard_Failure e = Standard_Failure::Caught();
+        Handle(Standard_Failure) e = Standard_Failure::Caught();
         return new App::DocumentObjectExecReturn(e->GetMessageString());
     }
 
@@ -552,7 +572,7 @@ App::DocumentObjectExecReturn* Prism::execute(void)
         return FeaturePrimitive::execute(mkPrism.Shape());
     }
     catch (Standard_Failure) {
-        Handle_Standard_Failure e = Standard_Failure::Caught();
+        Handle(Standard_Failure) e = Standard_Failure::Caught();
         return new App::DocumentObjectExecReturn(e->GetMessageString());
     }
 
@@ -639,7 +659,7 @@ App::DocumentObjectExecReturn* Wedge::execute(void)
         return FeaturePrimitive::execute(mkSolid.Solid());
     }
     catch (Standard_Failure) {
-        Handle_Standard_Failure e = Standard_Failure::Caught();
+        Handle(Standard_Failure) e = Standard_Failure::Caught();
         return new App::DocumentObjectExecReturn(e->GetMessageString());
     }
 

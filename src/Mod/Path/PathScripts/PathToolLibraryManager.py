@@ -22,22 +22,24 @@
 # *                                                                         *
 # ***************************************************************************
 
+from __future__ import print_function
 import FreeCAD
 import xml.sax
 import FreeCADGui
 import Path
 import os
 from PySide import QtCore, QtGui
+import PathScripts
+from PathScripts import PathUtils
 
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
+import PathScripts.PathLog as PathLog
 
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+LOG_MODULE = 'PathToolLibraryManager'
+PathLog.setLevel(PathLog.Level.INFO, LOG_MODULE)
+#PathLog.trackModule('PathToolLibraryManager')
 
+def translate(context, text, disambig=None):
+    return QtCore.QCoreApplication.translate(context, text, disambig)
 
 # Tooltable XML readers
 class FreeCADTooltableHandler(xml.sax.ContentHandler):
@@ -139,7 +141,6 @@ class ToolLibraryManager():
     '''
 
     def __init__(self):
-        # self.ToolLibrary = []
         self.prefs = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Mod/Path")
         return
 
@@ -157,10 +158,9 @@ class ToolLibraryManager():
 
         # Get ToolTables from any open CNC jobs
         for o in FreeCAD.ActiveDocument.Objects:
-            if "Proxy" in o.PropertiesList:
-                if hasattr(o, "Tooltable"):
-                    toollist = o.Label
-                    tablelist.append(toollist)
+            if hasattr(o, "Proxy"):
+                if isinstance(o.Proxy, PathScripts.PathJob.ObjectPathJob):
+                    tablelist.append(o.Label)
         return tablelist
 
     def _findList(self, listname):
@@ -192,19 +192,8 @@ class ToolLibraryManager():
         model.setHorizontalHeaderLabels(headers)
 
         def unitconv(ivalue):
-            parms = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Units")
-            digits = parms.GetContents()[1][2] #get user's number of digits of precision
-            if parms.GetContents()[0][2]==0:
-                suffix = 'mm'
-                conversion = 1.0
-            elif parms.GetContents()[0][2]==3:
-                suffix = 'in'
-                conversion = 25.4
-            else:
-                suffix = ''
-            val = FreeCAD.Units.parseQuantity(str(round(ivalue/conversion,digits))+suffix)
-            displayed_val = val.UserString #just the displayed value-not the internal one
-
+            val = FreeCAD.Units.Quantity(ivalue, FreeCAD.Units.Length)
+            displayed_val = val.UserString      #just the displayed value-not the internal one
             return displayed_val
 
         if tt:
@@ -218,7 +207,7 @@ class ToolLibraryManager():
                 itemName =  QtGui.QStandardItem(t.Name)
                 itemToolType =  QtGui.QStandardItem(t.ToolType)
                 itemMaterial =  QtGui.QStandardItem(t.Material)
-                itemDiameter =  QtGui.QStandardItem(unitconv(t.Diameter))   
+                itemDiameter =  QtGui.QStandardItem(unitconv(t.Diameter))
                 itemLengthOffset =  QtGui.QStandardItem(unitconv(t.LengthOffset))
                 itemFlatRadius =  QtGui.QStandardItem(unitconv(t.FlatRadius))
                 itmCornerRadius =  QtGui.QStandardItem(unitconv(t.CornerRadius))
@@ -239,33 +228,49 @@ class ToolLibraryManager():
             Handler = HeeksTooltableHandler()
         else:
             Handler = FreeCADTooltableHandler()
-        parser.setContentHandler(Handler)
-        parser.parse(str(filename[0]))
-        if not Handler.tooltable:
-            return None
 
-        ht = Handler.tooltable
-        tt = self._findList(listname)
-        for t in ht.Tools:
-            newt = ht.getTool(t).copy()
-            tt.addTools(newt)
-        if listname == "<Main>":
-            self.saveMainLibrary(tt)
-        return True
+        try:
+            parser.setContentHandler(Handler)
+            parser.parse(unicode(filename[0]))
+            if not Handler.tooltable:
+                return None
+
+            ht = Handler.tooltable
+            tt = self._findList(listname)
+            for t in ht.Tools:
+                newt = ht.getTool(t).copy()
+                tt.addTools(newt)
+            if listname == "<Main>":
+                self.saveMainLibrary(tt)
+            return True
+        except Exception as e:
+            print("could not parse file", e)
 
     def write(self, filename, listname):
         "exports the tooltable to a file"
         tt = self._findList(listname)
         if tt:
-            fil = open(str(filename[0]), "wb")
-            fil.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-            fil.write(tt.Content)
-            fil.close()
-            print "Written ", filename[0]
+            try:
+                file = open(unicode(filename[0]), "wb")
+
+                if filename[1] == 'LinuxCNC tooltable (*.tbl)':
+                    for key in tt.Tools:
+                        t = tt.Tools[key]
+                        file.write("T{} P{} Y{} Z{} A{} B{} C{} U{} V{} W{} D{} I{} J{} Q{} ;{}\n".format(key,key,0,t.LengthOffset,0,0,0,0,0,0,t.Diameter,0,0,0,t.Name))
+
+                else:
+                    file.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+                    file.write(tt.Content)
+
+                file.close()
+                print("Written ", unicode(filename[0]))
+
+            except Exception as e:
+                print("Could not write file:", e)
 
     def addnew(self, listname, tool, position = None):
         "adds a new tool at the end of the table"
-        print listname, tool, position
+        print(listname, tool, position)
         tt = self._findList(listname)
         if position is None:
             tt.addTools(tool)
@@ -328,20 +333,6 @@ class ToolLibraryManager():
             self.saveMainLibrary(tt)
         return True
 
-    # def createToolController(self, job, tool):
-    #     pass
-
-    # def exportListHeeks(self, tooltable):
-    #     '''exports one or more Lists as a HeeksCNC tooltable'''
-    #     pass
-
-    # def exportListLinuxCNC(self, tooltable):
-    #     '''exports one or more Lists as a LinuxCNC tooltable'''
-    #     pass
-
-    # def exportListXML(self, tooltable):
-    #     '''exports one or more Lists as an XML file'''
-    #     pass
 
 class EditorPanel():
     def __init__(self):
@@ -351,15 +342,7 @@ class EditorPanel():
         self.editform = FreeCADGui.PySideUic.loadUi(":/panels/ToolEdit.ui")
         self.TLM = ToolLibraryManager()
 
-        data = self.TLM.getLists()
-        self.listmodel = QtGui.QStandardItemModel(self.form.listView)
-#        self.listmodel = QtGui.QStringListModel(data)
-        for i in data:
-            item = QtGui.QStandardItem(i)
-            self.listmodel.appendRow(item)
-
-        self.form.listView.setModel(self.listmodel)
-        #self.form.listView.setCurrentIndex(0)
+        self.loadTable()
         self.form.ToolsList.resizeColumnsToContents()
 
     def accept(self):
@@ -383,9 +366,6 @@ class EditorPanel():
             else:
                 return 0
         else:
-            #if tooltype == 0:
-            #    return "Undefined"
-            #else:
             return toolslist[tooltype]
 
     def getMaterial(self, material):
@@ -398,44 +378,39 @@ class EditorPanel():
             else:
                 return 0
         else:
-            #if material == 0:
-            #    return "Undefined"
-            #else:
             return matslist[material]
 
     def addTool(self):
         t = Path.Tool()
-        print ("adding a new tool")
         editform = FreeCADGui.PySideUic.loadUi(":/panels/ToolEdit.ui")
 
         r = editform.exec_()
         if r:
             if editform.NameField.text():
-                t.Name = str(editform.NameField.text())
+                t.Name = str(editform.NameField.text()) #FIXME: not unicode safe!
             t.ToolType = self.getType(editform.TypeField.currentIndex())
             t.Material = self.getMaterial(editform.MaterialField.currentIndex())
             t.Diameter = FreeCAD.Units.parseQuantity(editform.DiameterField.text())
             t.LengthOffset = FreeCAD.Units.parseQuantity(editform.LengthOffsetField.text())
             t.FlatRadius = FreeCAD.Units.parseQuantity(editform.FlatRadiusField.text())
             t.CornerRadius = FreeCAD.Units.parseQuantity(editform.CornerRadiusField.text())
-            t.CuttingEdgeAngle = editform.CuttingEdgeAngleField.value()
+            t.CuttingEdgeAngle = FreeCAD.Units.Quantity(editform.CuttingEdgeAngleField.text())
             t.CuttingEdgeHeight = FreeCAD.Units.parseQuantity(editform.CuttingEdgeHeightField.text())
 
-            listname = self.form.listView.selectedIndexes()[0].data()
+            listname = "<Main>"
+
             if self.TLM.addnew(listname, t) is True:
-                self.loadTable(self.form.listView.selectedIndexes()[0])
+                self.loadTable()
 
     def setFields(self):
-        index = self.listmodel.index(0, 0, QtCore.QModelIndex())
-        self.form.listView.setFocus()
-        sm = self.form.listView.selectionModel()
-        sm.select(index, sm.Select)
+        pass
 
     def open(self):
         pass
 
-    def loadTable(self, curr):
-        tooldata = self.TLM.getTools(curr.data())
+    def loadTable(self):
+        #tooldata = self.TLM.getTools(curr.data())
+        tooldata = self.TLM.getTools("<Main>")
         self.form.ToolsList.setModel(tooldata)
 
     def moveUp(self):
@@ -443,36 +418,39 @@ class EditorPanel():
         item = self.form.ToolsList.selectedIndexes()[1].data()
         if item:
             number = int(item)
-            listname = self.form.listView.selectedIndexes()[0].data()
-
+            listname = "<Main>"
+            #listname = self.form.listView.selectedIndexes()[0].data()
             if self.TLM.moveup(number, listname) is True:
-                self.loadTable(self.form.listView.selectedIndexes()[0])
+                self.loadTable()
 
     def moveDown(self):
         "moves a tool to a higher number, if possible"
         item = self.form.ToolsList.selectedIndexes()[1].data()
         if item:
             number = int(item)
-            listname = self.form.listView.selectedIndexes()[0].data()
+            listname = "<Main>"
+            #listname = self.form.listView.selectedIndexes()[0].data()
             if self.TLM.movedown(number, listname) is True:
-                self.loadTable(self.form.listView.selectedIndexes()[0])
+                self.loadTable()
 
     def delete(self):
         '''deletes a tool'''
-        listname  =  self.form.listView.selectedIndexes()[0].data()
+        #listname  =  self.form.listView.selectedIndexes()[0].data()
+        listname = "<Main>"
         model = self.form.ToolsList.model()
         for i in range(model.rowCount()):
             item = model.item(i, 0)
             if item.checkState():
                 t = model.index(i, 1)
                 self.TLM.delete(int(t.data()) ,listname)
-        self.loadTable(self.form.listView.selectedIndexes()[0])
+        self.loadTable()
 
     def editTool(self, currItem):
 
         row = currItem.row()
         value = currItem.sibling(row, 1).data()
-        listname = self.form.listView.selectedIndexes()[0].data()
+        #listname = self.form.listView.selectedIndexes()[0].data()
+        listname = "<Main>"
         toolnum = int(value)
         tool = self.TLM.getTool(listname, toolnum)
         editform = FreeCADGui.PySideUic.loadUi(":/panels/ToolEdit.ui")
@@ -480,46 +458,57 @@ class EditorPanel():
         editform.NameField.setText(tool.Name)
         editform.TypeField.setCurrentIndex(self.getType(tool.ToolType))
         editform.MaterialField.setCurrentIndex(self.getMaterial(tool.Material))
-        editform.DiameterField.setText(str(tool.Diameter))
-        editform.LengthOffsetField.setText(str(tool.LengthOffset))
-        editform.FlatRadiusField.setText(str(tool.FlatRadius))
-        editform.CornerRadiusField.setText(str(tool.CornerRadius))
-        editform.CuttingEdgeAngleField.setValue(tool.CuttingEdgeAngle)
-        editform.CuttingEdgeHeightField.setText(str(tool.CuttingEdgeHeight))
+        editform.DiameterField.setText(FreeCAD.Units.Quantity(tool.Diameter, FreeCAD.Units.Length).UserString)
+        editform.LengthOffsetField.setText(FreeCAD.Units.Quantity(tool.LengthOffset, FreeCAD.Units.Length).UserString)
+        editform.FlatRadiusField.setText(FreeCAD.Units.Quantity(tool.FlatRadius, FreeCAD.Units.Length).UserString)
+        editform.CornerRadiusField.setText(FreeCAD.Units.Quantity(tool.CornerRadius, FreeCAD.Units.Length).UserString)
+        editform.CuttingEdgeAngleField.setText(FreeCAD.Units.Quantity(tool.CuttingEdgeAngle, FreeCAD.Units.Angle).UserString)
+        editform.CuttingEdgeHeightField.setText(FreeCAD.Units.Quantity(tool.CuttingEdgeHeight, FreeCAD.Units.Length).UserString)
 
         r = editform.exec_()
         if r:
             if editform.NameField.text():
-                tool.Name = str(editform.NameField.text())
+                tool.Name = str(editform.NameField.text()) #FIXME: not unicode safe!
             tool.ToolType = self.getType(editform.TypeField.currentIndex())
             tool.Material = self.getMaterial(editform.MaterialField.currentIndex())
             tool.Diameter = FreeCAD.Units.parseQuantity(editform.DiameterField.text())
             tool.LengthOffset = FreeCAD.Units.parseQuantity(editform.LengthOffsetField.text())
             tool.FlatRadius = FreeCAD.Units.parseQuantity(editform.FlatRadiusField.text())
             tool.CornerRadius = FreeCAD.Units.parseQuantity(editform.CornerRadiusField.text())
-            tool.CuttingEdgeAngle = editform.CuttingEdgeAngleField.value()
+            tool.CuttingEdgeAngle = FreeCAD.Units.Quantity(editform.CuttingEdgeAngleField.text())
             tool.CuttingEdgeHeight = FreeCAD.Units.parseQuantity(editform.CuttingEdgeHeightField.text())
 
             if self.TLM.updateTool(listname, toolnum, tool) is True:
-                self.loadTable(self.form.listView.selectedIndexes()[0])
+                self.loadTable()
 
     def importFile(self):
         "imports a tooltable from a file"
-        filename = QtGui.QFileDialog.getOpenFileName(self.form, _translate(
-                "TooltableEditor", "Open tooltable", None), None, _translate("TooltableEditor", "Tooltable XML (*.xml);;HeeksCAD tooltable (*.tooltable)", None))
-        if filename:
-            listname = self.form.listView.selectedIndexes()[0].data()
+        filename = QtGui.QFileDialog.getOpenFileName(self.form, translate( "TooltableEditor", "Open tooltable", None), None, translate("TooltableEditor", "Tooltable XML (*.xml);;HeeksCAD tooltable (*.tooltable)", None))
+        if filename[0]:
+            listname = '<Main>'
             if self.TLM.read(filename, listname):
-                self.loadTable(self.form.listView.selectedIndexes()[0])
+                self.loadTable()
 
 
     def exportFile(self):
         "imports a tooltable from a file"
-        filename = QtGui.QFileDialog.getSaveFileName(self.form, _translate("TooltableEditor", "Save tooltable", None), None, _translate("TooltableEditor", "Tooltable XML (*.xml)", None))
+        filename = QtGui.QFileDialog.getSaveFileName(self.form, translate("TooltableEditor", "Save tooltable", None), None, translate("TooltableEditor", "Tooltable XML (*.xml);;LinuxCNC tooltable (*.tbl)", None))
 
-        if filename:
-            listname = self.form.listView.selectedIndexes()[0].data()
+        if filename[0]:
+            #listname = self.form.listView.selectedIndexes()[0].data()
+            listname = '<Main>'
             self.TLM.write(filename, listname)
+
+    def checkCopy(self):
+        self.form.btnCopyTools.setEnabled(False)
+        model = self.form.ToolsList.model()
+        for i in range(model.rowCount()):
+            item = model.item(i, 0)
+            if item.checkState():
+                self.form.btnCopyTools.setEnabled(True)
+
+        if len(PathUtils.GetJobs()) == 0:
+            self.form.btnCopyTools.setEnabled(False)
 
     def copyTools(self):
         tools = []
@@ -533,7 +522,7 @@ class EditorPanel():
             return
 
         targets = self.TLM.getLists()
-        currList = self.form.listView.selectedIndexes()[0].data()
+        currList = "<Main>"
 
         for target in targets:
             if target == currList:
@@ -542,7 +531,8 @@ class EditorPanel():
         if len(targets) == 0:
             FreeCAD.Console.PrintWarning("no place to go")
             return
-
+        elif len(targets) == 1:
+            targetlist = targets[0]
         else:
             form = FreeCADGui.PySideUic.loadUi(":/panels/DlgToolCopy.ui")
             form.cboTarget.addItems(targets)
@@ -551,21 +541,23 @@ class EditorPanel():
                 return None
             else:
                 targetlist = form.cboTarget.currentText()
-                for toolnum in tools:
-                    tool = self.TLM.getTool(currList, int(toolnum))
-                    newtoolid = self.TLM.addnew(targetlist, tool.copy(), int(toolnum))
-                    if form.chkMakeController.checkState() == QtCore.Qt.CheckState.Checked and targetlist != "<Main>":
-                        snippet = '''
-import Path, PathScripts
-from PathScripts import PathUtils, PathLoadTool
-obj = FreeCAD.ActiveDocument.addObject("Path::FeaturePython","TC")
-PathScripts.PathLoadTool.LoadTool(obj)
-PathScripts.PathLoadTool._ViewProviderLoadTool(obj.ViewObject)
-obj.ToolNumber = %d
-PathUtils.addToJob(obj, "%s")
-App.activeDocument().recompute()
-''' % (newtoolid, targetlist)
-                        FreeCADGui.doCommand(snippet)
+
+        for toolnum in tools:
+            tool = self.TLM.getTool(currList, int(toolnum))
+            PathLog.debug('tool: {}, toolnum: {}'.format(tool, toolnum))
+            for i in FreeCAD.ActiveDocument.findObjects("Path::Feature"):
+                if isinstance(i.Proxy, PathScripts.PathJob.ObjectPathJob) and i.Label == targetlist:
+
+                    label = "T{}: {}".format(toolnum, tool.Name)
+                    obj = FreeCAD.ActiveDocument.addObject("Path::FeaturePython",label)
+                    PathScripts.PathToolController.ToolController(obj)
+                    PathScripts.PathToolController._ViewProviderToolController(obj.ViewObject)
+                    PathUtils.addToJob(obj, targetlist)
+                    FreeCAD.activeDocument().recompute()
+                    obj.Tool = tool.copy()
+                    obj.ToolNumber = int(toolnum)
+                    #obj.recompute()
+        FreeCAD.ActiveDocument.recompute()
 
     def getStandardButtons(self):
         return int(QtGui.QDialogButtonBox.Ok)
@@ -573,16 +565,16 @@ App.activeDocument().recompute()
     def setupUi(self):
         # Connect Signals and Slots
         self.form.ButtonNewTool.clicked.connect(self.addTool)
-        #self.form.listWidget.currentItemChanged.connect(self.loadTable)
-        sm = self.form.listView.selectionModel()
-        sm.currentChanged.connect(self.loadTable)
         self.form.ButtonImport.clicked.connect(self.importFile)
         self.form.ButtonExport.clicked.connect(self.exportFile)
         self.form.ButtonDown.clicked.connect(self.moveDown)
         self.form.ButtonUp.clicked.connect(self.moveUp)
         self.form.ButtonDelete.clicked.connect(self.delete)
         self.form.ToolsList.doubleClicked.connect(self.editTool)
+        self.form.ToolsList.clicked.connect(self.checkCopy)
         self.form.btnCopyTools.clicked.connect(self.copyTools)
+
+        self.form.btnCopyTools.setEnabled(False)
 
         self.setFields()
 
@@ -597,9 +589,9 @@ class CommandToolLibraryEdit():
 
     def GetResources(self):
         return {'Pixmap'  : 'Path-ToolTable',
-                'MenuText': QtCore.QT_TRANSLATE_NOOP("Path_ToolTable","Edit the Tool Library"),
+                'MenuText': QtCore.QT_TRANSLATE_NOOP("Path_ToolTable","Tool Manager"),
                 'Accel': "P, T",
-                'ToolTip': QtCore.QT_TRANSLATE_NOOP("Path_ToolTable","Edit the Tool Library")}
+                'ToolTip': QtCore.QT_TRANSLATE_NOOP("Path_ToolTable","Tool Manager")}
 
     def IsActive(self):
         return not FreeCAD.ActiveDocument is None
@@ -607,7 +599,6 @@ class CommandToolLibraryEdit():
     def Activated(self):
 
         self.edit()
-
 
 if FreeCAD.GuiUp:
     # register the FreeCAD command

@@ -28,24 +28,31 @@
 #include <gp_Pnt.hxx>
 
 #include <Base/Vector3D.h>
+#include <Base/BoundBox.h>
 #include <string>
 #include <vector>
 
 #include "Geometry.h"
 
+
 namespace TechDraw
 {
 class DrawViewPart;
+class DrawViewDetail;
 class DrawView;
 }
 
 namespace TechDrawGeometry
 {
+class BaseGeom;
+class Vector;
+class Face;
+class Vertex;
 
 //! scales & mirrors a shape about a center
 TopoDS_Shape TechDrawExport mirrorShape(const TopoDS_Shape &input,
-                        const gp_Pnt& inputCenter,
-                        double scale);
+                        const gp_Pnt& inputCenter = gp_Pnt(0.0,0.0,0.0),
+                        double scale = 1.0);
 TopoDS_Shape TechDrawExport scaleShape(const TopoDS_Shape &input,
                                        double scale);
 
@@ -56,17 +63,19 @@ gp_Pnt TechDrawExport findCentroid(const TopoDS_Shape &shape,
 gp_Ax2 TechDrawExport getViewAxis(const Base::Vector3d origin,
                                   const Base::Vector3d& direction,
                                   const bool flip=true);
+gp_Ax2 TechDrawExport getViewAxis(const Base::Vector3d origin,
+                                  const Base::Vector3d& direction,
+                                  const Base::Vector3d& xAxis,
+                                  const bool flip=true);
 
 class TechDrawExport GeometryObject
 {
 public:
     /// Constructor
-    GeometryObject(const std::string& parent);
+    GeometryObject(const std::string& parent, TechDraw::DrawView* parentObj);
     virtual ~GeometryObject();
 
     void clear();
-
-    void setScale(double value);
 
     //! Returns 2D bounding box
     Base::BoundBox3d calcBoundingBox() const;
@@ -77,13 +86,25 @@ public:
     const std::vector<Face *>     & getFaceGeometry() const { return faceGeom; };
 
     void projectShape(const TopoDS_Shape &input,
-                                 const gp_Pnt& inputCenter,
-                                 const Base::Vector3d &direction);
+                      const gp_Ax2 viewAxis);
+
     void extractGeometry(edgeClass category, bool visible);
     void addFaceGeom(Face * f);
     void clearFaceGeom();
     void setIsoCount(int i) { m_isoCount = i; }
     void setParentName(std::string n);                          //for debug messages
+    void pruneVertexGeom(Base::Vector3d center, double radius);
+
+    TopoDS_Shape getVisHard(void)    { return visHard; }
+    TopoDS_Shape getVisOutline(void) { return visOutline; }
+    TopoDS_Shape getVisSmooth(void)  { return visSmooth; }
+    TopoDS_Shape getVisSeam(void)    { return visSeam; }
+    TopoDS_Shape getVisIso(void)     { return visIso; }
+    TopoDS_Shape getHidHard(void)    { return hidHard; }
+    TopoDS_Shape getHidOutline(void) { return hidOutline; }
+    TopoDS_Shape getHidSmooth(void)  { return hidSmooth; }
+    TopoDS_Shape getHidSeam(void)    { return hidSeam; }
+    TopoDS_Shape getHidIso(void)     { return hidIso; }
 
 protected:
     //HLR output
@@ -99,7 +120,7 @@ protected:
     TopoDS_Shape hidIso;
 
     void addGeomFromCompound(TopoDS_Shape edgeCompound, edgeClass category, bool visible);
-
+    TechDraw::DrawViewDetail* isParentDetail(void);
 
     //similar function in Geometry?
     /*!
@@ -115,9 +136,8 @@ protected:
 
     bool findVertex(Base::Vector2d v);
 
-    double Scale;
-
     std::string m_parentName;
+    TechDraw::DrawView* m_parent;
     int m_isoCount;
 };
 

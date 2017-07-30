@@ -63,7 +63,7 @@ class TempoVis(FrozenClass):
         TempoVis deletion, or call to restore().'''
 
         if App.GuiUp:
-            if type(doc_obj_or_list) is not list:
+            if not hasattr(doc_obj_or_list, '__iter__'):
                 doc_obj_or_list = [doc_obj_or_list]
             for doc_obj in doc_obj_or_list:
                 if not hasattr(doc_obj.ViewObject, prop_name):
@@ -76,7 +76,7 @@ class TempoVis(FrozenClass):
                 oldval = getattr(doc_obj.ViewObject, prop_name)
                 setattr(doc_obj.ViewObject, prop_name, new_value)
                 self.restore_on_delete = True
-                if not self.data.has_key((doc_obj.Name,prop_name)):
+                if (doc_obj.Name,prop_name) not in self.data:
                     self.data[(doc_obj.Name,prop_name)] = oldval
 
     def show(self, doc_obj_or_list):
@@ -87,9 +87,13 @@ class TempoVis(FrozenClass):
         '''hide(doc_obj_or_list): hides objects (sets their Visibility to False). doc_obj_or_list can be a document object, or a list of document objects'''
         self.modifyVPProperty(doc_obj_or_list, "Visibility", False)
 
+    def get_all_dependent(self, doc_obj):
+        '''get_all_dependent(doc_obj): gets all objects that depend on doc_obj. Groups, Parts and Bodies are not hidden by this.'''
+        return [o for o in getAllDependent(doc_obj) if not isContainer(o)]
+
     def hide_all_dependent(self, doc_obj):
         '''hide_all_dependent(doc_obj): hides all objects that depend on doc_obj. Groups, Parts and Bodies are not hidden by this.'''
-        self.hide( [o for o in getAllDependent(doc_obj) if not isContainer(o)])
+        self.hide( self.get_all_dependent(doc_obj) )
 
     def show_all_dependent(self, doc_obj):
         '''show_all_dependent(doc_obj): shows all objects that depend on doc_obj. This method is probably useless.'''
@@ -216,7 +220,7 @@ class TempoVis(FrozenClass):
         tempovis. '''
         
         if App.GuiUp:
-            if type(doc_obj_or_list) is not list:
+            if not hasattr(doc_obj_or_list, '__iter__'):
                 doc_obj_or_list = [doc_obj_or_list]
             for doc_obj in doc_obj_or_list:
                 if doc_obj.Document is not self.document:  #ignore objects from other documents
@@ -225,7 +229,7 @@ class TempoVis(FrozenClass):
                 if actual_pick_style != oldval:
                     self._setPickStyle(doc_obj.ViewObject, actual_pick_style)
                     self.restore_on_delete = True
-                if not self.data_pickstyle.has_key(doc_obj.Name):
+                if doc_obj.Name not in self.data_pickstyle:
                     self.data_pickstyle[doc_obj.Name] = oldval
                     
     def restoreUnpickable(self):

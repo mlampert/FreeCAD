@@ -32,12 +32,14 @@
 #include <Base/Matrix.h>
 #include <Base/Vector3D.h>
 
+//#include "Cube.h"
 #include "DrawViewCollection.h"
 
 namespace TechDraw
 {
 
 class DrawProjGroupItem;
+class Cube;
 
 /**
  * Class super-container for managing a collection of DrawProjGroupItem
@@ -45,7 +47,7 @@ class DrawProjGroupItem;
  */
 class TechDrawExport DrawProjGroup : public TechDraw::DrawViewCollection
 {
-    PROPERTY_HEADER(TechDraw::DrawProjGroup);
+    PROPERTY_HEADER_WITH_OVERRIDE(TechDraw::DrawProjGroup);
 
 public:
     /// Constructor
@@ -61,10 +63,12 @@ public:
     App::PropertyFloat spacingY;
 
     App::PropertyLink Anchor; /// Anchor Element to align views to
+    App::PropertyVectorList  CubeDirs;
+    App::PropertyVectorList  CubeRotations;
 
     Base::BoundBox3d getBoundingBox() const;
     double calculateAutomaticScale() const;
-    virtual QRectF getRect(void) const;
+    virtual QRectF getRect(void) const override;
     virtual bool checkFit(TechDraw::DrawPage* p) const override;
     /// Check if container has a view of a specific type
     bool hasProjection(const char *viewProjType) const;
@@ -89,20 +93,19 @@ public:
     bool distributeProjections(void);
     void resetPositions(void);
 
-    short mustExecute() const;
+    short mustExecute() const override;
     /** @name methods overide Feature */
     //@{
     /// recalculate the Feature
-    virtual void onDocumentRestored();
-    virtual App::DocumentObjectExecReturn *execute(void);
+    virtual App::DocumentObjectExecReturn *execute(void) override;
     //@}
 
     /// returns the type name of the ViewProvider
-    virtual const char* getViewProviderName(void) const {
+    virtual const char* getViewProviderName(void) const override {
         return "TechDrawGui::ViewProviderProjGroup";
     }
     //return PyObject as DrawProjGroupPy
-    virtual PyObject *getPyObject(void);
+    virtual PyObject *getPyObject(void) override;
 
     /// Determines either "First Angle" or "Third Angle".
     App::Enumeration usedProjectionType(void);
@@ -113,12 +116,10 @@ public:
     bool hasAnchor(void);
     void setAnchorDirection(Base::Vector3d dir);
     Base::Vector3d getAnchorDirection(void);
+    TechDraw::DrawProjGroupItem* getAnchor(void);
 
-    void makeInitialMap(TechDraw::DrawProjGroupItem* anchor);
-    std::map<std::string,Base::Vector3d>  makeUnspunMap(Base::Vector3d f, Base::Vector3d r, Base::Vector3d t);
-    std::map<std::string,Base::Vector3d>  makeUnspunMap(void);
-    void dumpMap();
     void updateSecondaryDirs();
+    void resetCube(void);
 
     void rotateRight(void);
     void rotateLeft(void);
@@ -126,19 +127,18 @@ public:
     void rotateDown(void);
     void spinCW(void);
     void spinCCW(void);
-
-    static Base::Vector3d nameToStdDirection(std::string name);
-
+    
+    void dumpISO(char * title);
 
 protected:
-    void onChanged(const App::Property* prop);
+    void onChanged(const App::Property* prop) override;
 
     //! Moves anchor view to keep our bounding box centre on the origin
     void moveToCentre();
 
     /// Annoying helper - keep in sync with DrawProjGroupItem::TypeEnums
     /*!
-     * \TODO See note regarding App::PropertyEnumeration on my wiki page http://freecadweb.org/wiki/index.php?title=User:Ian.rees
+     * \todo {See note regarding App::PropertyEnumeration on my wiki page http://freecadweb.org/wiki/User:Ian.rees}
      * \return true iff 'in' is a valid name for an orthographic/isometric view
      */
     bool checkViewProjType(const char *in);
@@ -165,9 +165,10 @@ protected:
     /// Returns pointer to our page, or NULL if it couldn't be located
     TechDraw::DrawPage * getPage(void) const;
     void updateChildren(double scale);
+    void setPropsFromCube(void);
+    void setCubeFromProps(void);
     
-    std::map<std::string,Base::Vector3d> m_viewDir;
-
+    TechDraw::Cube* m_cube;
 };
 
 } //namespace TechDraw

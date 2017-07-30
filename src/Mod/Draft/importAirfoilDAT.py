@@ -34,7 +34,7 @@ import re, FreeCAD, FreeCADGui, Part, cProfile, os, string
 from FreeCAD import Vector, Base
 from Draft import makeWire
 
-if open.__module__ == '__builtin__':
+if open.__module__ in ['__builtin__','io']:
         pythonopen = open
 
 useDraftWire = True
@@ -85,7 +85,7 @@ def process(doc,filename):
 
     
 
-        # Collect the data for the upper and the lower side seperately if possible     
+        # Collect the data for the upper and the lower side separately if possible     
         for lin in afile:
                 curdat = regex.match(lin)
                 if curdat != None:   

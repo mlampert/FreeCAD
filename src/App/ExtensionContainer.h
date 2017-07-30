@@ -48,7 +48,7 @@ namespace App {
  * extend other objects. A extended object gets all the properties and methods of the extension. 
  * Therefore it is like c++ multiple inheritance, which is indeed used to achieve this on c++ side, 
  * but provides a few important additional functionalities:
- * - Property persistance is handled, save and restore work out of the box
+ * - Property persistence is handled, save and restore work out of the box
  * - The objects python API gets extended too with the extension python API
  * - Extensions can be added from c++ and python, even from both together
  *
@@ -102,10 +102,10 @@ namespace App {
  *     registerExtension("App::SecondExtensionPython", self)
  * @endcode
  * 
- * Extensions can provide methods that should be overriden by the extended object for customisation
+ * Extensions can provide methods that should be overridden by the extended object for customisation
  * of the extension behaviour. In c++ this is as simple as overriding the provided virtual functions.
  * In python a class method must be provided which has the same name as the method to override. This 
- * method must not neccessarily be in the object that is extended, it must be in the object which is 
+ * method must not necessarily be in the object that is extended, it must be in the object which is 
  * provided to the "registerExtension" call as second argument. This second argument is used as a 
  * proxy and enqueired if the method to override exists in this proxy before calling it. 
  * 
@@ -114,7 +114,7 @@ namespace App {
 class AppExport ExtensionContainer : public App::PropertyContainer
 {
 
-    TYPESYSTEM_HEADER();
+    TYPESYSTEM_HEADER_WITH_OVERRIDE();
 
 public:
     
@@ -124,15 +124,15 @@ public:
     virtual ~ExtensionContainer();
 
     void registerExtension(Base::Type extension, App::Extension* ext);
-    bool hasExtension(Base::Type) const; //returns first of type (or derived from) and throws otherwise
+    bool hasExtension(Base::Type, bool derived=true) const; //returns first of type (or derived from if set to true) and throws otherwise
     bool hasExtension(const std::string& name) const; //this version does not check derived classes
     bool hasExtensions() const;
-    App::Extension* getExtension(Base::Type);  //returns first of type (or derived from) and throws otherwise
-    App::Extension* getExtension(const std::string& name); //this version does not check derived classes
+    App::Extension* getExtension(Base::Type, bool derived = true) const; 
+    App::Extension* getExtension(const std::string& name) const; //this version does not check derived classes
     
     //returns first of type (or derived from) and throws otherwise
     template<typename ExtensionT>
-    ExtensionT* getExtensionByType() {
+    ExtensionT* getExtensionByType() const {
         return dynamic_cast<ExtensionT*>(getExtension(ExtensionT::getExtensionClassTypeId()));
     };
     
@@ -177,10 +177,10 @@ public:
     virtual const char* getPropertyDocumentation(const char *name) const override;
     //@}
     
-    virtual void onChanged(const Property*);
+    virtual void onChanged(const Property*) override;
     
-    virtual void Save(Base::Writer& writer) const;
-    virtual void Restore(Base::XMLReader& reader);
+    virtual void Save(Base::Writer& writer) const override;
+    virtual void Restore(Base::XMLReader& reader) override;
     
     //those methods save/restore the dynamic extenions without handling properties, which is something
     //done by the default Save/Restore methods.

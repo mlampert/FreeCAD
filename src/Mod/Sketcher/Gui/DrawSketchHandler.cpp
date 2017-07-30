@@ -61,16 +61,9 @@ using namespace Sketcher;
 //**************************************************************************
 // Construction/Destruction
 
-DrawSketchHandler::DrawSketchHandler()
-        : sketchgui(0)
-{
+DrawSketchHandler::DrawSketchHandler() : sketchgui(0) {}
 
-}
-
-DrawSketchHandler::~DrawSketchHandler()
-{
-
-}
+DrawSketchHandler::~DrawSketchHandler() {}
 
 void DrawSketchHandler::quit(void)
 {
@@ -195,7 +188,7 @@ int DrawSketchHandler::seekAutoConstraint(std::vector<AutoConstraint> &suggested
             double cosangle=dir3d.Normalize()*hitShapeDir.Normalize();
             
             // the angle between the line and the hitting direction are over around 6 degrees (it is substantially parallel)
-            // or if it is an sketch axis (that can not move to accomodate to the shape), then only if it is around 6 degrees with the normal (around 84 degrees)
+            // or if it is an sketch axis (that can not move to accommodate to the shape), then only if it is around 6 degrees with the normal (around 84 degrees)
             if (fabs(cosangle) < 0.995f || ((GeoId==Sketcher::GeoEnum::HAxis || GeoId==Sketcher::GeoEnum::VAxis) && fabs(cosangle) < 0.1))
                 suggestedConstraints.push_back(constr);
             
@@ -390,15 +383,18 @@ int DrawSketchHandler::seekAutoConstraint(std::vector<AutoConstraint> &suggested
 }
 
 void DrawSketchHandler::createAutoConstraints(const std::vector<AutoConstraint> &autoConstrs,
-                                              int geoId1, Sketcher::PointPos posId1)
+                                              int geoId1, Sketcher::PointPos posId1, bool createowncommand /*= true*/)
 {
     if (!sketchgui->Autoconstraints.getValue())
         return; // If Autoconstraints property is not set quit
 
     if (autoConstrs.size() > 0) {
-        // Open the Command
-        Gui::Command::openCommand("Add auto constraints");
-
+        
+        if(createowncommand) {
+            // Open the Command
+            Gui::Command::openCommand("Add auto constraints");
+        }
+        
         // Iterate through constraints
         std::vector<AutoConstraint>::const_iterator it = autoConstrs.begin();
         for (; it != autoConstrs.end(); ++it) {
@@ -428,36 +424,20 @@ void DrawSketchHandler::createAutoConstraints(const std::vector<AutoConstraint> 
                                        );
                 } break;
             case Sketcher::Horizontal: {
-                
-                bool start_external;
-                bool mid_external;
-                bool end_external;
-                
-                static_cast<Sketcher::SketchObject*>((sketchgui->getObject()))->isCoincidentWithExternalGeometry(geoId1, start_external, mid_external, end_external);
-                
-                if( !(start_external && end_external) ) {
-                    Gui::Command::doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('Horizontal',%i)) "
-                    ,sketchgui->getObject()->getNameInDocument()
-                    ,geoId1
-                    );
-                }
+
+                Gui::Command::doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('Horizontal',%i)) "
+                ,sketchgui->getObject()->getNameInDocument()
+                ,geoId1
+                );
 
                 } break;
             case Sketcher::Vertical: {
-                
-                bool start_external;
-                bool mid_external;
-                bool end_external;
-                
-                static_cast<Sketcher::SketchObject*>((sketchgui->getObject()))->isCoincidentWithExternalGeometry(geoId1, start_external, mid_external, end_external);
-                
-                if( !(start_external && end_external) ) {
-                    Gui::Command::doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('Vertical',%i)) "
-                    ,sketchgui->getObject()->getNameInDocument()
-                    ,geoId1
-                    );
-                }
-                
+
+                Gui::Command::doCommand(Gui::Command::Doc,"App.ActiveDocument.%s.addConstraint(Sketcher.Constraint('Vertical',%i)) "
+                ,sketchgui->getObject()->getNameInDocument()
+                ,geoId1
+                );
+
                 } break;
             case Sketcher::Tangent: {
                 Sketcher::SketchObject* Obj = static_cast<Sketcher::SketchObject*>(sketchgui->getObject());
@@ -519,7 +499,9 @@ void DrawSketchHandler::createAutoConstraints(const std::vector<AutoConstraint> 
                 break;
             }
 
-            Gui::Command::commitCommand();
+            if(createowncommand) {
+                Gui::Command::commitCommand();
+            }
             //Gui::Command::updateActive(); // There is already an recompute in each command creation, this is redundant.
         }
     }

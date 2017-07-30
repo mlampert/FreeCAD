@@ -27,6 +27,7 @@
 # include <Precision.hxx>
 # include <ShapeFix_Wire.hxx>
 # include <TopoDS_Compound.hxx>
+# include <Standard_Version.hxx>
 #endif
 
 #include <Base/Writer.h>
@@ -34,7 +35,6 @@
 #include <Base/Exception.h>
 #include <Base/TimeInfo.h>
 #include <Base/Console.h>
-
 #include <Base/VectorPy.h>
 
 #include <Mod/Part/App/Geometry.h>
@@ -45,7 +45,10 @@
 #include <Mod/Part/App/EllipsePy.h>
 #include <Mod/Part/App/HyperbolaPy.h>
 #include <Mod/Part/App/ArcOfHyperbolaPy.h>
+#include <Mod/Part/App/ParabolaPy.h>
+#include <Mod/Part/App/ArcOfParabolaPy.h>
 #include <Mod/Part/App/LineSegmentPy.h>
+#include <Mod/Part/App/BSplineCurvePy.h>
 
 #include <TopoDS.hxx>
 #include <TopoDS_Edge.hxx>
@@ -84,6 +87,8 @@ void Sketch::clear(void)
     Ellipses.clear();
     ArcsOfEllipse.clear();
     ArcsOfHyperbola.clear();
+    ArcsOfParabola.clear();
+    BSplines.clear();
 
     // deleting the doubles allocated with new
     for (std::vector<double*>::iterator it = Parameters.begin(); it != Parameters.end(); ++it)
@@ -177,6 +182,10 @@ const char* nameByType(Sketch::GeoType type)
         return "arcofellipse";
     case Sketch::ArcOfHyperbola:
         return "arcofhyperbola";
+    case Sketch::ArcOfParabola:
+        return "arcofparabola";
+    case Sketch::BSpline:
+        return "bspline";
     case Sketch::None:
     default:
         return "unknown";
@@ -190,7 +199,12 @@ int Sketch::addGeometry(const Part::Geometry *geo, bool fixed)
     if (geo->getTypeId() == GeomPoint::getClassTypeId()) { // add a point
         const GeomPoint *point = static_cast<const GeomPoint*>(geo);
         // create the definition struct for that geom
-        return addPoint(*point, fixed);
+        if( point->Construction == false ) {
+            return addPoint(*point, fixed);
+        }
+        else {
+            return addPoint(*point, true);
+        }
     } else if (geo->getTypeId() == GeomLineSegment::getClassTypeId()) { // add a line
         const GeomLineSegment *lineSeg = static_cast<const GeomLineSegment*>(geo);
         // create the definition struct for that geom
@@ -215,7 +229,16 @@ int Sketch::addGeometry(const Part::Geometry *geo, bool fixed)
         const GeomArcOfHyperbola *aoh = static_cast<const GeomArcOfHyperbola*>(geo);
         // create the definition struct for that geom
         return addArcOfHyperbola(*aoh, fixed);
-    } else {
+    } else if (geo->getTypeId() == GeomArcOfParabola::getClassTypeId()) { // add an arc of parabola
+        const GeomArcOfParabola *aop = static_cast<const GeomArcOfParabola*>(geo);
+        // create the definition struct for that geom
+        return addArcOfParabola(*aop, fixed);
+    } else if (geo->getTypeId() == GeomBSplineCurve::getClassTypeId()) { // add a bspline
+        const GeomBSplineCurve *bsp = static_cast<const GeomBSplineCurve*>(geo);
+        // create the definition struct for that geom
+        return addBSpline(*bsp, fixed);
+    }
+    else {
         throw Base::TypeError("Sketch::addGeometry(): Unknown or unsupported type added to a sketch");
     }
 }
@@ -234,8 +257,6 @@ int Sketch::addPoint(const Part::GeomPoint &point, bool fixed)
 
     // create our own copy
     GeomPoint *p = static_cast<GeomPoint*>(point.clone());
-    // points in a sketch are always construction elements
-    p->Construction = true;
     // create the definition struct for that geom
     GeoDef def;
     def.geo  = p;
@@ -560,6 +581,223 @@ int Sketch::addArcOfHyperbola(const Part::GeomArcOfHyperbola &hyperbolaSegment, 
     return Geoms.size()-1;
 }
 
+int Sketch::addArcOfParabola(const Part::GeomArcOfParabola &parabolaSegment, bool fixed)
+{
+    std::vector<double *> &params = fixed ? FixParameters : Parameters;
+
+    // create our own copy
+    GeomArcOfParabola *aop = static_cast<GeomArcOfParabola*>(parabolaSegment.clone());
+    // create the definition struct for that geom
+    GeoDef def;
+    def.geo  = aop;
+    def.type = ArcOfParabola;
+
+    Base::Vector3d vertex   = aop->getCenter();
+    Base::Vector3d startPnt = aop->getStartPoint();
+    Base::Vector3d endPnt   = aop->getEndPoint();
+    Base::Vector3d focus    = aop->getFocus();
+       
+    double startAngle, endAngle;
+    aop->getRange(startAngle, endAngle,/*emulateCCW=*/true);
+
+    GCS::Point p1, p2, p3, p4;
+    
+    params.push_back(new double(startPnt.x));
+    params.push_back(new double(startPnt.y));
+    p1.x = params[params.size()-2];
+    p1.y = params[params.size()-1];
+    
+    params.push_back(new double(endPnt.x));
+    params.push_back(new double(endPnt.y));
+    p2.x = params[params.size()-2];
+    p2.y = params[params.size()-1];
+    
+    params.push_back(new double(vertex.x));
+    params.push_back(new double(vertex.y));
+    p3.x = params[params.size()-2];
+    p3.y = params[params.size()-1];
+    
+    params.push_back(new double(focus.x));
+    params.push_back(new double(focus.y));
+    p4.x = params[params.size()-2];
+    p4.y = params[params.size()-1];
+    
+    def.startPointId = Points.size();
+    Points.push_back(p1);
+    def.endPointId = Points.size();
+    Points.push_back(p2);
+    def.midPointId = Points.size();
+    Points.push_back(p3);    
+    
+    // add the radius parameters
+    params.push_back(new double(startAngle));
+    double *a1 = params[params.size()-1];
+    params.push_back(new double(endAngle));
+    double *a2 = params[params.size()-1];
+    
+    // set the arc for later constraints
+    GCS::ArcOfParabola a;
+    a.start      = p1;
+    a.end        = p2;
+    a.vertex     = p3;
+    a.focus1     = p4;
+    a.startAngle = a1;
+    a.endAngle   = a2;
+    def.index = ArcsOfParabola.size();
+    ArcsOfParabola.push_back(a);
+
+    // store complete set
+    Geoms.push_back(def);
+
+    // arcs require an ArcRules constraint for the end points
+    if (!fixed)
+        GCSsys.addConstraintArcOfParabolaRules(a);
+
+    // return the position of the newly added geometry
+    return Geoms.size()-1;
+}
+
+int Sketch::addBSpline(const Part::GeomBSplineCurve &bspline, bool fixed)
+{
+    std::vector<double *> &params = fixed ? FixParameters : Parameters;
+
+    // create our own copy
+    GeomBSplineCurve *bsp = static_cast<GeomBSplineCurve*>(bspline.clone());
+    // create the definition struct for that geom
+    GeoDef def;
+    def.geo  = bsp;
+    def.type = BSpline;
+
+    std::vector<Base::Vector3d> poles = bsp->getPoles();
+    std::vector<double> weights = bsp->getWeights();
+    std::vector<double> knots = bsp->getKnots();
+    std::vector<int> mult = bsp->getMultiplicities();
+    int degree = bsp->getDegree();
+    bool periodic = bsp->isPeriodic();
+    
+    // OCC hack
+    // c means there is a constraint on that weight, nc no constraint
+    // OCC provides normalized weights when polynomic [1 1 1] [c c c] and unnormalized weights when rational [5 1 5] [c nc c]
+    // then when changing from polynomic to rational, after the first solve any not-constrained pole circle gets normalized to 1.
+    // This only happens when changing from polynomic to rational, any subsequent change remains unnormalized [5 1 5] [c nc nc]
+    // This creates a visual problem that one of the poles shrinks to 1 mm when deleting an equality constraint.
+    
+    int lastoneindex = -1;
+    int countones = 0;
+    double lastnotone = 1.0;
+    
+    for(size_t i = 0; i < weights.size(); i++) {
+        if(weights[i] != 1.0) {
+            lastnotone = weights[i];
+        }
+        else { // is 1.0
+            lastoneindex = i;
+            countones++;
+        }
+    }
+    
+    if (countones == 1)
+        weights[lastoneindex] = (lastnotone * 0.99);
+    
+    // end hack
+
+    Base::Vector3d startPnt = bsp->getStartPoint();
+    Base::Vector3d endPnt   = bsp->getEndPoint();
+
+    std::vector<GCS::Point> spoles;
+
+    for(std::vector<Base::Vector3d>::const_iterator it = poles.begin(); it != poles.end(); ++it){
+        params.push_back(new double( (*it).x ));
+        params.push_back(new double( (*it).y ));
+        
+        GCS::Point p;
+        p.x = params[params.size()-2];
+        p.y = params[params.size()-1];
+        
+        spoles.push_back(p);
+    }
+
+    std::vector<double *> sweights;
+
+    for(std::vector<double>::const_iterator it = weights.begin(); it != weights.end(); ++it) {
+        params.push_back(new double( (*it) ));
+        sweights.push_back(params[params.size()-1]);
+    }
+
+    std::vector<double *> sknots;
+
+    for(std::vector<double>::const_iterator it = knots.begin(); it != knots.end(); ++it) {
+        double * knot = new double( (*it) );
+        //params.push_back(knot);
+        sknots.push_back(knot);
+    }
+
+    GCS::Point p1, p2;
+
+    double * p1x = new double(startPnt.x);
+    double * p1y = new double(startPnt.y);
+
+    // if periodic, startpoint and endpoint do not play a role in the solver, this removes unnecesarry DoF of determining where in the curve
+    // the start and the stop should be
+    if(!periodic) {
+        params.push_back(p1x);
+        params.push_back(p1y);
+    }
+
+    p1.x = p1x;
+    p1.y = p1y;
+
+    double * p2x = new double(endPnt.x);
+    double * p2y = new double(endPnt.y);
+    
+    // if periodic, startpoint and endpoint do not play a role in the solver, this removes unnecesarry DoF of determining where in the curve
+    // the start and the stop should be
+    if(!periodic) {
+        params.push_back(p2x);
+        params.push_back(p2y);
+    }
+    p2.x = p2x;
+    p2.y = p2y;
+
+    def.startPointId = Points.size();
+    Points.push_back(p1);
+    def.endPointId = Points.size();
+    Points.push_back(p2);
+
+    GCS::BSpline bs;
+    bs.start        = p1;
+    bs.end          = p2;
+    bs.poles        = spoles;
+    bs.weights      = sweights;
+    bs.knots        = sknots;
+    bs.mult         = mult;
+    bs.degree       = degree;
+    bs.periodic     = periodic;
+    def.index       = BSplines.size();
+    
+    // non-solver related, just to enable initialization of knotspoints which is not a parameter of the solver
+    bs.knotpointGeoids.resize(knots.size());
+    
+    for(std::vector<int>::iterator it = bs.knotpointGeoids.begin(); it != bs.knotpointGeoids.end(); ++it) {
+        (*it) = Constraint::GeoUndef; 
+    }
+    
+    BSplines.push_back(bs);
+
+    // store complete set
+    Geoms.push_back(def);
+
+    // WARNING: This is only valid where the multiplicity of the endpoints conforms with a BSpline
+    // only then the startpoint is the first control point and the endpoint is the last control point
+    // accordingly, it is never the case for a periodic BSpline.
+    if(!bs.periodic && bs.mult[0] > bs.degree && bs.mult[mult.size()-1] > bs.degree) {
+        GCSsys.addConstraintP2PCoincident(*(bs.poles.begin()),bs.start);
+        GCSsys.addConstraintP2PCoincident(*(bs.poles.end()-1),bs.end);
+    }
+    // return the position of the newly added geometry
+    return Geoms.size()-1;
+}
+
 int Sketch::addCircle(const Part::GeomCircle &cir, bool fixed)
 {
     std::vector<double *> &params = fixed ? FixParameters : Parameters;
@@ -698,8 +936,14 @@ Py::Tuple Sketch::getPyGeometry(void) const
             GeomArcOfEllipse *ellipse = static_cast<GeomArcOfEllipse*>(it->geo->clone());
             tuple[i] = Py::asObject(new ArcOfEllipsePy(ellipse));
         } else if (it->type == ArcOfHyperbola) {
-            GeomArcOfHyperbola *aoh = dynamic_cast<GeomArcOfHyperbola*>(it->geo->clone());
+            GeomArcOfHyperbola *aoh = static_cast<GeomArcOfHyperbola*>(it->geo->clone());
             tuple[i] = Py::asObject(new ArcOfHyperbolaPy(aoh));
+        } else if (it->type == ArcOfParabola) {
+            GeomArcOfParabola *aop = static_cast<GeomArcOfParabola*>(it->geo->clone());
+            tuple[i] = Py::asObject(new ArcOfParabolaPy(aop));
+        } else if (it->type == BSpline) {
+            GeomBSplineCurve *bsp = static_cast<GeomBSplineCurve*>(it->geo->clone());
+            tuple[i] = Py::asObject(new BSplineCurvePy(bsp));
         } else {
             // not implemented type in the sketch!
         }
@@ -737,7 +981,13 @@ GCS::Curve* Sketch::getGCSCurveByGeoId(int geoId)
         break;
         case ArcOfHyperbola:
             return &ArcsOfHyperbola[Geoms[geoId].index];
-            break;        
+            break;   
+        case ArcOfParabola:
+            return &ArcsOfParabola[Geoms[geoId].index];
+            break;
+        case BSpline:
+            return &BSplines[Geoms[geoId].index];
+            break;
         default:
             return 0;
     };
@@ -999,6 +1249,15 @@ int Sketch::addConstraint(const Constraint *constraint)
                 break;
             case HyperbolaFocus: 
                 rtn = addInternalAlignmentHyperbolaFocus(constraint->First,constraint->Second);
+                break;
+            case ParabolaFocus:
+                rtn = addInternalAlignmentParabolaFocus(constraint->First,constraint->Second);
+                break;
+            case BSplineControlPoint:
+                rtn = addInternalAlignmentBSplineControlPoint(constraint->First,constraint->Second, constraint->InternalAlignmentIndex);
+                break;
+            case BSplineKnotPoint:
+                rtn = addInternalAlignmentKnotPoint(constraint->First,constraint->Second, constraint->InternalAlignmentIndex);
                 break;
             default:
                 break;
@@ -1730,6 +1989,16 @@ int Sketch::addEqualConstraint(int geoId1, int geoId2)
         }
     }
     
+    if (Geoms[geoId2].type == ArcOfParabola) {
+        if (Geoms[geoId1].type == ArcOfParabola) {
+            GCS::ArcOfParabola &a1 = ArcsOfParabola[Geoms[geoId1].index];
+            GCS::ArcOfParabola &a2 = ArcsOfParabola[Geoms[geoId2].index];
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintEqualFocus(a1, a2, tag);
+            return ConstraintsCounter;
+        }
+    }
+    
     if (Geoms[geoId1].type == Ellipse) {
         GCS::Ellipse &e1 = Ellipses[Geoms[geoId1].index];
         if (Geoms[geoId2].type == ArcOfEllipse) {
@@ -1791,7 +2060,13 @@ int Sketch::addPointOnObjectConstraint(int geoId1, PointPos pos1, int geoId2)
             int tag = ++ConstraintsCounter;
             GCSsys.addConstraintPointOnHyperbolicArc(p1, a, tag);
             return ConstraintsCounter;
-        }        
+        }
+        else if (Geoms[geoId2].type == ArcOfParabola) {
+            GCS::ArcOfParabola &a = ArcsOfParabola[Geoms[geoId2].index];
+            int tag = ++ConstraintsCounter;
+            GCSsys.addConstraintPointOnParabolicArc(p1, a, tag);
+            return ConstraintsCounter;
+        }
     }
     return -1;
 }
@@ -2157,6 +2432,89 @@ int Sketch::addInternalAlignmentHyperbolaFocus(int geoId1, int geoId2)
     return -1;
 }
 
+int Sketch::addInternalAlignmentParabolaFocus(int geoId1, int geoId2)
+{
+    std::swap(geoId1, geoId2);
+
+    geoId1 = checkGeoId(geoId1);
+    geoId2 = checkGeoId(geoId2);
+
+    if (Geoms[geoId1].type != ArcOfParabola)
+        return -1;
+    if (Geoms[geoId2].type != Point)
+        return -1;
+
+    int pointId1 = getPointId(geoId2, start);
+
+    if (pointId1 >= 0 && pointId1 < int(Points.size())) {
+        GCS::Point &p1 = Points[pointId1];
+
+        GCS::ArcOfParabola &a1 = ArcsOfParabola[Geoms[geoId1].index];
+
+        int tag = ++ConstraintsCounter;
+        GCSsys.addConstraintInternalAlignmentParabolaFocus(a1, p1, tag);
+        return ConstraintsCounter;
+    }
+    return -1;
+}
+
+int Sketch::addInternalAlignmentBSplineControlPoint(int geoId1, int geoId2, int poleindex)
+{
+    std::swap(geoId1, geoId2);
+
+    geoId1 = checkGeoId(geoId1);
+    geoId2 = checkGeoId(geoId2);
+
+    if (Geoms[geoId1].type != BSpline)
+        return -1;
+    if (Geoms[geoId2].type != Circle)
+        return -1;
+
+    int pointId1 = getPointId(geoId2, mid);
+
+    if (pointId1 >= 0 && pointId1 < int(Points.size())) {
+        GCS::Circle &c = Circles[Geoms[geoId2].index];
+
+        GCS::BSpline &b = BSplines[Geoms[geoId1].index];
+        
+        assert(poleindex < static_cast<int>(b.poles.size()) && poleindex >= 0);
+
+        int tag = ++ConstraintsCounter;
+        GCSsys.addConstraintInternalAlignmentBSplineControlPoint(b, c, poleindex, tag);
+        return ConstraintsCounter;
+    }
+    return -1;
+}
+
+int Sketch::addInternalAlignmentKnotPoint(int geoId1, int geoId2, int knotindex)
+{
+    std::swap(geoId1, geoId2);
+
+    geoId1 = checkGeoId(geoId1);
+    geoId2 = checkGeoId(geoId2);
+
+    if (Geoms[geoId1].type != BSpline)
+        return -1;
+    if (Geoms[geoId2].type != Point)
+        return -1;
+
+    int pointId1 = getPointId(geoId2, start);
+
+    if (pointId1 >= 0 && pointId1 < int(Points.size())) {
+       // GCS::Point &p = Points[pointId1];
+
+        GCS::BSpline &b = BSplines[Geoms[geoId1].index];
+
+        // no constraint is actually added, as knots are fixed geometry in this implementation
+        // indexing is added here.
+        
+        b.knotpointGeoids[knotindex] = geoId2;
+        
+        return ConstraintsCounter;
+    }
+    return -1;
+}
+
 double Sketch::calculateAngleViaPoint(int geoId1, int geoId2, double px, double py)
 {
     geoId1 = checkGeoId(geoId1);
@@ -2202,10 +2560,13 @@ bool Sketch::updateGeometry()
         try {
             if (it->type == Point) {
                 GeomPoint *point = static_cast<GeomPoint*>(it->geo);
-                point->setPoint(Vector3d(*Points[it->startPointId].x,
+                
+                if(!point->Construction) {
+                    point->setPoint(Vector3d(*Points[it->startPointId].x,
                                          *Points[it->startPointId].y,
                                          0.0)
                                );
+                }
             } else if (it->type == Line) {
                 GeomLineSegment *lineSeg = static_cast<GeomLineSegment*>(it->geo);
                 lineSeg->setPoints(Vector3d(*Lines[it->index].p1.x,
@@ -2281,7 +2642,7 @@ bool Sketch::updateGeometry()
             } else if (it->type == ArcOfHyperbola) {
                 GCS::ArcOfHyperbola &myArc = ArcsOfHyperbola[it->index];
 
-                GeomArcOfHyperbola *aoh = dynamic_cast<GeomArcOfHyperbola*>(it->geo);
+                GeomArcOfHyperbola *aoh = static_cast<GeomArcOfHyperbola*>(it->geo);
                 
                 Base::Vector3d center = Vector3d(*Points[it->midPointId].x, *Points[it->midPointId].y, 0.0);
                 Base::Vector3d f1 = Vector3d(*myArc.focus1.x, *myArc.focus1.y, 0.0);
@@ -2300,6 +2661,66 @@ bool Sketch::updateGeometry()
                 }
                 aoh->setMajorAxisDir(fd);
                 aoh->setRange(*myArc.startAngle, *myArc.endAngle, /*emulateCCW=*/true);
+            } else if (it->type == ArcOfParabola) {
+                GCS::ArcOfParabola &myArc = ArcsOfParabola[it->index];
+
+                GeomArcOfParabola *aop = static_cast<GeomArcOfParabola*>(it->geo);
+                
+                Base::Vector3d vertex = Vector3d(*Points[it->midPointId].x, *Points[it->midPointId].y, 0.0);
+                Base::Vector3d f1 = Vector3d(*myArc.focus1.x, *myArc.focus1.y, 0.0);
+                
+                Base::Vector3d fd=f1-vertex;
+                
+                aop->setXAxisDir(fd);
+                aop->setCenter(vertex);
+                aop->setFocal(fd.Length());
+                aop->setRange(*myArc.startAngle, *myArc.endAngle, /*emulateCCW=*/true);
+            } else if (it->type == BSpline) {
+                GCS::BSpline &mybsp = BSplines[it->index];
+
+                GeomBSplineCurve *bsp = static_cast<GeomBSplineCurve*>(it->geo);
+
+                std::vector<Base::Vector3d> poles;
+                std::vector<double> weights;
+
+                std::vector<GCS::Point>::const_iterator it1;
+                std::vector<double *>::const_iterator it2;
+
+                for( it1 = mybsp.poles.begin(), it2 = mybsp.weights.begin(); it1 != mybsp.poles.end() && it2 != mybsp.weights.end(); ++it1, ++it2) {
+                    poles.push_back(Vector3d( *(*it1).x , *(*it1).y , 0.0));
+                    weights.push_back(*(*it2));
+                }
+
+                bsp->setPoles(poles, weights);
+
+                std::vector<double> knots;
+                std::vector<int> mult;
+
+                std::vector<double *>::const_iterator it3;
+                std::vector<int>::const_iterator it4;
+
+                for( it3 = mybsp.knots.begin(), it4 = mybsp.mult.begin(); it3 != mybsp.knots.end() && it4 != mybsp.mult.end(); ++it3, ++it4) {
+                    knots.push_back(*(*it3));
+                    mult.push_back((*it4));
+                }
+
+                bsp->setKnots(knots,mult);
+                
+                #if OCC_VERSION_HEX >= 0x060900
+                int index = 0;
+                for(std::vector<int>::const_iterator it5 = mybsp.knotpointGeoids.begin(); it5 != mybsp.knotpointGeoids.end(); ++it5, index++) {
+                    if( *it5 != Constraint::GeoUndef) {
+                        if (Geoms[*it5].type == Point) {
+                            GeomPoint *point = static_cast<GeomPoint*>(Geoms[*it5].geo);
+
+                            if(point->Construction) {
+                                point->setPoint(bsp->pointAtParameter(knots[index]));
+                            }
+                        }
+                    }
+                }
+                #endif
+
             }
         } catch (Base::Exception e) {
             Base::Console().Error("Updating geometry: Error build geometry(%d): %s\n",
@@ -2320,8 +2741,13 @@ bool Sketch::updateNonDrivingConstraints()
                 
                 (*it).constr->Value = n2/n1;
             }
-            else
+            else if((*it).constr->Type==Angle) {
+                
+                (*it).constr->Value = std::fmod(*((*it).value), M_PI);
+            }
+            else {
                 (*it).constr->Value=*((*it).value);
+            }
         }
      }
     return true;
@@ -2603,8 +3029,7 @@ int Sketch::initMove(int geoId, PointPos pos, bool fine)
             int i=GCSsys.addConstraintP2PCoincident(p1,center,-1);
             GCSsys.rescaleConstraint(i-1, 0.01);
             GCSsys.rescaleConstraint(i, 0.01);
-	}
-
+        }
     } else if (Geoms[geoId].type == ArcOfHyperbola) {
         
         GCS::Point &center = Points[Geoms[geoId].midPointId];
@@ -2639,6 +3064,76 @@ int Sketch::initMove(int geoId, PointPos pos, bool fine)
             GCSsys.rescaleConstraint(i-1, 0.01);
             GCSsys.rescaleConstraint(i, 0.01);
 
+        }
+    } else if (Geoms[geoId].type == ArcOfParabola) {
+        
+        GCS::Point &center = Points[Geoms[geoId].midPointId];
+        GCS::Point p0,p1;
+        if (pos == mid || pos == none) {
+            MoveParameters.resize(2); // cx,cy
+            p0.x = &MoveParameters[0];
+            p0.y = &MoveParameters[1];
+            *p0.x = *center.x;
+            *p0.y = *center.y;
+
+            GCSsys.addConstraintP2PCoincident(p0,center,-1);
+        } else if (pos == start || pos == end) {
+            
+            MoveParameters.resize(4); // x,y,cx,cy
+            if (pos == start || pos == end) {
+                GCS::Point &p = (pos == start) ? Points[Geoms[geoId].startPointId]
+                                            : Points[Geoms[geoId].endPointId];;
+                p0.x = &MoveParameters[0];
+                p0.y = &MoveParameters[1];
+                *p0.x = *p.x;
+                *p0.y = *p.y;
+
+                GCSsys.addConstraintP2PCoincident(p0,p,-1);
+            } 
+            p1.x = &MoveParameters[2];
+            p1.y = &MoveParameters[3];
+            *p1.x = *center.x;
+            *p1.y = *center.y;
+
+            int i=GCSsys.addConstraintP2PCoincident(p1,center,-1);
+            GCSsys.rescaleConstraint(i-1, 0.01);
+            GCSsys.rescaleConstraint(i, 0.01);
+
+        }
+    } else if (Geoms[geoId].type == BSpline) {
+        if (pos == start || pos == end) {
+            MoveParameters.resize(2); // x,y
+            GCS::Point p0;
+            p0.x = &MoveParameters[0];
+            p0.y = &MoveParameters[1];
+            if (pos == start) {
+                GCS::Point &p = Points[Geoms[geoId].startPointId];
+                *p0.x = *p.x;
+                *p0.y = *p.y;
+                GCSsys.addConstraintP2PCoincident(p0,p,-1);
+            } else if (pos == end) {
+                GCS::Point &p = Points[Geoms[geoId].endPointId];
+                *p0.x = *p.x;
+                *p0.y = *p.y;
+                GCSsys.addConstraintP2PCoincident(p0,p,-1);
+            }
+        } else if (pos == none || pos == mid) {
+            GCS::BSpline &bsp = BSplines[Geoms[geoId].index];
+            MoveParameters.resize(bsp.poles.size()*2); // x0,y0,x1,y1,....xp,yp
+
+            int mvindex = 0;
+            for(std::vector<GCS::Point>::iterator it = bsp.poles.begin(); it != bsp.poles.end() ; it++, mvindex++) {
+                GCS::Point p1;
+                p1.x = &MoveParameters[mvindex];
+                mvindex++;
+                p1.y = &MoveParameters[mvindex];
+                
+                *p1.x = *(*it).x;
+                *p1.y = *(*it).y;
+
+                GCSsys.addConstraintP2PCoincident(p1,(*it),-1);
+            }
+            
         }
     } else if (Geoms[geoId].type == Arc) {
         GCS::Point &center = Points[Geoms[geoId].midPointId];
@@ -2742,7 +3237,35 @@ int Sketch::movePoint(int geoId, PointPos pos, Base::Vector3d toPoint, bool rela
             MoveParameters[0] = toPoint.x;
             MoveParameters[1] = toPoint.y;
         }
-    }    
+    } else if (Geoms[geoId].type == ArcOfParabola) {
+        if (pos == start || pos == end || pos == mid || pos == none) {
+            MoveParameters[0] = toPoint.x;
+            MoveParameters[1] = toPoint.y;
+        }
+    } else if (Geoms[geoId].type == BSpline) {
+        if (pos == start || pos == end) {
+            MoveParameters[0] = toPoint.x;
+            MoveParameters[1] = toPoint.y;
+        } else if (pos == none || pos == mid) {
+            GCS::BSpline &bsp = BSplines[Geoms[geoId].index];
+
+            double cx = 0, cy = 0; // geometric center
+            for (int i=0; i < int(InitParameters.size()-1); i+=2) {
+                cx += InitParameters[i];
+                cy += InitParameters[i+1];
+            }
+
+            cx /= bsp.poles.size();
+            cy /= bsp.poles.size();
+
+            for (int i=0; i < int(MoveParameters.size()-1); i+=2) {
+ 
+                MoveParameters[i]       = toPoint.x + InitParameters[i] - cx;
+                MoveParameters[i+1]     = toPoint.y + InitParameters[i+1] - cy;
+            }
+
+        }
+    }
 
     return solve();
 }
@@ -2806,7 +3329,7 @@ TopoShape Sketch::toShape(void) const
 
     // collecting all (non constructive and non external) edges out of the sketch
     for (;it!=Geoms.end();++it) {
-        if (!it->external && !it->geo->Construction) {
+        if (!it->external && !it->geo->Construction && (it->type != Point)) {
             edge_list.push_back(TopoDS::Edge(it->geo->toShape()));
         }
     }
@@ -2854,7 +3377,7 @@ TopoShape Sketch::toShape(void) const
     else if (wires.size() > 1) {
         // FIXME: The right way here would be to determine the outer and inner wires and
         // generate a face with holes (inner wires have to be taged REVERSE or INNER).
-        // thats the only way to transport a somwhat more complex sketch...
+        // thats the only way to transport a somewhat more complex sketch...
         //result = *wires.begin();
 
         // I think a compound can be used as container because it is just a collection of
@@ -2879,7 +3402,7 @@ TopoShape Sketch::toShape(void) const
     return result;
 }
 
-// Persistance implementer -------------------------------------------------
+// Persistence implementer -------------------------------------------------
 
 unsigned int Sketch::getMemSize(void) const
 {

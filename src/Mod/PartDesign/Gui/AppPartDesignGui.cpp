@@ -36,6 +36,7 @@
 
 #include "Workbench.h"
 #include "ViewProviderPocket.h"
+#include "ViewProviderHole.h"
 #include "ViewProviderBody.h"
 #include "ViewProviderSketchBased.h"
 #include "ViewProviderPad.h"
@@ -97,11 +98,11 @@ PyObject* initModule()
 
 
 /* Python entry */
-PyMODINIT_FUNC initPartDesignGui()
+PyMOD_INIT_FUNC(PartDesignGui)
 {
     if (!Gui::Application::Instance) {
         PyErr_SetString(PyExc_ImportError, "Cannot load Gui module in console application.");
-        return;
+        PyMOD_Return(0);
     }
 
     try {
@@ -110,10 +111,10 @@ PyMODINIT_FUNC initPartDesignGui()
     }
     catch(const Base::Exception& e) {
         PyErr_SetString(PyExc_ImportError, e.what());
-        return;
+        PyMOD_Return(0);
     }
 
-    (void)PartDesignGui::initModule();
+    PyObject* mod = PartDesignGui::initModule();
     Base::Console().Log("Loading GUI of PartDesign module... done\n");
 
     // instantiating the commands
@@ -123,9 +124,11 @@ PyMODINIT_FUNC initPartDesignGui()
 
     PartDesignGui::Workbench                 ::init();
     PartDesignGui::ViewProvider              ::init();
+    PartDesignGui::ViewProviderPython        ::init();
     PartDesignGui::ViewProviderBody          ::init();
     PartDesignGui::ViewProviderSketchBased   ::init();
     PartDesignGui::ViewProviderPocket        ::init();
+    PartDesignGui::ViewProviderHole          ::init();
     PartDesignGui::ViewProviderPad           ::init();
     PartDesignGui::ViewProviderRevolution    ::init();
     PartDesignGui::ViewProviderDressUp       ::init();
@@ -154,4 +157,6 @@ PyMODINIT_FUNC initPartDesignGui()
 
      // add resources and reloads the translators
     loadPartDesignResource();
+
+    PyMOD_Return(mod);
 }

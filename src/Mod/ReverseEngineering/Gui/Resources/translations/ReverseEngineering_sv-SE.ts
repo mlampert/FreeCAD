@@ -98,13 +98,13 @@
         <location line="+6"/>
         <location line="+67"/>
         <source>Degree</source>
-        <translation type="unfinished">Degree</translation>
+        <translation>Grad</translation>
     </message>
     <message>
         <location line="-38"/>
         <location line="+67"/>
         <source>Control points</source>
-        <translation type="unfinished">Control points</translation>
+        <translation>Kontrollpunkter</translation>
     </message>
     <message>
         <location line="-35"/>
@@ -134,7 +134,7 @@
     <message>
         <location line="+9"/>
         <source>Total Weight</source>
-        <translation type="unfinished">Total Weight</translation>
+        <translation>Total vikt</translation>
     </message>
     <message>
         <location line="+29"/>

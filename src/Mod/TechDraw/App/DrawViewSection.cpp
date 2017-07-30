@@ -46,6 +46,7 @@
 #include <HLRBRep_Algo.hxx>
 #include <HLRAlgo_Projector.hxx>
 #include <HLRBRep_HLRToShape.hxx>
+#include <ShapeAnalysis.hxx>
 #include <TopoDS_Shape.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Face.hxx>
@@ -63,19 +64,24 @@
 # include <QFileInfo>
 
 #include <App/Application.h>
+#include <App/Document.h>
 #include <App/Material.h>
 #include <Base/BoundBox.h>
 #include <Base/Exception.h>
 #include <Base/Console.h>
+#include <Base/Interpreter.h>
 #include <Base/Parameter.h>
 
 #include <Mod/Part/App/PartFeature.h>
 
 #include "Geometry.h"
 #include "GeometryObject.h"
+#include "HatchLine.h"
 #include "EdgeWalker.h"
 #include "DrawUtil.h"
+#include "DrawProjGroupItem.h"
 #include "DrawProjectSplit.h"
+#include "DrawGeomHatch.h"
 #include "DrawViewSection.h"
 
 using namespace TechDraw;
@@ -109,11 +115,17 @@ DrawViewSection::DrawViewSection()
     SectionDirection.setEnums(SectionDirEnums);
     ADD_PROPERTY_TYPE(SectionDirection,((long)0),sgroup, App::Prop_None, "Direction in Base View for this Section");
 
-    ADD_PROPERTY_TYPE(ShowCutSurface ,(true),fgroup,App::Prop_None,"Shade the cut surface");
-    ADD_PROPERTY_TYPE(CutSurfaceColor,(0.0,0.0,0.0),fgroup,App::Prop_None,"The color to shade the cut surface");
-    ADD_PROPERTY_TYPE(HatchCutSurface ,(false),fgroup,App::Prop_None,"Hatch the cut surface");
-    ADD_PROPERTY_TYPE(HatchPattern ,(""),fgroup,App::Prop_None,"The hatch pattern file for the cut surface");
-    ADD_PROPERTY_TYPE(HatchColor,(0.0,0.0,0.0),fgroup,App::Prop_None,"The color of the hatch pattern");
+    ADD_PROPERTY_TYPE(FileHatchPattern ,(""),fgroup,App::Prop_None,"The hatch pattern file for the cut surface");
+    ADD_PROPERTY_TYPE(NameGeomPattern ,(""),fgroup,App::Prop_None,"The pattern name for geometric hatching");
+    ADD_PROPERTY_TYPE(HatchScale,(1.0),fgroup,App::Prop_None,"Hatch pattern size adjustment");
+
+//    ADD_PROPERTY_TYPE(ShowCutSurface ,(true),fgroup,App::Prop_None,"Show/hide the cut surface");
+//    ADD_PROPERTY_TYPE(CutSurfaceColor,(0.0,0.0,0.0),fgroup,App::Prop_None,"The color to shade the cut surface");
+//    ADD_PROPERTY_TYPE(HatchCutSurface ,(false),fgroup,App::Prop_None,"Hatch the cut surface");
+//    ADD_PROPERTY_TYPE(FileHatchPattern ,(""),fgroup,App::Prop_None,"The hatch pattern file for the cut surface");
+//    ADD_PROPERTY_TYPE(NameGeomPattern ,(""),fgroup,App::Prop_None,"The pattern name for geometric hatching");
+//    ADD_PROPERTY_TYPE(HatchColor,(0.0,0.0,0.0),fgroup,App::Prop_None,"The color of the hatch pattern");
+    
 
     getParameters();
 
@@ -157,6 +169,23 @@ void DrawViewSection::onChanged(const App::Property* prop)
             }
         }
     }
+    if (prop == &FileHatchPattern    ||
+        prop == &NameGeomPattern ) {
+      if ((!FileHatchPattern.isEmpty())  &&
+          (!NameGeomPattern.isEmpty())) {
+              std::vector<PATLineSpec> specs = 
+                               DrawGeomHatch::getDecodedSpecsFromFile(FileHatchPattern.getValue(),NameGeomPattern.getValue());
+              m_lineSets.clear();
+              for (auto& hl: specs) {
+                  //hl.dump("hl from section");
+                  LineSet ls;
+                  ls.setPATLineSpec(hl);
+                  m_lineSets.push_back(ls);
+              }
+                  
+      }
+    }
+
     DrawView::onChanged(prop);
 }
 
@@ -228,14 +257,15 @@ App::DocumentObjectExecReturn *DrawViewSection::execute(void)
         TopoDS_Shape mirroredShape = TechDrawGeometry::mirrorShape(rawShape,
                                                     inputCenter,
                                                     Scale.getValue());
-        geometryObject = buildGeometryObject(mirroredShape,inputCenter);   //this is original shape after cut by section prism
+        gp_Ax2 viewAxis = getViewAxis(Base::Vector3d(inputCenter.X(),inputCenter.Y(),inputCenter.Z()),Direction.getValue());
+        geometryObject = buildGeometryObject(mirroredShape,viewAxis);   //this is original shape after cut by section prism
 
 #if MOD_TECHDRAW_HANDLE_FACES
         extractFaces();
 #endif //#if MOD_TECHDRAW_HANDLE_FACES
     }
     catch (Standard_Failure) {
-        Handle_Standard_Failure e1 = Standard_Failure::Caught();
+        Handle(Standard_Failure) e1 = Standard_Failure::Caught();
         Base::Console().Log("LOG - DVS::execute - base shape failed for %s - %s **\n",getNameInDocument(),e1->GetMessageString());
         return new App::DocumentObjectExecReturn(e1->GetMessageString());
     }
@@ -246,10 +276,12 @@ App::DocumentObjectExecReturn *DrawViewSection::execute(void)
                                                                      inputCenter,
                                                                      Scale.getValue());
 
+        sectionFaceWires.clear();
         TopoDS_Compound newFaces;
         BRep_Builder builder;
         builder.MakeCompound(newFaces);
         TopExp_Explorer expl(mirroredSection, TopAbs_FACE);
+        int idb = 0;
         for (; expl.More(); expl.Next()) {
             const TopoDS_Face& face = TopoDS::Face(expl.Current());
             TopoDS_Face pFace = projectFace(face,
@@ -257,13 +289,14 @@ App::DocumentObjectExecReturn *DrawViewSection::execute(void)
                                             Direction.getValue());
              if (!pFace.IsNull()) {
                  builder.Add(newFaces,pFace);
+                 sectionFaceWires.push_back(ShapeAnalysis::OuterWire(pFace));
              }
-
+             idb++;
         }
         sectionFaces = newFaces;
     }
     catch (Standard_Failure) {
-        Handle_Standard_Failure e2 = Standard_Failure::Caught();
+        Handle(Standard_Failure) e2 = Standard_Failure::Caught();
         Base::Console().Log("LOG - DVS::execute - failed building section faces for %s - %s **\n",getNameInDocument(),e2->GetMessageString());
         return new App::DocumentObjectExecReturn(e2->GetMessageString());
     }
@@ -275,7 +308,7 @@ gp_Pln DrawViewSection::getSectionPlane() const
 {
     Base::Vector3d plnPnt = SectionOrigin.getValue();
     Base::Vector3d plnNorm = SectionNormal.getValue();
-    gp_Ax2 viewAxis = TechDrawGeometry::getViewAxis(plnPnt,plnNorm,false);
+    gp_Ax2 viewAxis = getViewAxis(plnPnt,plnNorm,false);
     gp_Ax3 viewAxis3(viewAxis);
 
     return gp_Pln(viewAxis3);
@@ -351,7 +384,7 @@ TopoDS_Face DrawViewSection::projectFace(const TopoDS_Shape &face,
     }
 
     Base::Vector3d origin(faceCenter.X(),faceCenter.Y(),faceCenter.Z());
-    gp_Ax2 viewAxis = TechDrawGeometry::getViewAxis(origin,direction);
+    gp_Ax2 viewAxis = getViewAxis(origin,direction);
 
     HLRBRep_Algo *brep_hlr = new HLRBRep_Algo();
     brep_hlr->Add(face);
@@ -451,34 +484,43 @@ bool DrawViewSection::isReallyInBox (const Base::Vector3d v, const Base::BoundBo
 }
 
 //! calculate the section Normal/Projection Direction given baseView projection direction and section name
-/*static*/
-Base::Vector3d DrawViewSection::getSectionVector (const Base::Vector3d baseViewDir, const std::string sectionName)
+Base::Vector3d DrawViewSection::getSectionVector (const std::string sectionName)
 {
     Base::Vector3d result;
     Base::Vector3d stdX(1.0,0.0,0.0);
     Base::Vector3d stdY(0.0,1.0,0.0);
     Base::Vector3d stdZ(0.0,0.0,1.0);
-    Base::Vector3d view = baseViewDir;
+
+    double adjustAngle = 0.0;
+    if (getBaseDPGI() != nullptr) {
+        adjustAngle = getBaseDPGI()->getRotateAngle();
+    }
+
+    Base::Vector3d view = getBaseDVP()->Direction.getValue();
     view.Normalize();
     Base::Vector3d left = view.Cross(stdZ);
-    left.Normalize();    //redundent?
-    Base::Vector3d down = view.Cross(left);
-    down.Normalize();    //redundent?
+    left.Normalize();
+    Base::Vector3d up = view.Cross(left);
+    up.Normalize();
     double dot = view.Dot(stdZ);
 
     if (sectionName == "Up") {
-        result = down;
-        if (DrawUtil::fpCompare(fabs(dot),1.0)) {
-            result  = (-1.0 * stdY);
+        result = up;
+        if (DrawUtil::fpCompare(dot,1.0)) {            //view = stdZ
+            result = (-1.0 * stdY);
+        } else if (DrawUtil::fpCompare(dot,-1.0)) {    //view = -stdZ
+            result = stdY;
         }
     } else if (sectionName == "Down") {
-        result = down * -1.0;
-        if (DrawUtil::fpCompare(fabs(dot),1.0)) {
+        result = up * -1.0;
+        if (DrawUtil::fpCompare(dot,1.0)) {            //view = stdZ
             result = stdY;
+        } else if (DrawUtil::fpCompare(dot, -1.0)) {   //view = -stdZ
+            result = (-1.0 * stdY);
         }
     } else if (sectionName == "Left") {
         result = left * -1.0;
-        if (DrawUtil::fpCompare(fabs(dot),1.0)) {
+        if (DrawUtil::fpCompare(fabs(dot),1.0)) {      //view = +/- stdZ
             result = stdX;
         }
     } else if (sectionName == "Right") {
@@ -490,33 +532,74 @@ Base::Vector3d DrawViewSection::getSectionVector (const Base::Vector3d baseViewD
         Base::Console().Log("Error - DVS::getSectionVector - bad sectionName: %s\n",sectionName.c_str());
         result = stdZ;
     }
-    
+    Base::Vector3d adjResult = DrawUtil::vecRotate(result,adjustAngle,view);
+    return adjResult;
+}
+
+std::vector<LineSet> DrawViewSection::getDrawableLines(int i)
+{
+    std::vector<LineSet> result;
+    result = DrawGeomHatch::getTrimmedLines(this,m_lineSets,i,HatchScale.getValue());
     return result;
+}
+
+std::vector<TopoDS_Wire> DrawViewSection::getWireForFace(int idx) const
+{
+    std::vector<TopoDS_Wire> result;
+    result.push_back(sectionFaceWires.at(idx));
+    return result;
+}
+
+void DrawViewSection::unsetupObject()
+{
+    TechDraw::DrawViewPart* base = getBaseDVP();
+    if (base != nullptr) {
+        base->touch();
+    }
+    DrawViewPart::unsetupObject();
+}
+
+TechDraw::DrawViewPart* DrawViewSection::getBaseDVP()
+{
+    TechDraw::DrawViewPart* baseDVP = nullptr;
+    App::DocumentObject* base = BaseView.getValue();
+    if (base != nullptr) {
+        if (base->getTypeId().isDerivedFrom(TechDraw::DrawViewPart::getClassTypeId())) {
+            baseDVP = static_cast<TechDraw::DrawViewPart*>(base);
+        }
+    }
+    return baseDVP;
+}
+
+TechDraw::DrawProjGroupItem* DrawViewSection::getBaseDPGI()
+{
+    TechDraw::DrawProjGroupItem* baseDPGI = nullptr;
+    App::DocumentObject* base = BaseView.getValue();
+    if (base != nullptr) {
+        if (base->getTypeId().isDerivedFrom(TechDraw::DrawProjGroupItem::getClassTypeId())) {
+            baseDPGI = static_cast<TechDraw::DrawProjGroupItem*>(base);
+        }
+    }
+    return baseDPGI;
 }
 
 void DrawViewSection::getParameters()
 {
     Base::Reference<ParameterGrp> hGrp = App::GetApplication().GetUserParameter()
-        .GetGroup("BaseApp")->GetGroup("Preferences")->GetGroup("Mod/TechDraw/Colors");
-    App::Color cutColor = App::Color((uint32_t) hGrp->GetUnsigned("CutSurfaceColor", 0xC8C8C800));
-    CutSurfaceColor.setValue(cutColor);
-    App::Color hatchColor = App::Color((uint32_t) hGrp->GetUnsigned("SectionHatchColor", 0x00000000));
-    HatchColor.setValue(hatchColor);
-
-    hGrp = App::GetApplication().GetUserParameter()
         .GetGroup("BaseApp")->GetGroup("Preferences")->GetGroup("Mod/TechDraw");
 
     std::string defaultDir = App::Application::getResourceDir() + "Mod/Drawing/patterns/";
     std::string defaultFileName = defaultDir + "simple.svg";
-    QString patternFileName = QString::fromStdString(hGrp->GetASCII("PatternFile",defaultFileName.c_str()));
+    QString patternFileName = QString::fromStdString(hGrp->GetASCII("FileHatch",defaultFileName.c_str()));
     if (patternFileName.isEmpty()) {
         patternFileName = QString::fromStdString(defaultFileName);
     }
     QFileInfo tfi(patternFileName);
         if (tfi.isReadable()) {
-            HatchPattern.setValue(patternFileName.toUtf8().constData());
+            FileHatchPattern.setValue(patternFileName.toUtf8().constData());
         }
-
+    std::string patternName = hGrp->GetASCII("PatternName","Diamond");
+    NameGeomPattern.setValue(patternName);
 }
 
 // Python Drawing feature ---------------------------------------------------------

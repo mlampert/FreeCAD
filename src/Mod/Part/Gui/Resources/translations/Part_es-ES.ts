@@ -7,121 +7,121 @@
         <location filename="../../AttacherTexts.cpp" line="+273"/>
         <source>Any</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished"></translation>
+        <translation>Cualquiera</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Vertex</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished">Vértice</translation>
+        <translation>Vértice</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Edge</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished">Arista</translation>
+        <translation>Arista</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Face</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished">Cara</translation>
+        <translation>Cara</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Line</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished">Línea</translation>
+        <translation>Línea</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Curve</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished"></translation>
+        <translation>Curva</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Circle</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished">Circunferencia</translation>
+        <translation>Circunferencia</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Conic</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished"></translation>
+        <translation>Cónica</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Ellipse</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished">Elipse</translation>
+        <translation>Elipse</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Parabola</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished"></translation>
+        <translation>Parábola</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Hyperbola</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished"></translation>
+        <translation>Hipérbola</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Plane</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished">Plano</translation>
+        <translation>Plano</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Sphere</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished">Esfera</translation>
+        <translation>Esfera</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Revolve</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished">Girar</translation>
+        <translation>Girar</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Cylinder</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished">Cilindro</translation>
+        <translation>Cilindro</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Torus</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished">Toro</translation>
+        <translation>Toro</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Cone</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished">Cono</translation>
+        <translation>Cono</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Object</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished"></translation>
+        <translation>Objeto</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Solid</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished">Sólido</translation>
+        <translation>Sólido</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Wire</source>
         <comment>Attacher reference type</comment>
-        <translation type="unfinished">Alambre</translation>
+        <translation>Alambre</translation>
     </message>
 </context>
 <context>
@@ -130,71 +130,81 @@
         <location line="-65"/>
         <source>Deactivated</source>
         <comment>AttachmentPoint mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Desactivado</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Attachment is disabled. Point can be moved by editing Placement property.</source>
         <comment>AttachmentPoint mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Attachment is disabled. Point can be moved by editing Placement property.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Object&apos;s origin</source>
         <comment>AttachmentPoint mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Origen del objeto</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Point is put at object&apos;s Placement.Position. Works on objects with placements, and ellipse/parabola/hyperbola edges.</source>
         <comment>AttachmentPoint mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Point is put at object&apos;s Placement.Position. Works on objects with placements, and ellipse/parabola/hyperbola edges.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Focus1</source>
         <comment>AttachmentPoint mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Foco1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Focus of ellipse, parabola, hyperbola.</source>
         <comment>AttachmentPoint mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Foco de la elipse, parábola, hipérbola.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Focus2</source>
         <comment>AttachmentPoint mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Foco2</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Second focus of ellipse and hyperbola.</source>
         <comment>AttachmentPoint mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Segundo foco de la elipse y la hipérbola.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>On edge</source>
         <comment>AttachmentPoint mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>En la arista</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Point is put on edge, MapPathParametr controls where. Additionally, vertex can be linked in for making a projection.</source>
+        <comment>AttachmentPoint mode tooltip</comment>
+        <translation type="obsolete">Point is put on edge, MapPathParametr controls where. Additionally, vertex can be linked in for making a projection.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Center of curvature</source>
+        <comment>AttachmentPoint mode caption</comment>
+        <translation>Centro de curvatura</translation>
+    </message>
+    <message>
+        <source>Center of osculating circle of an edge. Optinal vertex link defines where.</source>
+        <comment>AttachmentPoint mode tooltip</comment>
+        <translation type="obsolete">Center of osculating circle of an edge. Optinal vertex link defines where.</translation>
+    </message>
+    <message>
+        <location line="-2"/>
+        <source>Point is put on edge, MapPathParameter controls where. Additionally, vertex can be linked in for making a projection.</source>
         <comment>AttachmentPoint mode tooltip</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Center of curvature</source>
-        <comment>AttachmentPoint mode caption</comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Center of osculating circle of an edge. Optinal vertex link defines where.</source>
+        <location line="+3"/>
+        <source>Center of osculating circle of an edge. Optional vertex link defines where.</source>
         <comment>AttachmentPoint mode tooltip</comment>
         <translation type="unfinished"></translation>
     </message>
@@ -202,61 +212,61 @@
         <location line="+2"/>
         <source>Center of mass</source>
         <comment>AttachmentPoint mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Centro de masas</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Center of mass of all references (equal densities are assumed).</source>
         <comment>AttachmentPoint mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Centro de masas de todas las referencias (se asumen densidades iguales).</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Intersection</source>
         <comment>AttachmentPoint mode caption</comment>
-        <translation type="unfinished">Intersección</translation>
+        <translation>Intersección</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Not implemented</source>
         <comment>AttachmentPoint mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>No implementado</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Vertex</source>
         <comment>AttachmentPoint mode caption</comment>
-        <translation type="unfinished">Vértice</translation>
+        <translation>Vértice</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Put Datum point coincident with another vertex.</source>
         <comment>AttachmentPoint mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Put Datum point coincident with another vertex.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Proximity point 1</source>
         <comment>AttachmentPoint mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Punto de proximidad 1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Point on first reference that is closest to second reference.</source>
         <comment>AttachmentPoint mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Point on first reference that is closest to second reference.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Proximity point 2</source>
         <comment>AttachmentPoint mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Punto de proximidad 2</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Point on second reference that is closest to first reference.</source>
         <comment>AttachmentPoint mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Point on second reference that is closest to first reference.</translation>
     </message>
 </context>
 <context>
@@ -265,231 +275,231 @@
         <location line="-97"/>
         <source>Deactivated</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Desactivado</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Attachment is disabled. Line can be moved by editing Placement property.</source>
         <comment>AttachmentLine mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Attachment is disabled. Line can be moved by editing Placement property.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Object&apos;s X</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Objetos de X</translation>
     </message>
     <message>
         <location line="+1"/>
         <location line="+6"/>
         <source>Line is aligned along local X axis of object. Works on objects with placements, and ellipse/parabola/hyperbola edges.</source>
         <comment>AttachmentLine mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Line is aligned along local X axis of object. Works on objects with placements, and ellipse/parabola/hyperbola edges.</translation>
     </message>
     <message>
         <location line="-4"/>
         <source>Object&apos;s Y</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Objetos de Y</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Line is aligned along local Y axis of object. Works on objects with placements, and ellipse/parabola/hyperbola edges.</source>
         <comment>AttachmentLine mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Line is aligned along local Y axis of object. Works on objects with placements, and ellipse/parabola/hyperbola edges.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Object&apos;s Z</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Objetos de Z</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Axis of curvature</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Eje de curvatura</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Line that is an axis of osculating circle of curved edge. Optional vertex defines where.</source>
         <comment>AttachmentLine mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Line that is an axis of osculating circle of curved edge. Optional vertex defines where.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Directrix1</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Directriz1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Directrix line for ellipse, parabola, hyperbola.</source>
         <comment>AttachmentLine mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Línea directriz para elipse, parábola e hipérbola.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Directrix2</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Directriz2</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Second directrix line for ellipse and hyperbola.</source>
         <comment>AttachmentLine mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Segunda línea directriz para elipse e hipérbola.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Asymptote1</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Asíntota1</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Asymptote of a hyperbola.</source>
         <comment>AttachmentLine mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Asíntota de una hipérbola.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Asymptote2</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Asíntota2</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Second asymptote of hyperbola.</source>
         <comment>AttachmentLine mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Segunda asíntota de la hipérbola.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Tangent</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished">Tangente</translation>
+        <translation>Tangente</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Line tangent to an edge. Optional vertex link defines where.</source>
         <comment>AttachmentLine mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Línea tangente a una arista. El enlace opcional de vértice define dónde.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Normal</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Normal</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Align to N vector of Frenet-Serret coordinate system of curved edge. Optional vertex link defines where.</source>
         <comment>AttachmentLine mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Align to N vector of Frenet-Serret coordinate system of curved edge. Optional vertex link defines where.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Binormal</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Binormal</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Align to B vector of Frenet-Serret coordinate system of curved edge. Optional vertex link defines where.</source>
         <comment>AttachmentLine mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Align to B vector of Frenet-Serret coordinate system of curved edge. Optional vertex link defines where.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Tangent to surface (U)</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Tangente a la superficie (U)</translation>
     </message>
     <message>
         <location line="+1"/>
         <location line="+3"/>
         <source>Tangent to surface, along U parameter. Vertex link defines where.</source>
         <comment>AttachmentLine mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Tangente a la superficie, a lo largo del parámetro U. El enlace de vértice define dónde.</translation>
     </message>
     <message>
         <location line="-1"/>
         <source>Tangent to surface (V)</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Tangente a la superficie (V)</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Through two points</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>A través de dos puntos</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Line that passes through two vertices.</source>
         <comment>AttachmentLine mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Línea que pasa por dos vértices.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Intersection</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished">Intersección</translation>
+        <translation>Intersección</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Not implemented.</source>
         <comment>AttachmentLine mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>No implementado.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Proximity line</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Línea de proximidad</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Line that spans the shortest distance between shapes.</source>
         <comment>AttachmentLine mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Line that spans the shortest distance between shapes.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>1st principal axis</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Primer eje principal</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Line follows first principal axis of inertia.</source>
         <comment>AttachmentLine mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Línea que sigue al primer eje principal de inercia.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>2nd principal axis</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Segundo eje principal</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Line follows second principal axis of inertia.</source>
         <comment>AttachmentLine mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Línea que sigue al segundo eje principal de inercia.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>3rd principal axis</source>
         <comment>AttachmentLine mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Tercer eje principal</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Line follows third principal axis of inertia.</source>
         <comment>AttachmentLine mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Línea que sigue al tercer eje principal de inercia.</translation>
     </message>
 </context>
 <context>
@@ -498,103 +508,103 @@
         <location line="-115"/>
         <source>Deactivated</source>
         <comment>AttachmentPlane mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Desactivado</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Attachment is disabled. Plane can be moved by editing Placement property.</source>
         <comment>AttachmentPlane mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Attachment is disabled. Plane can be moved by editing Placement property.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Translate origin</source>
         <comment>AttachmentPlane mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Trasladar origen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Origin is aligned to match Vertex. Orientation is controlled by Placement property.</source>
         <comment>AttachmentPlane mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Origin is aligned to match Vertex. Orientation is controlled by Placement property.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Object&apos;s XY</source>
         <comment>AttachmentPlane mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Objetos de XY</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Plane is aligned to XY local plane of linked object.</source>
         <comment>AttachmentPlane mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>El plano está alineado al plano local XY del objeto vinculado.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Object&apos;s XZ</source>
         <comment>AttachmentPlane mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Objetos de XZ</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Plane is aligned to XZ local plane of linked object.</source>
         <comment>AttachmentPlane mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>El plano está alineado al plano local XZ del objeto vinculado.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Object&apos;s  YZ</source>
         <comment>AttachmentPlane mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Objetos de YZ</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Plane is aligned to YZ local plane of linked object.</source>
         <comment>AttachmentPlane mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>El plano está alineado al plano local YZ del objeto vinculado.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Plane face</source>
         <comment>AttachmentPlane mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Cara plana</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Plane is aligned to coincide planar face.</source>
         <comment>AttachmentPlane mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Plano se alinea para coincidir con una cara plana.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Tangent to surface</source>
         <comment>AttachmentPlane mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Tangente a la superficie</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Plane is made tangent to surface at vertex.</source>
         <comment>AttachmentPlane mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>El plano se hace tangente a la superficie en el vértice.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Normal to edge</source>
         <comment>AttachmentPlane mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Normal a la arista</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Plane is made tangent to edge. Optional vertex link defines where.</source>
         <comment>AttachmentPlane mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Plano hecho tangente a la arista. El enlace opcional de vértice define dónde.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Frenet NB</source>
         <comment>AttachmentPlane mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Frenet NB</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -602,91 +612,96 @@
         <location line="+3"/>
         <source>Align to Frenet-Serret coordinate system of curved edge. Optional vertex link defines where.</source>
         <comment>AttachmentPlane mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Align to Frenet-Serret coordinate system of curved edge. Optional vertex link defines where.</translation>
     </message>
     <message>
         <location line="-4"/>
         <source>Frenet TN</source>
         <comment>AttachmentPlane mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Frenet TN</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Frenet TB</source>
         <comment>AttachmentPlane mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Frenet TB</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Concentric</source>
         <comment>AttachmentPlane mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Concéntrico</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Align to plane to osculating circle of an edge. Origin is aligned to point of curvature. Optional vertex link defines where.</source>
         <comment>AttachmentPlane mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Align to plane to osculating circle of an edge. Origin is aligned to point of curvature. Optional vertex link defines where.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Revolution Section</source>
         <comment>AttachmentPlane mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Sección de revolución</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>Plane is prependicular to edge, and Y axis is matched with axis of osculating circle. Optional vertex link defines where.</source>
+        <source>Plane is perpendicular to edge, and Y axis is matched with axis of osculating circle. Optional vertex link defines where.</source>
         <comment>AttachmentPlane mode tooltip</comment>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Plane is prependicular to edge, and Y axis is matched with axis of osculating circle. Optional vertex link defines where.</source>
+        <comment>AttachmentPlane mode tooltip</comment>
+        <translation type="obsolete">Plane is prependicular to edge, and Y axis is matched with axis of osculating circle. Optional vertex link defines where.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Plane by 3 points</source>
         <comment>AttachmentPlane mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Plano mediante 3 puntos</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Align plane to pass through three vertices.</source>
         <comment>AttachmentPlane mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Alinear plano para pasar a través de tres vértices.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Normal to 3 points</source>
         <comment>AttachmentPlane mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Normal a 3 puntos</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Plane will pass through first two vertices, and perpendicular to plane that passes through three vertices.</source>
         <comment>AttachmentPlane mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Plano que pasará a través de dos vértices, y perpendicular al plano que pasa por los tres vértices.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Folding</source>
         <comment>AttachmentPlane mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Plegado</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Specialty mode for folding polyhedra. Select 4 edges in order: foldable edge, fold line, other fold line, other foldable edge. Plane will be aligned to folding the first edge.</source>
         <comment>AttachmentPlane mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Specialty mode for folding polyhedra. Select 4 edges in order: foldable edge, fold line, other fold line, other foldable edge. Plane will be aligned to folding the first edge.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Inertia 2-3</source>
         <comment>AttachmentPlane mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Inercia 2-3</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Plane constructed on second and third principal axes of inertia (passes through center of mass).</source>
         <comment>AttachmentPlane mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Plane constructed on second and third principal axes of inertia (passes through center of mass).</translation>
     </message>
 </context>
 <context>
@@ -695,103 +710,103 @@
         <location line="-106"/>
         <source>Deactivated</source>
         <comment>Attachment3D mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Desactivado</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Attachment is disabled. CS can be moved by editing Placement property.</source>
         <comment>Attachment3D mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Attachment is disabled. CS can be moved by editing Placement property.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Translate origin</source>
         <comment>Attachment3D mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Trasladar origen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Origin is aligned to match Vertex. Orientation is controlled by Placement property.</source>
         <comment>Attachment3D mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Origin is aligned to match Vertex. Orientation is controlled by Placement property.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Object&apos;s  X Y Z</source>
         <comment>Attachment3D mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Objetos de X Y Z</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Placement is made equal to Placement of linked object.</source>
         <comment>Attachment3D mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Placement is made equal to Placement of linked object.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Object&apos;s  X Z-Y</source>
         <comment>Attachment3D mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Objetos de X Z-Y</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>X&apos;, Y&apos;, Z&apos; axes are matched with object&apos;s local X, Z, -Y, respectively.</source>
         <comment>Attachment3D mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Los ejes X&apos;, Y&apos;, Z&apos; coinciden con los del objeto local X, Z, -Y, respectivamente.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Object&apos;s  Y Z X</source>
         <comment>Attachment3D mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Objetos de Y Z X</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>X&apos;, Y&apos;, Z&apos; axes are matched with object&apos;s local Y, Z, X, respectively.</source>
         <comment>Attachment3D mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Los ejes X&apos;, Y&apos;, Z&apos; coinciden con los del objeto local Y, Z, X, respectivamente.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>XY on plane</source>
         <comment>Attachment3D mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>XY en plano</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>X&apos; Y&apos; plane is aligned to coincide planar face.</source>
         <comment>Attachment3D mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>El plano X&apos; Y&apos; está alineado para coincidir con la cara plana.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>XY tangent to surface</source>
         <comment>Attachment3D mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>XY tangente a la superficie</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>X&apos; Y&apos; plane is made tangent to surface at vertex.</source>
         <comment>Attachment3D mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Plano X&apos; Y&apos; plano hecho tangente a la superficie en el vértice.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Z tangent to edge</source>
         <comment>Attachment3D mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Z tangente a la arista</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Z&apos; axis is aligned to be tangent to edge. Optional vertex link defines where.</source>
         <comment>Attachment3D mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>El eje Z&apos; eje se alinea para ser tangente a la arista. El enlace opcional de vértice define dónde.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Frenet NBT</source>
         <comment>Attachment3D mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Frenet NBT</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -799,91 +814,91 @@
         <location line="+3"/>
         <source>Align to Frenet-Serret coordinate system of curved edge. Optional vertex link defines where.</source>
         <comment>Attachment3D mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Align to Frenet-Serret coordinate system of curved edge. Optional vertex link defines where.</translation>
     </message>
     <message>
         <location line="-4"/>
         <source>Frenet TNB</source>
         <comment>Attachment3D mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Frenet TNB</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Frenet TBN</source>
         <comment>Attachment3D mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Frenet TBN</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Concentric</source>
         <comment>Attachment3D mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Concéntrico</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Align XY plane to osculating circle of an edge. Optional vertex link defines where.</source>
         <comment>Attachment3D mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Align XY plane to osculating circle of an edge. Optional vertex link defines where.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Revolution Section</source>
         <comment>Attachment3D mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Sección de revolución</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Align Y&apos; axis to match axis of osculating circle of an edge. Optional vertex link defines where.</source>
         <comment>Attachment3D mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Align Y&apos; axis to match axis of osculating circle of an edge. Optional vertex link defines where.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>XY plane by 3 points</source>
         <comment>Attachment3D mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Plano XY de 3 puntos</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Align XY plane to pass through three vertices.</source>
         <comment>Attachment3D mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Alinear plano para pasar a través de tres vértices.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>XZ plane by 3 points</source>
         <comment>Attachment3D mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Plano XZ de 3 puntos</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Align XZ plane to pass through 3 points; X axis will pass through two first points.</source>
         <comment>Attachment3D mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Alinear el plano XZ para pasar por 3 puntos; Eje X pasará a través de los dos primeros puntos.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Folding</source>
         <comment>Attachment3D mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>Plegado</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Specialty mode for folding polyhedra. Select 4 edges in order: foldable edge, fold line, other fold line, other foldable edge. XY plane will be aligned to folding the first edge.</source>
         <comment>Attachment3D mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Specialty mode for folding polyhedra. Select 4 edges in order: foldable edge, fold line, other fold line, other foldable edge. XY plane will be aligned to folding the first edge.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Inertial CS</source>
         <comment>Attachment3D mode caption</comment>
-        <translation type="unfinished"></translation>
+        <translation>SC inercial</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Inertial coordinate system, constructed on principal axes of inertia and center of mass.</source>
         <comment>Attachment3D mode tooltip</comment>
-        <translation type="unfinished"></translation>
+        <translation>Sistema de coordenadas inercial, construido sobre los ejes principales de inercia y centro de masa.</translation>
     </message>
 </context>
 <context>
@@ -1016,7 +1031,7 @@
 <context>
     <name>CmdCheckGeometry</name>
     <message>
-        <location filename="../../Command.cpp" line="+1981"/>
+        <location filename="../../Command.cpp" line="+1982"/>
         <source>Part</source>
         <translation>Pieza</translation>
     </message>
@@ -1182,7 +1197,7 @@
 <context>
     <name>CmdPartBox2</name>
     <message>
-        <location filename="../../Command.cpp" line="-1020"/>
+        <location filename="../../Command.cpp" line="-1021"/>
         <source>Part</source>
         <translation>Pieza</translation>
     </message>
@@ -1218,7 +1233,7 @@
 <context>
     <name>CmdPartBuilder</name>
     <message>
-        <location line="+1236"/>
+        <location line="+1237"/>
         <source>Part</source>
         <translation>Pieza</translation>
     </message>
@@ -1254,7 +1269,7 @@
 <context>
     <name>CmdPartCommon</name>
     <message>
-        <location line="-971"/>
+        <location line="-972"/>
         <source>Part</source>
         <translation>Pieza</translation>
     </message>
@@ -1290,19 +1305,19 @@
 <context>
     <name>CmdPartCompOffset</name>
     <message>
-        <location line="+1043"/>
+        <location line="+1044"/>
         <source>Part</source>
-        <translation type="unfinished">Pieza</translation>
+        <translation>Pieza</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Offset:</source>
-        <translation type="unfinished"></translation>
+        <translation>Desplazamiento:</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Tools to offset shapes (construct parallel shapes)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Tools to offset shapes (construct parallel shapes)</translation>
     </message>
 </context>
 <context>
@@ -1310,17 +1325,17 @@
     <message>
         <location line="-941"/>
         <source>Part</source>
-        <translation type="unfinished">Pieza</translation>
+        <translation>Pieza</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Split objects...</source>
-        <translation type="unfinished"></translation>
+        <translation>Partir objetos...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Shape splitting tools. Compsolid creation tools. OCC 6.9.0 or later is required.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Shape splitting tools. Compsolid creation tools. OCC 6.9.0 or later is required.</translation>
     </message>
 </context>
 <context>
@@ -1382,7 +1397,7 @@
 <context>
     <name>CmdPartCut</name>
     <message>
-        <location line="-1105"/>
+        <location line="-1106"/>
         <source>Part</source>
         <translation>Pieza</translation>
     </message>
@@ -1420,7 +1435,7 @@
 <context>
     <name>CmdPartExport</name>
     <message>
-        <location filename="../../Command.cpp" line="+653"/>
+        <location filename="../../Command.cpp" line="+654"/>
         <source>Part</source>
         <translation>Pieza</translation>
     </message>
@@ -1474,7 +1489,7 @@
 <context>
     <name>CmdPartFuse</name>
     <message>
-        <location line="-841"/>
+        <location line="-842"/>
         <source>Part</source>
         <translation>Pieza</translation>
     </message>
@@ -1492,7 +1507,7 @@
 <context>
     <name>CmdPartImport</name>
     <message>
-        <location line="+413"/>
+        <location line="+414"/>
         <source>Part</source>
         <translation>Pieza</translation>
     </message>
@@ -1557,12 +1572,12 @@
     <message>
         <location line="+1"/>
         <source>Make face from wires</source>
-        <translation type="unfinished"></translation>
+        <translation>Crear cara a partir de alambres</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Part_MakeFace: Make face from set of wires (e.g., from a sketch).</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Part_MakeFace: Make face from set of wires (e.g., from a sketch).</translation>
     </message>
     <message>
         <source>Make face from sketch</source>
@@ -1619,12 +1634,12 @@
     <message>
         <location line="+1"/>
         <source>3D Offset...</source>
-        <translation type="unfinished"></translation>
+        <translation>Desplazamiento 3D...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Part_Offset: Utility to offset in 3D</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Part_Offset: Utility to offset in 3D</translation>
     </message>
     <message>
         <source>Offset...</source>
@@ -1640,23 +1655,23 @@
     <message>
         <location line="+48"/>
         <source>Part</source>
-        <translation type="unfinished">Pieza</translation>
+        <translation>Pieza</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>2D Offset...</source>
-        <translation type="unfinished"></translation>
+        <translation>Desplazamiento 2D...</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Part_Offset2D: Utility to offset planar shapes</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Part_Offset2D: Utility to offset planar shapes</translation>
     </message>
 </context>
 <context>
     <name>CmdPartPickCurveNet</name>
     <message>
-        <location line="-1464"/>
+        <location line="-1465"/>
         <source>Part</source>
         <translation>Pieza</translation>
     </message>
@@ -1710,7 +1725,7 @@
 <context>
     <name>CmdPartReverseShape</name>
     <message>
-        <location filename="../../Command.cpp" line="+880"/>
+        <location filename="../../Command.cpp" line="+881"/>
         <source>Part</source>
         <translation>Pieza</translation>
     </message>
@@ -1963,82 +1978,82 @@
     <message>
         <location filename="../../../AttachmentEditor/TaskAttachmentEditor.ui" line="+14"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Formulario</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Selection accepted</source>
-        <translation type="unfinished"></translation>
+        <translation>Selección aceptada</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Reference 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Referencia 1</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Reference 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Referencia 2</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Reference 3</source>
-        <translation type="unfinished"></translation>
+        <translation>Referencia 3</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Reference 4</source>
-        <translation type="unfinished"></translation>
+        <translation>Referencia 4</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Attachment mode:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Attachment mode:</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Mirror of superPlacement property. Extra placement is expressed in local space of object being attached.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mirror of superPlacement property. Extra placement is expressed in local space of object being attached.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Extra placement:</source>
-        <translation type="unfinished"></translation>
+        <translation>Colocación adicional:</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>X:</source>
-        <translation type="unfinished">X:</translation>
+        <translation>X:</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Y:</source>
-        <translation type="unfinished">Y:</translation>
+        <translation>Y:</translation>
     </message>
     <message>
         <location line="+29"/>
         <source>Z:</source>
-        <translation type="unfinished">Z:</translation>
+        <translation>Z:</translation>
     </message>
     <message>
         <location line="+29"/>
         <source>Yaw:</source>
-        <translation type="unfinished"></translation>
+        <translation>Del desvío:</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Pitch:</source>
-        <translation type="unfinished">Paso:</translation>
+        <translation>Paso:</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Roll:</source>
-        <translation type="unfinished"></translation>
+        <translation>Lanzar:</translation>
     </message>
     <message>
         <location line="+92"/>
         <source>Flip sides</source>
-        <translation type="unfinished"></translation>
+        <translation>Voltear caras</translation>
     </message>
 </context>
 <context>
@@ -2229,27 +2244,27 @@
     <message>
         <location line="+6"/>
         <source>If checked, direction of extrusion is reversed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Si está marcada, se invierte la dirección de extrusión.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Reversed</source>
-        <translation type="unfinished"></translation>
+        <translation>Invertido</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Specify direction manually using X,Y,Z values.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Specify direction manually using X,Y,Z values.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Custom direction:</source>
-        <translation type="unfinished"></translation>
+        <translation>Dirección personalizada:</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Extrude perpendicularly to plane of input shape.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Extrude perpendicularly to plane of input shape.</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -2281,69 +2296,69 @@
     <message>
         <location line="-211"/>
         <source>Click to start selecting an edge in 3d view.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Click to start selecting an edge in 3d view.</translation>
     </message>
     <message>
         <location line="+3"/>
         <location filename="../../DlgExtrusion.cpp" line="+198"/>
         <source>Select</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleccionar</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Set direction to match a direction of straight edge. Hint: to account for length of the edge too, set both lengths to zero.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Set direction to match a direction of straight edge. Hint: to account for length of the edge too, set both lengths to zero.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Along edge:</source>
-        <translation type="unfinished"></translation>
+        <translation>A lo largo de la arista:</translation>
     </message>
     <message>
         <location line="+98"/>
         <source>Length</source>
-        <translation type="unfinished">Longitud</translation>
+        <translation>Longitud</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Along:</source>
-        <translation type="unfinished"></translation>
+        <translation>A lo largo de:</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Length to extrude along direction (can be negative). If both lengths are zero, magnitude of direction is used.</source>
-        <translation type="unfinished"></translation>
+        <translation>Longitud de extrusión a lo largo de la dirección (puede ser negativa). Si ambas son cero, se utiliza la magnitud de la dirección.</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Against:</source>
-        <translation type="unfinished"></translation>
+        <translation>En contra:</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Length to extrude against direction (can be negative).</source>
-        <translation type="unfinished"></translation>
+        <translation>Longitud de extrusión contra dirección (puede ser negativa).</translation>
     </message>
     <message>
         <location line="+19"/>
         <source>Distribute extrusion length equally to both sides.</source>
-        <translation type="unfinished"></translation>
+        <translation>Distribución de la longitud de extrusión a ambos lados equivalentemente.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Symmetric</source>
-        <translation type="unfinished"></translation>
+        <translation>Simétrico</translation>
     </message>
     <message>
         <location line="+25"/>
         <location line="+25"/>
         <source>Apply slope (draft) to extrusion side faces.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Apply slope (draft) to extrusion side faces.</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>If checked, extruding closed wires will give solids, not shells.</source>
-        <translation type="unfinished"></translation>
+        <translation>Si está marcada, la extrusión de alambres cerrados dará sólidos, no caparazones.</translation>
     </message>
     <message>
         <location line="+33"/>
@@ -2376,7 +2391,7 @@
     <message>
         <location filename="../../DlgExtrusion.cpp" line="-26"/>
         <source>Selecting...</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleccionar...</translation>
     </message>
     <message>
         <location line="+241"/>
@@ -2389,46 +2404,52 @@
         <source>Creating Extrusion failed.
 
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Falló en la creación de extrusión. 
+
+%1</translation>
     </message>
     <message>
         <location line="+67"/>
         <source>Object not found: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Objeto no encontrado: %1</translation>
     </message>
     <message>
         <location line="+62"/>
         <source>No shapes selected for extrusion. Select some, first.</source>
-        <translation type="unfinished"></translation>
+        <translation>No hay formas seleccionadas para extrusión. Seleccione algunas, primero.</translation>
     </message>
     <message>
         <location line="+21"/>
         <source>Revolution axis link is invalid.
 
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Revolution axis link is invalid.
+
+%1</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Direction mode is to use an edge, but no edge is linked.</source>
-        <translation type="unfinished"></translation>
+        <translation>El modo de dirección debe utilizar una arista, pero la arista no está vinculada.</translation>
     </message>
     <message>
         <location line="+23"/>
         <source>Can&apos;t determine normal vector of shape to be extruded. Please use other mode. 
 
 (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>No se puede determinar el vector normal de la forma para ser extruido. Por favor utilice otro modo. 
+
+ (%1)</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Extrusion direction is zero-length. It must be non-zero.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Extrusion direction is zero-length. It must be non-zero.</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Total extrusion length is zero (length1 == -length2). It must be nonzero.</source>
-        <translation type="unfinished"></translation>
+        <translation>Longitud total de extrusión es cero (length1 == - length2). Esta debe ser distinta de cero.</translation>
     </message>
     <message>
         <source>Succeeded</source>
@@ -2720,7 +2741,7 @@ Please select a valid shape in the drop-down box first.</source>
     <message>
         <location line="+26"/>
         <source>Write out curves in parametric space of surface</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Write out curves in parametric space of surface</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -3395,66 +3416,70 @@ Please select a valid shape in the drop-down box first.</source>
         <translation>Girar</translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>If checked, revolving wires will produce solids. If not, revolving a wire yeilds a shell.</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Si está marcada, al girar los alambres se producirán sólidos. Si no, al girar un alambre se obtendrá un caparazón.</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>If checked, revolving wires will produce solids. If not, revolving a wire yields a shell.</source>
+        <translation>Si está marcada, al girar los alambres se producirán sólidos. Si no, al girar un alambre se obtendrá un caparazón.</translation>
     </message>
     <message>
         <location line="+79"/>
         <source>Revolution axis</source>
-        <translation type="unfinished"></translation>
+        <translation>Eje de revolución</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Center X:</source>
-        <translation type="unfinished"></translation>
+        <translation>Centro X:</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Center Y:</source>
-        <translation type="unfinished"></translation>
+        <translation>Centro Y:</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Center Z:</source>
-        <translation type="unfinished"></translation>
+        <translation>Centro Z:</translation>
     </message>
     <message>
         <location line="+42"/>
         <location line="+41"/>
         <source>Click to set this as axis</source>
-        <translation type="unfinished"></translation>
+        <translation>Haga clic para definirlo como eje</translation>
     </message>
     <message>
         <location line="-38"/>
         <source>Dir. X:</source>
-        <translation type="unfinished"></translation>
+        <translation>Dir. X:</translation>
     </message>
     <message>
         <location line="+41"/>
         <source>Dir. Y:</source>
-        <translation type="unfinished"></translation>
+        <translation>Dir. Y:</translation>
     </message>
     <message>
         <location line="+38"/>
         <source>Dir. Z:</source>
-        <translation type="unfinished"></translation>
+        <translation>Dir. Z:</translation>
     </message>
     <message>
         <location line="+22"/>
         <location filename="../../DlgRevolution.cpp" line="+440"/>
         <source>Select reference</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleccionar referencia</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>If checked, revolution will extend forwards and backwards by half the angle.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">If checked, revolution will extend forwards and backwards by half the angle.</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Symmetric angle</source>
-        <translation type="unfinished"></translation>
+        <translation>Ángulo simétrico</translation>
     </message>
     <message>
         <source>Y:</source>
@@ -3494,7 +3519,7 @@ Please select a valid shape in the drop-down box first.</source>
     <message>
         <location filename="../../DlgRevolution.cpp" line="-268"/>
         <source>Object not found: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Objeto no encontrado: %1</translation>
     </message>
     <message>
         <location line="+81"/>
@@ -3508,17 +3533,19 @@ Please select a valid shape in the drop-down box first.</source>
         <source>Revolution axis link is invalid.
 
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Revolution axis link is invalid.
+
+%1</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Revolution axis direction is zero-length. It must be non-zero.</source>
-        <translation type="unfinished"></translation>
+        <translation>Dirección del eje de revolución de longitud cero. Debe ser distinta de cero.</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>Revolution angle span is zero. It must be non-zero.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Revolution angle span is zero. It must be non-zero.</translation>
     </message>
     <message>
         <location line="+122"/>
@@ -3526,12 +3553,14 @@ Please select a valid shape in the drop-down box first.</source>
         <source>Creating Revolve failed.
 
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Creación de revolución fallida. 
+
+%1</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Selecting... (line or arc)</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleccionar... (línea o arco)</translation>
     </message>
 </context>
 <context>
@@ -4077,159 +4106,160 @@ Please select a valid shape in the drop-down box first.</source>
     <message>
         <location filename="../../TaskAttacher.ui" line="+14"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Formulario</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Selection accepted</source>
-        <translation type="unfinished"></translation>
+        <translation>Selección aceptada</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Reference 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Referencia 1</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Reference 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Referencia 2</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Reference 3</source>
-        <translation type="unfinished"></translation>
+        <translation>Referencia 3</translation>
     </message>
     <message>
         <location line="+17"/>
         <source>Reference 4</source>
-        <translation type="unfinished"></translation>
+        <translation>Referencia 4</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Attachment mode:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Attachment mode:</translation>
     </message>
     <message>
         <location line="+20"/>
         <source>Mirror of superPlacement property. Extra placement is expressed in local space of object being attached.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Mirror of superPlacement property. Extra placement is expressed in local space of object being attached.</translation>
     </message>
     <message>
         <location line="+3"/>
         <location filename="../../TaskAttacher.cpp" line="+297"/>
         <source>Extra placement:</source>
-        <translation type="unfinished"></translation>
+        <translation>Colocación adicional:</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>X:</source>
-        <translation type="unfinished">X:</translation>
+        <translation>X:</translation>
     </message>
     <message>
         <location line="+16"/>
         <source>Y:</source>
-        <translation type="unfinished">Y:</translation>
+        <translation>Y:</translation>
     </message>
     <message>
         <location line="+29"/>
         <source>Z:</source>
-        <translation type="unfinished">Z:</translation>
+        <translation>Z:</translation>
     </message>
     <message>
         <location line="+29"/>
         <source>Yaw:</source>
-        <translation type="unfinished"></translation>
+        <translation>Del desvío:</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Pitch:</source>
-        <translation type="unfinished">Paso:</translation>
+        <translation>Paso:</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Roll:</source>
-        <translation type="unfinished"></translation>
+        <translation>Lanzar:</translation>
     </message>
     <message>
         <location line="+92"/>
         <source>Flip sides</source>
-        <translation type="unfinished"></translation>
+        <translation>Voltear caras</translation>
     </message>
     <message>
         <location filename="../../TaskAttacher.cpp" line="-17"/>
         <source>OCC error: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Error OCC: %1</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>unknown error</source>
-        <translation type="unfinished"></translation>
+        <translation>error desconocido</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Attachment mode failed: %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Attachment mode failed: %1</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>No adjuntado</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Attached with mode %1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Attached with mode %1</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Extra placement (inactive - not attached):</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Extra placement (inactive - not attached):</translation>
     </message>
     <message>
         <location line="+272"/>
         <source>Face</source>
-        <translation type="unfinished">Cara</translation>
+        <translation>Cara</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Edge</source>
-        <translation type="unfinished">Arista</translation>
+        <translation>Arista</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Vertex</source>
-        <translation type="unfinished">Vértice</translation>
+        <translation>Vértice</translation>
     </message>
     <message>
         <location line="+58"/>
         <source>Selecting...</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleccionar...</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Reference%1</source>
-        <translation type="unfinished"></translation>
+        <translation>Referencia%1</translation>
     </message>
     <message>
         <location line="+43"/>
         <source>Not editable because rotation part of superplacement is bound by expressions.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Not editable because rotation part of superplacement is bound by expressions.</translation>
     </message>
     <message>
         <location line="+55"/>
         <source>Reference combinations:
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Combinaciones de referencia:
+</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>%1 (add %2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (Añadir %2)</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>%1 (add more references)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (añadir más referencias)</translation>
     </message>
 </context>
 <context>
@@ -4416,7 +4446,7 @@ Please select a valid shape in the drop-down box first.</source>
     <message>
         <location filename="../../TaskAttacher.cpp" line="+200"/>
         <source>Datum dialog: Input error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Datum dialog: Input error</translation>
     </message>
 </context>
 <context>
@@ -4689,64 +4719,64 @@ in the 3D view for the sweep path.</source>
     <message>
         <location filename="../../../App/FaceMaker.cpp" line="+172"/>
         <source>Simple</source>
-        <translation type="unfinished"></translation>
+        <translation>Simple</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Makes separate plane face from every wire independently. No support for holes; wires can be on different planes.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Makes separate plane face from every wire independently. No support for holes; wires can be on different planes.</translation>
     </message>
     <message>
         <location filename="../../../App/FaceMakerBullseye.cpp" line="+69"/>
         <source>Bull&apos;s-eye facemaker</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Bull&apos;s-eye facemaker</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Supports making planar faces with holes with islands.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Supports making planar faces with holes with islands.</translation>
     </message>
     <message>
         <location filename="../../../App/FaceMakerCheese.cpp" line="+248"/>
         <source>Cheese facemaker</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cheese facemaker</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Supports making planar faces with holes, but no islands inside holes.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Supports making planar faces with holes, but no islands inside holes.</translation>
     </message>
     <message>
         <location filename="../../../App/FeatureExtrusion.cpp" line="+507"/>
         <source>Part Extrude facemaker</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Part Extrude facemaker</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Supports making faces with holes, does not support nesting.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Supports making faces with holes, does not support nesting.</translation>
     </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../Command.cpp" line="-1443"/>
+        <location filename="../../Command.cpp" line="-1444"/>
         <location line="+97"/>
         <location line="+102"/>
-        <location line="+298"/>
+        <location line="+299"/>
         <location line="+51"/>
         <location line="+1121"/>
         <source>Wrong selection</source>
         <translation>Selección incorrecta</translation>
     </message>
     <message>
-        <location line="-1668"/>
-        <location line="+548"/>
+        <location line="-1669"/>
+        <location line="+549"/>
         <source>Select two shapes please.</source>
         <translation>Seleccione dos formas por favor.</translation>
     </message>
     <message>
-        <location line="-538"/>
+        <location line="-539"/>
         <location line="+102"/>
         <location line="+102"/>
         <source>Non-solids selected</source>
@@ -4764,15 +4794,15 @@ Do you want to continue?</source>
     <message>
         <location line="-118"/>
         <source>Select two shapes or more, please. Or, select one compound containing two or more shapes to compute common between.</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleccione dos o más formas, por favor. O bien, seleccione un compuesto que contiene dos o más formas para calcular el común entre ellas.</translation>
     </message>
     <message>
         <location line="+102"/>
         <source>Select two shapes or more, please. Or, select one compound containing two or more shapes to be fused.</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleccione dos formas o más, por favor. O bien, seleccione un compuesto que contiene dos o más formas para ser fusionado.</translation>
     </message>
     <message>
-        <location line="+298"/>
+        <location line="+299"/>
         <source>Select one shape or more, please.</source>
         <translation>Seleccione una o más formas, por favor.</translation>
     </message>
@@ -4831,7 +4861,7 @@ Do you want to continue?</source>
         <translation type="obsolete">Transformar</translation>
     </message>
     <message>
-        <location filename="../../AppPartGui.cpp" line="+194"/>
+        <location filename="../../AppPartGui.cpp" line="+201"/>
         <location line="+1"/>
         <source>Part design</source>
         <translation>Diseño de piezas</translation>
@@ -4872,7 +4902,7 @@ Do you want to continue?</source>
         <translation>Editar aristas redondeadas</translation>
     </message>
     <message>
-        <location filename="../../ViewProviderExt.cpp" line="+825"/>
+        <location filename="../../ViewProviderExt.cpp" line="+840"/>
         <source>Set colors...</source>
         <translation>Ajustar colores...</translation>
     </message>
@@ -4911,7 +4941,7 @@ Do you want to continue?</source>
         <location filename="../../TaskAttacher.cpp" line="-9"/>
         <location line="+33"/>
         <source>No reference selected</source>
-        <translation type="unfinished"></translation>
+        <translation>Ninguna referencia seleccionada</translation>
     </message>
     <message>
         <location line="-21"/>
@@ -5163,7 +5193,7 @@ Do you want to continue?</source>
     <message>
         <location line="+1"/>
         <source>BOPAlgo_InvalidCurveOnSurface</source>
-        <translation type="unfinished"></translation>
+        <translation>BOPAlgo_InvalidCurveOnSurface</translation>
     </message>
     <message>
         <location line="+1"/>

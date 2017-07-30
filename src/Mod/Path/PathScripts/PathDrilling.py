@@ -22,12 +22,26 @@
 # *                                                                         *
 # ***************************************************************************
 
+from __future__ import print_function
+import sys
 import FreeCAD
 import Path
-import Part
+import PathScripts.PathLog as PathLog
 from PySide import QtCore, QtGui
 from PathScripts import PathUtils
-from PathScripts.PathUtils import fmt
+from PathScripts.PathUtils import fmt, waiting_effects
+import ArchPanel
+
+
+# xrange is not available in python3
+if sys.version_info.major >= 3:
+    xrange = range
+
+if False:
+    PathLog.setLevel(PathLog.Level.DEBUG, PathLog.thisModule())
+    PathLog.trackModule(PathLog.thisModule())
+else:
+    PathLog.setLevel(PathLog.Level.INFO, PathLog.thisModule())
 
 FreeCADGui = None
 if FreeCAD.GuiUp:
@@ -36,40 +50,51 @@ if FreeCAD.GuiUp:
 """Path Drilling object and FreeCAD command"""
 
 # Qt tanslation handling
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-
-    def translate(context, text, disambig=None):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def translate(context, text, disambig=None):
-        return QtGui.QApplication.translate(context, text, disambig)
+def translate(context, text, disambig=None):
+    return QtCore.QCoreApplication.translate(context, text, disambig)
 
 
 class ObjectDrilling:
 
     def __init__(self, obj):
-        obj.addProperty("App::PropertyLinkSubList", "Base","Path", QtCore.QT_TRANSLATE_NOOP("App::Property","The base geometry of this toolpath"))
-        obj.addProperty("App::PropertyBool", "Active", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property","Make False, to prevent operation from generating code"))
-        obj.addProperty("App::PropertyString", "Comment", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property","An optional comment for this profile"))
-        obj.addProperty("App::PropertyString", "UserLabel", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property","User Assigned Label"))
+        # Properties of the holes
+        obj.addProperty("App::PropertyStringList", "Names", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property", "Names of the holes"))
+        obj.addProperty("App::PropertyVectorList", "Positions", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property", "Locations of insterted holes"))
+        obj.addProperty("App::PropertyIntegerList", "Enabled", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property", "Enable/disable status of the holes"))
+        obj.addProperty("App::PropertyFloatList", "Diameters", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property", "Diameters of the holes"))
 
-        obj.addProperty("App::PropertyLength", "PeckDepth", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property","Incremental Drill depth before retracting to clear chips"))
-        obj.addProperty("App::PropertyLength", "StartDepth", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property","Starting Depth of Tool- first cut depth in Z"))
-        obj.addProperty("App::PropertyDistance", "ClearanceHeight", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property","The height needed to clear clamps and obstructions"))
-        obj.addProperty("App::PropertyDistance", "FinalDepth", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property","Final Depth of Tool- lowest value in Z"))
-        obj.addProperty("App::PropertyDistance", "SafeHeight", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property","Height to clear top of materil"))
-        obj.addProperty("App::PropertyDistance", "RetractHeight", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property","The height where feed starts and height during retract tool when path is finished"))
-        obj.addProperty("App::PropertyFloat", "DwellTime", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property","The time to dwell between peck cycles"))
+        # General Properties
+        obj.addProperty("App::PropertyBool", "Active", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property", "Make False, to prevent operation from generating code"))
+        obj.addProperty("App::PropertyString", "Comment", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property", "An optional comment for this profile"))
+        obj.addProperty("App::PropertyString", "UserLabel", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property", "User Assigned Label"))
+
+        # Drilling Properties
+        obj.addProperty("App::PropertyLength", "PeckDepth", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property", "Incremental Drill depth before retracting to clear chips"))
+        obj.addProperty("App::PropertyBool", "PeckEnabled", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property", "Enable pecking"))
+        obj.addProperty("App::PropertyLength", "StartDepth", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property", "Starting Depth of Tool- first cut depth in Z"))
+        obj.addProperty("App::PropertyFloat", "DwellTime", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property", "The time to dwell between peck cycles"))
+        obj.addProperty("App::PropertyBool", "DwellEnabled", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property", "Enable dwell"))
+        obj.addProperty("App::PropertyBool", "AddTipLength", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property", "Calculate the tip length and subtract from final depth"))
+        obj.addProperty("App::PropertyEnumeration", "ReturnLevel", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property", "Controls how tool retracts Default=G98"))
+        obj.ReturnLevel = ['G98', 'G99']  # this is the direction that the Contour runs
+
+        # Heights & Depths
+        obj.addProperty("App::PropertyDistance", "ClearanceHeight", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property", "The height needed to clear clamps and obstructions"))
+        obj.addProperty("App::PropertyDistance", "FinalDepth", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property", "Final Depth of Tool- lowest value in Z"))
+        obj.addProperty("App::PropertyDistance", "SafeHeight", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property", "Height to clear top of material"))
+        obj.addProperty("App::PropertyDistance", "RetractHeight", "Depth", QtCore.QT_TRANSLATE_NOOP("App::Property", "The height where feed starts and height during retract tool when path is finished"))
+
         # Tool Properties
-        obj.addProperty("App::PropertyIntegerConstraint", "ToolNumber", "Tool", QtCore.QT_TRANSLATE_NOOP("App::Property","The tool number in use"))
-        obj.ToolNumber = (0, 0, 1000, 1)
-        obj.setEditorMode('ToolNumber', 1)  # make this read only
-        obj.addProperty("App::PropertyString", "ToolDescription", "Tool", QtCore.QT_TRANSLATE_NOOP("App::Property","The description of the tool "))
-        obj.setEditorMode('ToolDescription', 1) # make this read onlyt
+        obj.addProperty("App::PropertyLink", "ToolController", "Path", QtCore.QT_TRANSLATE_NOOP("App::Property", "The tool controller that will be used to calculate the path"))
 
+        if FreeCAD.GuiUp:
+            _ViewProviderDrill(obj.ViewObject)
 
         obj.Proxy = self
+        self.vertFeed = 0.0
+        self.horizFeed = 0.0
+        self.vertRapid = 0.0
+        self.horizRapid = 0.0
 
     def __getstate__(self):
         return None
@@ -78,235 +103,182 @@ class ObjectDrilling:
         return None
 
     def onChanged(self, obj, prop):
-        if prop == "UserLabel":
-            obj.Label = obj.UserLabel + " :" + obj.ToolDescription
+        pass
 
+    @waiting_effects
     def execute(self, obj):
+        PathLog.track()
+
+        if not obj.Active:
+            path = Path.Path("(inactive operation)")
+            obj.Path = path
+            obj.ViewObject.Visibility = False
+            return
+
         output = ""
         if obj.Comment != "":
             output += '(' + str(obj.Comment)+')\n'
 
-        toolLoad = PathUtils.getLastToolLoad(obj)
+        toolLoad = obj.ToolController
         if toolLoad is None or toolLoad.ToolNumber == 0:
-            self.vertFeed = 100
-            self.horizFeed = 100
-            self.vertRapid = 100
-            self.horizRapid = 100
-            self.radius = 0.25
-            obj.ToolNumber = 0
-            obj.ToolDescription = "UNDEFINED"
+            FreeCAD.Console.PrintError("No Tool Controller is selected. We need a tool to build a Path.")
+            return
         else:
             self.vertFeed = toolLoad.VertFeed.Value
             self.horizFeed = toolLoad.HorizFeed.Value
             self.vertRapid = toolLoad.VertRapid.Value
             self.horizRapid = toolLoad.HorizRapid.Value
-            tool = PathUtils.getTool(obj, toolLoad.ToolNumber)
-            if tool.Diameter == 0:
-                self.radius = 0.25
+            tool = toolLoad.Proxy.getTool(toolLoad)
+            if not tool or tool.Diameter == 0:
+                FreeCAD.Console.PrintError("No Tool found or diameter is zero. We need a tool to build a Path.")
+                return
             else:
                 self.radius = tool.Diameter/2
-            obj.ToolNumber = toolLoad.ToolNumber
-            obj.ToolDescription = toolLoad.Name
 
-        if obj.UserLabel == "":
-            obj.Label = obj.Name + " :" + obj.ToolDescription
-        else:
-            obj.Label = obj.UserLabel + " :" + obj.ToolDescription
+        tiplength = 0.0
+        if obj.AddTipLength:
+            tiplength = PathUtils.drillTipLength(tool)
+
+        if len(obj.Names) == 0:
+            parentJob = PathUtils.findParentJob(obj)
+            if parentJob is None:
+                return
+            baseobject = parentJob.Base
+            if baseobject is None:
+                return
+
+            # Arch PanelSheet
+            if hasattr(baseobject, "Proxy"):
+                holes = []
+                if isinstance(baseobject.Proxy, ArchPanel.PanelSheet):
+                    baseobject.Proxy.execute(baseobject)
+                    i = 0
+                    holeshapes = baseobject.Proxy.getHoles(baseobject, transform=True)
+                    tooldiameter = obj.ToolController.Proxy.getTool(obj.ToolController).Diameter
+                    for holeshape in holeshapes:
+                        PathLog.debug('Entering new HoleShape')
+                        for wire in holeshape.Wires:
+                            PathLog.debug('Entering new Wire')
+                            for edge in wire.Edges:
+                                if PathUtils.isDrillable(baseobject, edge, tooldiameter):
+                                    PathLog.debug('Found drillable hole edges: {}'.format(edge))
+                                    x = edge.Curve.Center.x
+                                    y = edge.Curve.Center.y
+                                    diameter = edge.BoundBox.XLength
+                                    holes.append({'x': x, 'y': y, 'featureName': baseobject.Name+'.'+'Drill'+str(i), 'd': diameter})
+                                    i = i + 1
+            else:
+                holes = self.findHoles(obj, baseobject.Shape)
+                for i in range(len(holes)):
+                    holes[i]['featureName'] = baseobject.Name + '.' + holes[i]['featureName']
+            names = []
+            positions = []
+            enabled = []
+            diameters = []
+            for h in holes:
+                if len(names) == 0:
+                    self.setDepths(obj, baseobject, h)
+                names.append(h['featureName'])
+                positions.append(FreeCAD.Vector(h['x'], h['y'], 0))
+                enabled.append(1)
+                diameters.append(h['d'])
+            obj.Names = names
+            obj.Positions = positions
+            obj.Enabled = enabled
+            obj.Diameters = diameters
 
         locations = []
         output = "(Begin Drilling)\n"
-        if obj.Base:
-            for loc in obj.Base:
-                #print loc
-                for sub in loc[1]:
-                    #locations.append(self._findDrillingVector(loc))
 
-                    if "Face" in sub or "Edge" in sub:
-                        s = getattr(loc[0].Shape, sub)
-                    else:
-                        s = loc[0].Shape
-
-                    if s.ShapeType in ['Wire', 'Edge']:
-                        X = s.Edges[0].Curve.Center.x
-                        Y = s.Edges[0].Curve.Center.y
-                        Z = s.Edges[0].Curve.Center.z
-                    elif s.ShapeType in ['Vertex']:
-                        X = s.Point.x
-                        Y = s.Point.y
-                        Z = s.Point.z
-                    elif s.ShapeType in ['Face']:
-                        #if abs(s.normalAt(0, 0).z) == 1:  # horizontal face
-                        X = s.CenterOfMass.x
-                        Y = s.CenterOfMass.y
-                        Z = s.CenterOfMass.z
-                    locations.append(FreeCAD.Vector(X, Y, Z))
-
-
-            output += "G90 G98\n"
+        for i in range(len(obj.Names)):
+            if obj.Enabled[i] > 0:
+                locations.append({'x': obj.Positions[i].x, 'y': obj.Positions[i].y})
+        if len(locations) > 0:
+            locations = PathUtils.sort_jobs(locations, ['x', 'y'])
+            output += "G90 " + obj.ReturnLevel + "\n"
             # rapid to clearance height
             output += "G0 Z" + str(obj.ClearanceHeight.Value) + "F " + PathUtils.fmt(self.vertRapid) + "\n"
             # rapid to first hole location, with spindle still retracted:
+
             p0 = locations[0]
-            output += "G0 X" + fmt(p0.x) + " Y" + fmt(p0.y)  + "F " + PathUtils.fmt(self.horizRapid) + "\n"
+            output += "G0 X" + fmt(p0['x']) + " Y" + fmt(p0['y']) + "F " + PathUtils.fmt(self.horizRapid) + "\n"
             # move tool to clearance plane
-            output += "G0 Z" + fmt(obj.ClearanceHeight.Value)  + "F " + PathUtils.fmt(self.vertRapid) + "\n"
+            output += "G0 Z" + fmt(obj.ClearanceHeight.Value) + "F " + PathUtils.fmt(self.vertRapid) + "\n"
             pword = ""
             qword = ""
-            if obj.PeckDepth.Value > 0:
+            if obj.PeckDepth.Value > 0 and obj.PeckEnabled:
                 cmd = "G83"
                 qword = " Q" + fmt(obj.PeckDepth.Value)
-            elif obj.DwellTime > 0:
+            elif obj.DwellTime > 0 and obj.DwellEnabled:
                 cmd = "G82"
                 pword = " P" + fmt(obj.DwellTime)
             else:
                 cmd = "G81"
             for p in locations:
                 output += cmd + \
-                    " X" + fmt(p.x) + \
-                    " Y" + fmt(p.y) + \
-                    " Z" + fmt(obj.FinalDepth.Value) + qword + pword + \
+                    " X" + fmt(p['x']) + \
+                    " Y" + fmt(p['y']) + \
+                    " Z" + fmt(obj.FinalDepth.Value - tiplength) + qword + pword + \
                     " R" + str(obj.RetractHeight.Value) + \
                     " F" + str(self.vertFeed) + "\n" \
 
             output += "G80\n"
 
-#         path = Path.Path(output)
-#         obj.Path = path
+        path = Path.Path(output)
+        obj.Path = path
 
-        if obj.Active:
-            path = Path.Path(output)
-            obj.Path = path
-            obj.ViewObject.Visibility = True
+    def setDepths(self, obj, bobj, hole):
+        try:
+            bb = bobj.Shape.BoundBox
+            subobj = hole['feature']
+            fbb = subobj.BoundBox
+            obj.StartDepth = bb.ZMax
+            obj.ClearanceHeight = bb.ZMax + 5.0
+            obj.SafeHeight = bb.ZMax + 3.0
+            obj.RetractHeight = bb.ZMax + 1.0
 
+            if fbb.ZMax < bb.ZMax:
+                obj.FinalDepth = fbb.ZMax
+            else:
+                obj.FinalDepth = bb.ZMin
+        except:
+            obj.StartDepth = 5.0
+            obj.ClearanceHeight = 10.0
+            obj.SafeHeight = 8.0
+            obj.RetractHeight = 6.0
+
+    def findHoles(self, obj, shape):
+        import DraftGeomUtils as dgu
+        PathLog.track('obj: {} shape: {}'.format(obj, shape))
+        holelist = []
+        # tooldiameter = obj.ToolController.Proxy.getTool(obj.ToolController).Diameter
+        tooldiameter = None
+        PathLog.debug('search for holes larger than tooldiameter: {}: '.format(tooldiameter))
+        if dgu.isPlanar(shape):
+            PathLog.debug("shape is planar")
+            for i in range(len(shape.Edges)):
+                candidateEdgeName = "Edge" + str(i + 1)
+                e = shape.getElement(candidateEdgeName)
+                if PathUtils.isDrillable(shape, e, tooldiameter):
+                    PathLog.debug('edge candidate: {} (hash {})is drillable '.format(e, e.hashCode()))
+                    x = e.Curve.Center.x
+                    y = e.Curve.Center.y
+                    diameter = e.BoundBox.XLength
+                    holelist.append({'featureName': candidateEdgeName, 'feature': e, 'x': x, 'y': y, 'd': diameter, 'enabled': True})
         else:
-            path = Path.Path("(inactive operation)")
-            obj.Path = path
-            obj.ViewObject.Visibility = False
+            PathLog.debug("shape is not planar")
+            for i in range(len(shape.Faces)):
+                candidateFaceName = "Face" + str(i + 1)
+                f = shape.getElement(candidateFaceName)
+                if PathUtils.isDrillable(shape, f, tooldiameter):
+                    PathLog.debug('face candidate: {} is drillable '.format(f))
+                    x = f.Surface.Center.x
+                    y = f.Surface.Center.y
+                    diameter = f.BoundBox.XLength
+                    holelist.append({'featureName': candidateFaceName, 'feature': f, 'x': x, 'y': y, 'd': diameter, 'enabled': True})
 
-
-
-    def checkdrillable(self, obj, sub):
-        drillable = False
-        if obj.ShapeType == 'Vertex':
-                drillable = True
-        elif obj.ShapeType in['Solid', 'Compound']:
-            if sub[0:4] == 'Face':
-                subobj = obj.getElement(sub)
-                if isinstance(subobj.Edges[0].Curve, Part.Circle):
-                    drillable = True
-                if str(subobj.Surface) == "<Cylinder object>":
-                    drillable = subobj.isClosed()
-                if len(subobj.Edges) == 3:
-                    cedge = []
-                    ledge = []
-                    for e in subobj.Edges:
-                        if isinstance (e.Curve, Part.Circle):
-                            cedge.append(e)
-                        elif isinstance (e.Curve, Part.LineSegment):
-                            ledge.append(e)
-                    if len(cedge) == 2 and len(ledge) == 1:
-                        drillable = True
-                    else:
-                #if len(subobj.Edges[0].Vertexes) > 1:
-                        drillable = False
-            if sub[0:4] == 'Edge':
-                o = obj.getElement(sub)
-                if isinstance(o.Curve, Part.Circle):
-                    drillable = True
-
-        return drillable
-
-    def addDrillableLocation(self, obj, ss, sub=""):
-        baselist = obj.Base
-        item = (ss, sub)
-        if len(baselist) == 0:  # When adding the first base object, guess at heights
-            try:
-                bb = ss.Shape.BoundBox  # parent boundbox
-                subobj = ss.Shape.getElement(sub)
-                fbb = subobj.BoundBox  # feature boundbox
-                obj.StartDepth = bb.ZMax
-                obj.ClearanceHeight = bb.ZMax + 5.0
-                obj.SafeHeight = bb.ZMax + 3.0
-                obj.RetractHeight = bb.ZMax + 1.0
-
-                if fbb.ZMax < bb.ZMax:
-                    obj.FinalDepth = fbb.ZMax
-                else:
-                    obj.FinalDepth = bb.ZMin
-            except:
-                obj.StartDepth = 5.0
-                obj.ClearanceHeight = 10.0
-                obj.SafeHeight = 8.0
-                obj.RetractHeight = 6.0
-
-        if not self.checkdrillable(ss.Shape,sub):
-            FreeCAD.Console.PrintError("Selected element is not a drillable location" + "\n")
-            return
-
-        if sub[0:4] == 'Face':
-            # Check for other drillable faces and give user the option
-            drillableFaces = []
-
-            for i in range(len(ss.Shape.Faces)):
-                if self.checkdrillable(ss.Shape, "Face" + str(i+1)):
-                    drillableFaces.append("Face" + str(i+1))
-            if len(drillableFaces) > 1:
-                reply = QtGui.QMessageBox.question(None,"","Multiple drillable faces found.  Drill them all?",
-                        QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-                if reply == QtGui.QMessageBox.Yes:
-                    for i in drillableFaces:
-                        if i in baselist:
-                            FreeCAD.Console.PrintWarning("Drillable location already in the list" + "\n")
-                            continue
-                        else:
-                            newitem = (ss, i)
-                            baselist.append(newitem)
-                else:
-                    if item in baselist:
-                        FreeCAD.Console.PrintWarning("Drillable location already in the list" + "\n")
-                    else:
-                        baselist.append(item)
-            else:
-                if item in baselist:
-                    FreeCAD.Console.PrintWarning("Drillable location already in the list" + "\n")
-                else:
-                    baselist.append(item)
-
-
-        if sub[0:4] == 'Edge':
-            drillableEdges = []
-            o = ss.Shape.getElement(sub)
-
-            for i in range(len(ss.Shape.Edges)):
-                candidateedge = ss.Shape.getElement("Edge" + str(i+1))
-                if self.checkdrillable(ss.Shape, "Edge" + str(i+1)):
-                    if candidateedge.Curve.Radius == o.Curve.Radius and candidateedge.Curve.Center.z == o.Curve.Center.z:
-                        drillableEdges.append("Edge" + str(i+1))
-            if len(drillableEdges) > 1:
-                reply = QtGui.QMessageBox.question(None,"","Multiple drillable edges found.  Drill them all?",
-                        QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-                if reply == QtGui.QMessageBox.Yes:
-                    for i in drillableEdges:
-                        if i in baselist:
-                            FreeCAD.Console.PrintWarning("Drillable location already in the list" + "\n")
-                            continue
-                        else:
-                            newitem = (ss, i)
-                            baselist.append(newitem)
-                else:
-                    if item in baselist:
-                        FreeCAD.Console.PrintWarning("Drillable location already in the list" + "\n")
-                    else:
-                        baselist.append(item)
-            else:
-                if item in baselist:
-                    FreeCAD.Console.PrintWarning("Drillable location already in the list" + "\n")
-                else:
-                    baselist.append(item)
-
-        print baselist
-        obj.Base = baselist
-        self.execute(obj)
+        PathLog.debug("holes found: {}".format(holelist))
+        return holelist
 
 
 class _ViewProviderDrill:
@@ -330,12 +302,16 @@ class _ViewProviderDrill:
         # this is executed when a property of the APP OBJECT changes
         pass
 
+    def deleteObjectsOnReject(self):
+        return hasattr(self, 'deleteOnReject') and self.deleteOnReject
+
     def setEdit(self, vobj, mode=0):
         FreeCADGui.Control.closeDialog()
-        taskd = TaskPanel()
+        taskd = TaskPanel(vobj.Object, self.deleteObjectsOnReject())
         taskd.obj = vobj.Object
         FreeCADGui.Control.showDialog(taskd)
         taskd.setupUi()
+        self.deleteOnReject = False
         return True
 
     def unsetEdit(self, vobj, mode):
@@ -359,6 +335,8 @@ class CommandPathDrilling:
         return False
 
     def Activated(self):
+        ztop = 10.0
+        zbottom = 0.0
 
         # if everything is ok, execute and register the transaction in the undo/redo stack
         FreeCAD.ActiveDocument.openTransaction(translate("Path_Drilling", "Create Drilling"))
@@ -366,168 +344,299 @@ class CommandPathDrilling:
         FreeCADGui.doCommand('obj = FreeCAD.ActiveDocument.addObject("Path::FeaturePython", "Drilling")')
         FreeCADGui.doCommand('PathScripts.PathDrilling.ObjectDrilling(obj)')
         FreeCADGui.doCommand('obj.Active = True')
-        FreeCADGui.doCommand('PathScripts.PathDrilling._ViewProviderDrill(obj.ViewObject)')
+        FreeCADGui.doCommand('obj.ViewObject.Proxy.deleteOnReject = True')
 
-        ztop = 10.0
-        zbottom = 0.0
         FreeCADGui.doCommand('obj.ClearanceHeight = ' + str(ztop))
         FreeCADGui.doCommand('obj.RetractHeight= ' + str(ztop))
         FreeCADGui.doCommand('obj.FinalDepth=' + str(zbottom))
         FreeCADGui.doCommand('PathScripts.PathUtils.addToJob(obj)')
+        FreeCADGui.doCommand('obj.ToolController = PathScripts.PathUtils.findToolController(obj)')
+       # FreeCADGui.doCommand('PathScripts.PathDrilling.ObjectDrilling.setDepths(obj.Proxy, obj)')
 
         FreeCAD.ActiveDocument.commitTransaction()
-        FreeCAD.ActiveDocument.recompute()
         FreeCADGui.doCommand('obj.ViewObject.startEditing()')
 
 
 class TaskPanel:
-    def __init__(self):
+    def __init__(self, obj, deleteOnReject):
+        FreeCAD.ActiveDocument.openTransaction(translate("Path_Drilling", "Drilling Operation"))
         self.form = FreeCADGui.PySideUic.loadUi(":/panels/DrillingEdit.ui")
+        self.deleteOnReject = deleteOnReject
+        self.obj = obj
+        self.isDirty = True
 
     def accept(self):
-        self.getFields()
-
-        FreeCADGui.ActiveDocument.resetEdit()
         FreeCADGui.Control.closeDialog()
-        FreeCAD.ActiveDocument.recompute()
-        FreeCADGui.Selection.removeObserver(self.s)
+        FreeCADGui.ActiveDocument.resetEdit()
+        FreeCAD.ActiveDocument.commitTransaction()
+        if self.isDirty:
+            FreeCAD.ActiveDocument.recompute()
 
     def reject(self):
         FreeCADGui.Control.closeDialog()
+        FreeCADGui.ActiveDocument.resetEdit()
+        FreeCAD.ActiveDocument.abortTransaction()
+        if self.deleteOnReject:
+            FreeCAD.ActiveDocument.openTransaction(translate("Path_Drilling", "Uncreate Drilling Operation"))
+            FreeCAD.ActiveDocument.removeObject(self.obj.Name)
+            FreeCAD.ActiveDocument.commitTransaction()
         FreeCAD.ActiveDocument.recompute()
-        FreeCADGui.Selection.removeObserver(self.s)
+
+    def clicked(self,button):
+        if button == QtGui.QDialogButtonBox.Apply:
+            self.getFields()
+            FreeCAD.ActiveDocument.recompute()
+            self.isDirty = False
 
     def getFields(self):
+        PathLog.track()
         if self.obj:
-            if hasattr(self.obj, "StartDepth"):
-                self.obj.StartDepth = self.form.startDepth.text()
-            if hasattr(self.obj, "FinalDepth"):
-                self.obj.FinalDepth = self.form.finalDepth.text()
-            if hasattr(self.obj, "PeckDepth"):
-                self.obj.PeckDepth = self.form.peckDepth.text()
-            if hasattr(self.obj, "SafeHeight"):
-                self.obj.SafeHeight = self.form.safeHeight.text()
-            if hasattr(self.obj, "ClearanceHeight"):
-                self.obj.ClearanceHeight = self.form.clearanceHeight.text()
-            if hasattr(self.obj, "RetractHeight"):
-                self.obj.RetractHeight = self.form.retractHeight.text()
+            try:
+                if hasattr(self.obj, "StartDepth"):
+                    self.obj.StartDepth = FreeCAD.Units.Quantity(self.form.startDepth.text()).Value
+                if hasattr(self.obj, "FinalDepth"):
+                    self.obj.FinalDepth = FreeCAD.Units.Quantity(self.form.finalDepth.text()).Value
+                if hasattr(self.obj, "PeckDepth"):
+                    if FreeCAD.Units.Quantity(self.form.peckDepth.text()).Value >= 0:
+                        self.obj.PeckDepth = FreeCAD.Units.Quantity(self.form.peckDepth.text()).Value
+                    else:
+                        self.form.peckDepth.setText("0.00")
+                if hasattr(self.obj, "SafeHeight"):
+                    self.obj.SafeHeight = FreeCAD.Units.Quantity(self.form.safeHeight.text()).Value
+                if hasattr(self.obj, "ClearanceHeight"):
+                    self.obj.ClearanceHeight = FreeCAD.Units.Quantity(self.form.clearanceHeight.text()).Value
+                if hasattr(self.obj, "RetractHeight"):
+                    self.obj.RetractHeight = FreeCAD.Units.Quantity(self.form.retractHeight.text()).Value
+                if hasattr(self.obj, "DwellTime"):
+                    if FreeCAD.Units.Quantity(self.form.dwellTime.text()).Value >= 0:
+                        self.obj.DwellTime = FreeCAD.Units.Quantity(self.form.dwellTime.text()).Value
+                    else:
+                        self.form.dwellTime.setText("0.00")
+                if hasattr(self.obj, "DwellEnabled"):
+                    self.obj.DwellEnabled = self.form.dwellEnabled.isChecked()
+                if hasattr(self.obj, "PeckEnabled"):
+                    self.obj.PeckEnabled = self.form.peckEnabled.isChecked()
+                if hasattr(self.obj, "ToolController"):
+                    PathLog.debug("name: {}".format(self.form.uiToolController.currentText()))
+                    tc = PathUtils.findToolController(self.obj, self.form.uiToolController.currentText())
+                    self.obj.ToolController = tc
+                if hasattr(self.obj, "AddTipLength"):
+                    self.obj.AddTipLength = self.form.chkTipDepth.isChecked()
+            except ValueError:
+                self.setFields()
+        self.isDirty = True
 
-        self.obj.Proxy.execute(self.obj)
+    def updateFeatureList(self):
+        self.form.baseList.itemChanged.disconnect(self.checkedChanged)  # disconnect this slot while creating objects
+        self.form.baseList.clear()
+        self.form.baseList.setColumnCount(2)
+        self.form.baseList.setRowCount(0)
+        self.form.baseList.setHorizontalHeaderLabels(["Feature", "Diameter"])
+        self.form.baseList.horizontalHeader().setStretchLastSection(True)
+        self.form.baseList.resizeColumnToContents(0)
+        self.form.baseList.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        for i in range(len(self.obj.Names)):
+            self.form.baseList.insertRow(self.form.baseList.rowCount())
+            item = QtGui.QTableWidgetItem(self.obj.Names[i])
+            item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
+
+            if self.obj.Enabled[i] > 0:
+                item.setCheckState(QtCore.Qt.Checked)
+            else:
+                item.setCheckState(QtCore.Qt.Unchecked)
+            self.form.baseList.setItem(self.form.baseList.rowCount()-1, 0, item)
+            item = QtGui.QTableWidgetItem("{:.3f}".format(self.obj.Diameters[i]))
+
+            self.form.baseList.setItem(self.form.baseList.rowCount()-1, 1, item)
+        self.form.baseList.resizeColumnToContents(0)
+        self.form.baseList.itemChanged.connect(self.checkedChanged)
+
+        self.form.baseList.setSortingEnabled(True)
 
     def setFields(self):
-        self.form.startDepth.setText(str(self.obj.StartDepth.Value))
-        self.form.finalDepth.setText(str(self.obj.FinalDepth.Value))
-        self.form.peckDepth.setText(str(self.obj.PeckDepth.Value))
-        self.form.safeHeight.setText(str(self.obj.SafeHeight.Value))
-        self.form.clearanceHeight.setText(str(self.obj.ClearanceHeight.Value))
-        self.form.retractHeight.setText(str(self.obj.RetractHeight.Value))
+        PathLog.track()
+        self.form.startDepth.setText(FreeCAD.Units.Quantity(self.obj.StartDepth.Value, FreeCAD.Units.Length).UserString)
+        self.form.finalDepth.setText(FreeCAD.Units.Quantity(self.obj.FinalDepth.Value, FreeCAD.Units.Length).UserString)
+        self.form.peckDepth.setText(FreeCAD.Units.Quantity(self.obj.PeckDepth.Value, FreeCAD.Units.Length).UserString)
+        self.form.safeHeight.setText(FreeCAD.Units.Quantity(self.obj.SafeHeight.Value, FreeCAD.Units.Length).UserString)
+        self.form.clearanceHeight.setText(FreeCAD.Units.Quantity(self.obj.ClearanceHeight.Value, FreeCAD.Units.Length).UserString)
+        self.form.retractHeight.setText(FreeCAD.Units.Quantity(self.obj.RetractHeight.Value, FreeCAD.Units.Length).UserString)
+        self.form.dwellTime.setText(str(self.obj.DwellTime))
 
-        self.form.baseList.clear()
-        for i in self.obj.Base:
-            for sub in i[1]:
-                self.form.baseList.addItem(i[0].Name + "." + sub)
+        if self.obj.DwellEnabled:
+            self.form.dwellEnabled.setCheckState(QtCore.Qt.Checked)
+        else:
+            self.form.dwellEnabled.setCheckState(QtCore.Qt.Unchecked)
 
+        if self.obj.PeckEnabled:
+            self.form.peckEnabled.setCheckState(QtCore.Qt.Checked)
+        else:
+            self.form.peckEnabled.setCheckState(QtCore.Qt.Unchecked)
+
+        if self.obj.AddTipLength:
+            self.form.chkTipDepth.setCheckState(QtCore.Qt.Checked)
+        else:
+            self.form.chkTipDepth.setCheckState(QtCore.Qt.Unchecked)
+
+        self.updateFeatureList()
+
+        controllers = PathUtils.getToolControllers(self.obj)
+        labels = [c.Label for c in controllers]
+        self.form.uiToolController.blockSignals(True)
+        self.form.uiToolController.addItems(labels)
+        self.form.uiToolController.blockSignals(False)
+
+        if self.obj.ToolController is not None:
+            index = self.form.uiToolController.findText(
+                self.obj.ToolController.Label, QtCore.Qt.MatchFixedString)
+            PathLog.debug("searching for TC label {}. Found Index: {}".format(self.obj.ToolController.Label, index))
+            if index >= 0:
+                self.form.uiToolController.blockSignals(True)
+                self.form.uiToolController.setCurrentIndex(index)
+                self.form.uiToolController.blockSignals(False)
 
     def open(self):
-        self.s = SelObserver()
-        FreeCADGui.Selection.addObserver(self.s)
-
-    def addBase(self):
-        # check that the selection contains exactly what we want
-        selection = FreeCADGui.Selection.getSelectionEx()
-
-        if not len(selection) >= 1:
-            FreeCAD.Console.PrintError(translate("PathProject", "Please select at least one Drillable Location\n"))
-            return
-        for s in selection:
-            if s.HasSubObjects:
-                for i in s.SubElementNames:
-                    self.obj.Proxy.addDrillableLocation(self.obj, s.Object, i)
-            else:
-                self.obj.Proxy.addDrillableLocation(self.obj, s.Object)
-
-        self.setFields()  # defaults may have changed.  Reload.
-        self.form.baseList.clear()
-
-        for i in self.obj.Base:
-            for sub in i[1]:
-                self.form.baseList.addItem(i[0].Name + "." + sub)
-
-    def deleteBase(self):
-        dlist = self.form.baseList.selectedItems()
-        for d in dlist:
-            newlist = []
-            for i in self.obj.Base:
-                if not i[0].Name == d.text().partition(".")[0]:
-                    newlist.append(i)
-            self.obj.Base = newlist
-        self.form.baseList.takeItem(self.form.baseList.row(d))
-        # self.obj.Proxy.execute(self.obj)
-        # FreeCAD.ActiveDocument.recompute()
+        pass
+        # self.s = SelObserver()
+        # FreeCADGui.Selection.addObserver(self.s)
 
     def itemActivated(self):
         FreeCADGui.Selection.clearSelection()
         slist = self.form.baseList.selectedItems()
+        # parentJob = PathUtils.findParentJob(self.obj)
         for i in slist:
-            objstring = i.text().partition(".")
-            obj = FreeCAD.ActiveDocument.getObject(objstring[0])
-            # sub = o.Shape.getElement(objstring[2])
-            if objstring[2] != "":
-                FreeCADGui.Selection.addSelection(obj, objstring[2])
-            else:
-                FreeCADGui.Selection.addSelection(obj)
+            if i.column() == 0:
+                objstring = i.text().partition(".")
+                obj = FreeCAD.ActiveDocument.getObject(objstring[0])
+                if obj is not None:
+                    if objstring[2] != "":
+                        FreeCADGui.Selection.addSelection(obj, objstring[2])
+                    else:
+                        FreeCADGui.Selection.addSelection(obj)
 
         FreeCADGui.updateGui()
 
-    def reorderBase(self):
-        newlist = []
-        for i in range(self.form.baseList.count()):
-            s = self.form.baseList.item(i).text()
-            objstring = s.partition(".")
+    def checkedChanged(self):
+        enabledlist = self.obj.Enabled
 
-            obj = FreeCAD.ActiveDocument.getObject(objstring[0])
-            item = (obj, str(objstring[2]))
-            newlist.append(item)
-        self.obj.Base = newlist
+        for i in xrange(0, self.form.baseList.rowCount()):
+            try:
+                ind = self.obj.Names.index(self.form.baseList.item(i, 0).text())
+                if self.form.baseList.item(i, 0).checkState() == QtCore.Qt.Checked:
+                    enabledlist[ind] = 1
+                else:
+                    enabledlist[ind] = 0
+            except:
+                PathLog.track("Not found:"+self.form.baseList.item(i, 0).text() + " in " + str(self.obj.Names))
 
-        self.obj.Proxy.execute(self.obj)
+        self.obj.Enabled = enabledlist
         FreeCAD.ActiveDocument.recompute()
 
+    def enableAll(self):
+        for i in xrange(0, self.form.baseList.rowCount()):
+            self.form.baseList.item(i, 0).setCheckState(QtCore.Qt.Checked)
+
+    def enableSelected(self):
+        slist = self.form.baseList.selectedItems()
+        for i in slist:
+            r = i.row()
+            self.form.baseList.item(r, 0).setCheckState(QtCore.Qt.Checked)
+
+    def disableAll(self):
+        for i in xrange(0, self.form.baseList.rowCount()):
+            self.form.baseList.item(i, 0).setCheckState(QtCore.Qt.Unchecked)
+
+    def disableSelected(self):
+        slist = self.form.baseList.selectedItems()
+        for i in slist:
+            r = i.row()
+            self.form.baseList.item(r, 0).setCheckState(QtCore.Qt.Unchecked)
+
+    def findAll(self):
+        """ Reset the list of features by running the findHoles again """
+        self.obj.Names = []
+        self.obj.Diameters = []
+        self.obj.Enabled = []
+        self.obj.Positions = []
+
+        self.obj.Proxy.execute(self.obj)
+
+        self.updateFeatureList()
+        FreeCAD.ActiveDocument.recompute()
+
+    def addSelected(self):
+        for sel in FreeCAD.Gui.Selection.getSelectionEx():
+
+            names = self.obj.Names
+            positions = self.obj.Positions
+            enabled = self.obj.Enabled
+            diameters = self.obj.Diameters
+
+            objectname = sel.ObjectName
+            sobj = sel.Object
+            for i, sub in enumerate(sel.SubObjects):
+                if hasattr(sub, 'ShapeType'):
+                    if sub.ShapeType == 'Vertex':
+                        PathLog.debug("Selection is a vertex, lets drill that")
+                        names.append(objectname+'.'+sel.SubElementNames[i])
+                        positions.append(FreeCAD.Vector(sub.X, sub.Y, 0))
+                        enabled.append(1)
+                        diameters.append(0)
+
+                    elif sub.ShapeType == 'Edge':
+                        if PathUtils.isDrillable(sobj, sub):
+                            PathLog.debug("Selection is a drillable edge, lets drill that")
+                            names.append(objectname+'.'+sel.SubElementNames[i])
+                            positions.append(FreeCAD.Vector(sub.Curve.Center.x, sub.Curve.Center.y, 0))
+                            enabled.append(1)
+                            diameters.append(sub.BoundBox.XLength)
+                    elif sub.ShapeType == 'Face':
+                        if PathUtils.isDrillable(sobj.Shape, sub):
+                            PathLog.debug("Selection is a drillable face, lets drill that")
+                            names.append(objectname+'.'+sel.SubElementNames[i])
+                            positions.append(FreeCAD.Vector(sub.Surface.Center.x, sub.Surface.Center.y, 0))
+                            enabled.append(1)
+                            diameters.append(sub.BoundBox.XLength)
+
+            self.obj.Names = names
+            self.obj.Positions = positions
+            self.obj.Enabled = enabled
+            self.obj.Diameters = diameters
+
+            self.updateFeatureList()
+
+            FreeCAD.ActiveDocument.recompute()
+
     def getStandardButtons(self):
-        return int(QtGui.QDialogButtonBox.Ok)
+        return int(QtGui.QDialogButtonBox.Ok | QtGui.QDialogButtonBox.Apply | QtGui.QDialogButtonBox.Cancel)
 
     def setupUi(self):
+        PathLog.track()
 
         # Connect Signals and Slots
         self.form.startDepth.editingFinished.connect(self.getFields)
         self.form.finalDepth.editingFinished.connect(self.getFields)
         self.form.safeHeight.editingFinished.connect(self.getFields)
+        self.form.retractHeight.editingFinished.connect(self.getFields)
+        self.form.peckDepth.editingFinished.connect(self.getFields)
         self.form.clearanceHeight.editingFinished.connect(self.getFields)
+        self.form.dwellTime.editingFinished.connect(self.getFields)
+        self.form.dwellEnabled.stateChanged.connect(self.getFields)
+        self.form.peckEnabled.stateChanged.connect(self.getFields)
+        self.form.chkTipDepth.stateChanged.connect(self.getFields)
 
-        self.form.addBase.clicked.connect(self.addBase)
-        self.form.deleteBase.clicked.connect(self.deleteBase)
-        self.form.reorderBase.clicked.connect(self.reorderBase)
+        # buttons
+        self.form.uiEnableSelected.clicked.connect(self.enableSelected)
+        self.form.uiDisableSelected.clicked.connect(self.disableSelected)
+        self.form.uiFindAllHoles.clicked.connect(self.findAll)
+        self.form.uiAddSelected.clicked.connect(self.addSelected)
 
         self.form.baseList.itemSelectionChanged.connect(self.itemActivated)
+        self.form.baseList.itemChanged.connect(self.checkedChanged)
 
-        sel = FreeCADGui.Selection.getSelectionEx()
-        if len(sel) != 0 and sel[0].HasSubObjects:
-                self.addBase()
+        self.form.uiToolController.currentIndexChanged.connect(self.getFields)
 
         self.setFields()
-
-class SelObserver:
-    def __init__(self):
-        import PathScripts.PathSelection as PST
-        PST.drillselect()
-
-    def __del__(self):
-        import PathScripts.PathSelection as PST
-        PST.clear()
-
-    def addSelection(self, doc, obj, sub, pnt):
-        FreeCADGui.doCommand('Gui.Selection.addSelection(FreeCAD.ActiveDocument.' + obj + ')')
-        FreeCADGui.updateGui()
 
 
 if FreeCAD.GuiUp:

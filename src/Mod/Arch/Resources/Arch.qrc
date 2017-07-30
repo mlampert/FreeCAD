@@ -26,6 +26,8 @@
         <file>icons/Arch_Window_Clone.svg</file>
         <file>icons/Arch_Axis.svg</file>
         <file>icons/Arch_Axis_Tree.svg</file>
+        <file>icons/Arch_Axis_System.svg</file>
+        <file>icons/Arch_Axis_System_Tree.svg</file>
         <file>icons/Arch_Roof.svg</file>
         <file>icons/Arch_Roof_Tree.svg</file>
         <file>icons/Arch_CloseHoles.svg</file>
@@ -60,8 +62,10 @@
         <file>icons/Arch_Bimserver.svg</file>
         <file>icons/Git.svg</file>
         <file>icons/Arch_Component.svg</file>
+        <file>icons/Arch_Component_Clone.svg</file>
         <file>icons/Arch_Material.svg</file>
         <file>icons/Arch_Material_Group.svg</file>
+        <file>icons/Arch_Material_Multi.svg</file>
         <file>icons/Arch_Schedule.svg</file>
         <file>icons/ArchWorkbench.svg</file>
         <file>ui/preferences-arch.ui</file>
@@ -69,11 +73,13 @@
         <file>ui/preferences-ifc.ui</file>
         <file>ui/preferences-dae.ui</file>
         <file>ui/ArchMaterial.ui</file>
+        <file>ui/ArchMultiMaterial.ui</file>
         <file>ui/ArchSchedule.ui</file>
         <file>icons/Arch_Pipe.svg</file>
         <file>icons/Arch_Pipe_Tree.svg</file>
         <file>icons/Arch_PipeConnector.svg</file>
         <file>icons/Arch_ToggleSubs.svg</file>
+        <file>icons/Arch_Nest.svg</file>
         <file>ui/ParametersWindowDouble.svg</file>
         <file>ui/ParametersWindowSimple.svg</file>
         <file>ui/ParametersWindowFixed.svg</file>
@@ -91,6 +97,7 @@
         <file>ui/GitTaskPanel.ui</file>
         <file>ui/DialogBimServerLogin.ui</file>
         <file>ui/DialogDisplayText.ui</file>
+        <file>ui/ArchNest.ui</file>
         <file>translations/Arch_af.qm</file>
         <file>translations/Arch_de.qm</file>
         <file>translations/Arch_fi.qm</file>
@@ -117,5 +124,10 @@
         <file>translations/Arch_sr.qm</file>
         <file>translations/Arch_el.qm</file>
         <file>translations/Arch_sl.qm</file>
+        <file>translations/Arch_eu.qm</file>
+        <file>translations/Arch_ca.qm</file>
+        <file>translations/Arch_gl.qm</file>
+        <file>translations/Arch_kab.qm</file>
+        <file>translations/Arch_ko.qm</file>
     </qresource>
 </RCC> 

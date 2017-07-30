@@ -58,7 +58,7 @@ Dependency of pcl components:
 common: none
 features: common, kdtree, octree, search, (range_image)
 filters: common, kdtree, octree, sample_consenus, search
-geomety: common
+geometry: common
 io: common, octree
 kdtree: common
 keypoints: common, features, filters, kdtree, octree, search, (range_image)
@@ -221,7 +221,7 @@ private:
             }
 
             Reen::BSplineParameterCorrection pc(uOrder,vOrder,uPoles,vPoles);
-            Handle_Geom_BSplineSurface hSurf;
+            Handle(Geom_BSplineSurface) hSurf;
 
             if (uvdirs) {
                 Py::Tuple t(uvdirs);
@@ -735,11 +735,17 @@ Mesh.show(m)
     }
 #endif
 };
+
+PyObject* initModule()
+{
+    return (new Module)->module().ptr();
+}
+
 } // namespace Reen
 
 
 /* Python entry */
-PyMODINIT_FUNC initReverseEngineering()
+PyMOD_INIT_FUNC(ReverseEngineering)
 {
     // load dependent module
     try {
@@ -748,9 +754,10 @@ PyMODINIT_FUNC initReverseEngineering()
     }
     catch(const Base::Exception& e) {
         PyErr_SetString(PyExc_ImportError, e.what());
-        return;
+        PyMOD_Return(0);
     }
 
-    new Reen::Module();
+    PyObject* mod = Reen::initModule();
     Base::Console().Log("Loading ReverseEngineering module... done\n");
+    PyMOD_Return(mod);
 }

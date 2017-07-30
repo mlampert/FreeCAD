@@ -84,6 +84,21 @@
  */
 #define PYFUNCIMP_S(CLASS,SFUNC) PyObject* CLASS::SFUNC (PyObject *self,PyObject *args,PyObject *kwd)
 
+
+/** Macro for initialization function of Python modules. 
+ */
+#if PY_MAJOR_VERSION >= 3
+# define PyMOD_INIT_FUNC(name) PyMODINIT_FUNC PyInit_##name(void)
+#else
+# define PyMOD_INIT_FUNC(name) PyMODINIT_FUNC init##name(void)
+#endif
+
+#if PY_MAJOR_VERSION >= 3
+# define PyMOD_Return(name) return name
+#else
+# define PyMOD_Return(name) return (void)name
+#endif
+
 /**
  * Union to convert from PyTypeObject to PyObject pointer.
  */
@@ -178,6 +193,12 @@ class BaseExport PyObjectBase : public PyObject
      */
     Py_Header
 
+    enum Status {
+        Valid = 0,
+        Immutable = 1,
+        Notify = 2
+    };
+
 protected:
     /// destructor
     virtual ~PyObjectBase();
@@ -206,8 +227,8 @@ public:
      *  methods of the object will disappear!
      */
     virtual PyObject *_getattr(char *attr);
-    /// static wrapper for pythons _getattr()
-    static  PyObject *__getattr(PyObject * PyObj, char *attr);
+    /// static wrapper for pythons _getattro()
+    static  PyObject *__getattro(PyObject * PyObj, PyObject *attro);
 
     /** SetAttribute implementation
      *  This method implements the setting of object attributes.
@@ -215,9 +236,9 @@ public:
      *  this method.
      *  You have to call the method of the base class.
      */
-    virtual int _setattr(char *attr, PyObject *value);    // _setattr method
-    /// static wrapper for pythons _setattr(). // This should be the entry in Type. 
-    static  int __setattr(PyObject *PyObj, char *attr, PyObject *value);
+    virtual int _setattr(char *attro, PyObject *value);    // _setattr method
+    /// static wrapper for pythons _setattro(). // This should be the entry in Type. 
+    static  int __setattro(PyObject *PyObj, PyObject *attro, PyObject *value);
 
     /** _repr method
     * Override this method to return a string object with some
@@ -259,34 +280,49 @@ public:
 
     void setInvalid() { 
         // first bit is not set, i.e. invalid
-        StatusBits.reset(0);
+        StatusBits.reset(Valid);
         _pcTwinPointer = 0;
     }
 
     bool isValid() {
-        return StatusBits.test(0);
+        return StatusBits.test(Valid);
     }
 
     void setConst() {
         // second bit is set, i.e. immutable
-        StatusBits.set(1);
+        StatusBits.set(Immutable);
     }
 
     bool isConst() {
-        return StatusBits.test(1);
+        return StatusBits.test(Immutable);
     }
 
-    void setAttributeOf(const char* attr, const PyObjectBase* par);
+    void setShouldNotify(bool on) {
+        StatusBits.set(Notify, on);
+    }
+
+    bool shouldNotify() const {
+        return StatusBits.test(Notify);
+    }
+
     void startNotify();
 
-    typedef void* PointerType ;
+    typedef void* PointerType;
+
+private:
+    void setAttributeOf(const char* attr, PyObject* par);
+    void resetAttribute();
+    PyObject* getTrackedAttribute(const char* attr);
+    void trackAttribute(const char* attr, PyObject* obj);
+    void untrackAttribute(const char* attr);
 
 protected:
     std::bitset<32> StatusBits;
     /// pointer to the handled class
     void * _pcTwinPointer;
-    PyObjectBase* parent;
-    char* attribute;
+
+private:
+    PyObject* attrDict;
 };
 
 
@@ -472,7 +508,7 @@ inline PyObject * PyAsUnicodeObject(const char *str)
     // Returns a new reference, don't increment it!
     PyObject *p = PyUnicode_DecodeUTF8(str,strlen(str),0);
     if(!p)
-        throw Base::Exception("UTF8 conversion failure at PyAsUnicodeString()");
+        throw Base::UnicodeError("UTF8 conversion failure at PyAsUnicodeString()");
     return p;
 }
 

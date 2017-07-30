@@ -21,6 +21,7 @@
 # *   USA                                                                   *
 # *                                                                         *
 # ***************************************************************************
+from __future__ import print_function
 import FreeCAD
 import FreeCADGui
 import Path
@@ -30,17 +31,8 @@ from PySide import QtCore, QtGui
 """Path Dressup object and FreeCAD command"""
 
 # Qt tanslation handling
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-
-    def translate(context, text, disambig=None):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-
-except AttributeError:
-
-    def translate(context, text, disambig=None):
-        return QtGui.QApplication.translate(context, text, disambig)
-
+def translate(context, text, disambig=None):
+    return QtCore.QCoreApplication.translate(context, text, disambig)
 
 class ObjectDressup:
 
@@ -90,7 +82,7 @@ class ViewProviderDressup:
                     if g.Name == self.Object.Base.Name:
                         group.remove(g)
                 i.Group = group
-                print i.Group
+                print(i.Group)
         return [self.Object.Base]
 
     def __getstate__(self):
@@ -103,6 +95,7 @@ class ViewProviderDressup:
         '''this makes sure that the base operation is added back to the project and visible'''
         FreeCADGui.ActiveDocument.getObject(arg1.Object.Base.Name).Visibility = True
         P.addToProject(arg1.Object.Base)
+        arg1.Object.Base = None
         return True
 
 class CommandPathDressup:

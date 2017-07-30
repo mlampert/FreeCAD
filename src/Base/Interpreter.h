@@ -53,7 +53,6 @@
 
 #include "Exception.h"
 
-
 namespace Base {
 
     using std::string;
@@ -67,6 +66,11 @@ public:
     /// constructor does the whole job
     PyException(void);
     ~PyException() throw();
+    
+    /// this method determines if the original exception
+    /// can be reconstructed or not, if yes throws the reconstructed version
+    /// if not, throws a generic PyException.
+    static void ThrowException(void);
 
     ///  this function returns the stack trace
     const std::string &getStackTrace(void) const {return _stackTrace;}
@@ -185,7 +189,7 @@ public:
     /* Loads a module
      */
     bool loadModule(const char* psModName);
-    /// Add an addtional pyhton path
+    /// Add an additional python path
     void addPythonPath(const char* Path);
     static void addType(PyTypeObject* Type,PyObject* Module, const char * Name);
     //@}
@@ -194,9 +198,9 @@ public:
      */
     //@{
     /** Register a cleanup function to be called by finalize(). The cleanup function will be called with no 
-     * arguments and should return no value. At most 32 cleanup functions can be registered.When the registration 
+     * arguments and should return no value. At most 32 cleanup functions can be registered. When the registration 
      * is successful 0 is returned; on failure -1 is returned. The cleanup function registered last is called 
-     * first. Each cleanup function will be called at most once. Since Python's internal finallization will have 
+     * first. Each cleanup function will be called at most once. Since Python's internal finalization will have 
      * completed before the cleanup function, no Python APIs should be called by \a func. 
      */
     int cleanup(void (*func)(void));

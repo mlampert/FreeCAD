@@ -66,6 +66,26 @@
         <source>Visual size of the feature</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>&lt;empty&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Axis</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Base</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>CmdTestConsoleOutput</name>
@@ -1215,27 +1235,39 @@ Please define another shortcut.</source>
         <source>Style sheet:</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Python console</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable word wrap</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Gui::Dialog::DlgGeneralImp</name>
     <message>
-        <source>Default (%1 x %1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Small (%1 x %1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Large (%1 x %1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Extra large (%1 x %1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>No style sheet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Small (%1px)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Medium (%1px)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Large (%1px)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Extra large (%1px)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Custom (%1px)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1697,6 +1729,18 @@ Specify another directory, please.</source>
         <source>Please select an object from the list</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Search</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>A search pattern to filter the results above</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>None (Remove link)</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Gui::Dialog::DlgReportView</name>
@@ -1900,6 +1944,10 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>Perspective renderin&amp;g</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Use OpenGL Vertex Buffer Object (experimental)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2421,6 +2469,14 @@ Specify another directory, please.</source>
         <source>Insert comment</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Transparent</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add watermark</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Gui::Dialog::DlgSettingsMacro</name>
@@ -2566,14 +2622,6 @@ Specify another directory, please.</source>
         <source>Sets the area of confusion for picking elements in 3D view. Larger value make it easier to pick stuff, but will make some small features impossible to select.</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>PickRadius</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>View</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>Gui::Dialog::DlgTipOfTheDay</name>
@@ -2701,12 +2749,6 @@ Specify another directory, please.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Press &apos;Start Recovery&apos; to start the recovery process of the doument listed below.
-
-The &apos;Status&apos; column shows whether the document could be recovered.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Status of recovered documents:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2776,6 +2818,12 @@ The &apos;Status&apos; column shows whether the document could be recovered.</so
     </message>
     <message>
         <source>Transient directories deleted.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Press &apos;Start Recovery&apos; to start the recovery process of the document listed below.
+
+The &apos;Status&apos; column shows whether the document could be recovered.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3141,6 +3189,10 @@ The &apos;Status&apos; column shows whether the document could be recovered.</so
         <source>Euler angles (XY&apos;Z&apos;&apos;)</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Use center of mass</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Gui::Dialog::PrintModel</name>
@@ -3335,10 +3387,6 @@ The &apos;Status&apos; column shows whether the document could be recovered.</so
 <context>
     <name>Gui::DockWnd::SelectionView</name>
     <message>
-        <source>Property View</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Search</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3396,6 +3444,22 @@ The &apos;Status&apos; column shows whether the document could be recovered.</so
     </message>
     <message>
         <source>Mark this object to be recomputed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Selection View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>The number of selected items</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Duplicate subshape</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Creates a standalone copy of this subshape in the document</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3699,18 +3763,6 @@ Do you want to save your changes?</source>
 Do you want to copy them, too?</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>There is a rendering issue on MacOS.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>See &lt;a href=&quot;http://www.freecadweb.org/wiki/index.php?title=OpenGL_on_MacOS&quot;&gt; the wiki&lt;/a&gt; for more information</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Don&apos;t show again</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>Gui::ManualAlignment</name>
@@ -3892,7 +3944,7 @@ How do you want to proceed?</source>
 <context>
     <name>Gui::PropertyEditor::LinkLabel</name>
     <message>
-        <source>Edit...</source>
+        <source>Change the linked object</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4283,6 +4335,10 @@ Do you want to specify another directory?</source>
     </message>
     <message>
         <source>Mark this object to be recomputed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>%1, Internal name: %2</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4852,7 +4908,7 @@ Be aware the point where you click matters.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The %1 is not empty, delete it&apos;s content as well?</source>
+        <source>The %1 is not empty, delete its content as well?</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6809,6 +6865,22 @@ Are you sure you want to continue?
     </message>
     <message>
         <source>Points mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hidden line</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hidden line mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No shading</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No shading mode</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

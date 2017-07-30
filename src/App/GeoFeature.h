@@ -54,6 +54,32 @@ public:
      * @param transform (input).
      */
     virtual void transformPlacement(const Base::Placement &transform);
+    /**
+     * This method returns the main property of a geometric object that holds
+     * the actual geometry. For a part object this is the Shape property, for
+     * a mesh object the Mesh property and so on.
+     * The default implementation returns null.
+     */
+    virtual const PropertyComplexGeoData* getPropertyOfGeometry() const;
+    /**
+     * @brief getPyObject returns the Python binding object
+     * @return the Python binding object
+     */
+    virtual PyObject* getPyObject(void);
+       
+    /**
+     * @brief Calculates the placement in the global reference coordinate system
+     * 
+     * In FreeCAD the GeoFeature placement describes the local placement of the object in its parent
+     * coordinate system. This is however not always the same as the global reference system. If the
+     * object is in a GeoFeatureGroup, hence in another local coordinate system, the Placement
+     * property does only give the local transformation. This function can be used to calculate the 
+     * placement of the object in the global reference coordinate system taking all stacked local 
+     * systems into account.
+     * 
+     * @return Base::Placement The transformation from the global reference coordinate system
+     */
+    Base::Placement globalPlacement() const;
 };
 
 } //namespace App

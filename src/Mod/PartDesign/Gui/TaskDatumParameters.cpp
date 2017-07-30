@@ -69,7 +69,7 @@ using namespace Attacher;
 
 TaskDatumParameters::TaskDatumParameters(ViewProviderDatum *ViewProvider,QWidget *parent)
     : PartGui::TaskAttacher(ViewProvider, parent, QString::fromLatin1("PartDesign_") + ViewProvider->datumType,
-              ViewProvider->datumType + tr(" parameters"))
+              ViewProvider->datumText + tr(" parameters"))
 {
     Gui::Selection().addSelectionGate(new NoDependentsSelection(ViewProvider->getObject()));
     ViewProvider->setPickable(false);
@@ -77,6 +77,9 @@ TaskDatumParameters::TaskDatumParameters(ViewProviderDatum *ViewProvider,QWidget
 
 TaskDatumParameters::~TaskDatumParameters()
 {
+    if(this->ViewProvider && this->ViewProvider->isDerivedFrom(ViewProviderDatum::getClassTypeId()))
+        static_cast<ViewProviderDatum*>(this->ViewProvider)->setPickable(true);
+    Gui::Selection().rmvSelectionGate();
 }
 
 
@@ -100,8 +103,6 @@ TaskDlgDatumParameters::~TaskDlgDatumParameters()
 
 bool TaskDlgDatumParameters::reject() {
     
-    Gui::Selection().rmvSelectionGate();
-    static_cast<ViewProviderDatum*>(ViewProvider)->setPickable(true);
     return PartGui::TaskDlgAttacher::reject();
 }
 
@@ -136,7 +137,7 @@ bool TaskDlgDatumParameters::accept() {
     //the user has to decide which option we should take if external references are used
     bool ext = false;
     for(App::DocumentObject* obj : pcDatum->Support.getValues()) {
-        if(!pcActiveBody->hasFeature(obj) && !pcActiveBody->getOrigin()->hasObject(obj))
+        if(!pcActiveBody->hasObject(obj) && !pcActiveBody->getOrigin()->hasObject(obj))
             ext = true;
     }
     if(ext) {
@@ -155,7 +156,7 @@ bool TaskDlgDatumParameters::accept() {
             int index = 0;
             for(App::DocumentObject* obj : pcDatum->Support.getValues()) {
 
-                if(!pcActiveBody->hasFeature(obj) && !pcActiveBody->getOrigin()->hasObject(obj)) {
+                if(!pcActiveBody->hasObject(obj) && !pcActiveBody->getOrigin()->hasObject(obj)) {
                     objs.push_back(PartDesignGui::TaskFeaturePick::makeCopy(obj, subs[index], dlg.radioIndependent->isChecked()));
                     copies.push_back(objs.back());
                     subs[index] = "";
@@ -176,7 +177,7 @@ bool TaskDlgDatumParameters::accept() {
     //we need to add the copied features to the body after the command action, as otherwise freecad crashs unexplainable
     for(auto obj : copies) {
         if(pcActiveBody)
-            pcActiveBody->addFeature(obj);
+            pcActiveBody->addObject(obj);
         else if (pcActivePart)
             pcActivePart->addObject(obj);
     }

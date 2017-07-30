@@ -20,6 +20,7 @@ include_directories(
 link_directories(${OCC_LIBRARY_DIR})
 
 generate_from_xml(BodyPy)
+generate_from_xml(FeaturePy)
 
 
 set(PartDesign_LIBS
@@ -122,6 +123,8 @@ SOURCE_GROUP("Module" FILES ${Module_SRCS})
 SET(Python_SRCS
     BodyPy.xml
     BodyPyImp.cpp
+    FeaturePy.xml
+    FeaturePyImp.cpp
 
 )
 SOURCE_GROUP("Python" FILES ${Python_SRCS})
@@ -150,6 +153,24 @@ SET(PartDesign_Scripts
     Scripts/RadialCopy.py
     Scripts/Parallelepiped.py
     Scripts/Spring.py
+    PartDesignTests/__init__.py
+    PartDesignTests/TestDatum.py
+    PartDesignTests/TestShapeBinder.py
+    PartDesignTests/TestPad.py
+    PartDesignTests/TestPocket.py
+    PartDesignTests/TestRevolve.py
+    PartDesignTests/TestLoft.py
+    PartDesignTests/TestPipe.py
+    PartDesignTests/TestPrimitive.py
+    PartDesignTests/TestMirrored.py
+    PartDesignTests/TestLinearPattern.py
+    PartDesignTests/TestPolarPattern.py
+    PartDesignTests/TestMultiTransform.py
+    PartDesignTests/TestBoolean.py
+    PartDesignTests/TestFillet.py
+    PartDesignTests/TestChamfer.py
+    PartDesignTests/TestDraft.py
+    PartDesignTests/TestThickness.py
     fcgear/__init__.py
     fcgear/fcgear.py
     fcgear/fcgeardialog.py

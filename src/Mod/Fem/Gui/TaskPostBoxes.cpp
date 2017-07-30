@@ -143,7 +143,7 @@ ViewProviderPointMarker::~ViewProviderPointMarker()
 // TaskDialog
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-TaskDlgPost::TaskDlgPost(Gui::ViewProviderDocumentObject *view,bool newObj)
+TaskDlgPost::TaskDlgPost(Gui::ViewProviderDocumentObject *view)
     : TaskDialog(), m_view(view)
 {
     assert(view);
@@ -336,6 +336,7 @@ TaskPostClip::TaskPostClip(ViewProviderDocumentObject* view, App::PropertyLink* 
 
     assert(view->isDerivedFrom(ViewProviderFemPostClip::getClassTypeId()));
     assert(function);
+    Q_UNUSED(function)
 
     fwidget = NULL;
 
@@ -355,7 +356,9 @@ TaskPostClip::TaskPostClip(ViewProviderDocumentObject* view, App::PropertyLink* 
 
     //add the function creation command
     Gui::CommandManager &rcCmdMgr = Gui::Application::Instance->commandManager();
-    rcCmdMgr.getCommandByName("Fem_PostCreateFunctions")->getAction()->addTo(ui->CreateButton);
+    Gui::Command* cmd = rcCmdMgr.getCommandByName("FEM_PostCreateFunctions");
+    if (cmd && cmd->getAction())
+        cmd->getAction()->addTo(ui->CreateButton);
     ui->CreateButton->setPopupMode(QToolButton::InstantPopup);
 
     //load the default values
@@ -392,7 +395,7 @@ void TaskPostClip::collectImplicitFunctions() {
     }
 }
 
-void TaskPostClip::on_CreateButton_triggered(QAction* a) {
+void TaskPostClip::on_CreateButton_triggered(QAction*) {
 
     collectImplicitFunctions();
     recompute();
@@ -827,14 +830,14 @@ void TaskPostWarpVector::on_Value_valueChanged(double v) {
     ui->Slider->blockSignals(false);
 }
 
-void TaskPostWarpVector::on_Max_valueChanged(double v) {
+void TaskPostWarpVector::on_Max_valueChanged(double) {
 
     ui->Slider->blockSignals(true);
     ui->Slider->setValue((ui->Value->value() - ui->Min->value()) / (ui->Max->value() - ui->Min->value())*100.);
     ui->Slider->blockSignals(false);
 }
 
-void TaskPostWarpVector::on_Min_valueChanged(double v) {
+void TaskPostWarpVector::on_Min_valueChanged(double) {
 
     ui->Slider->blockSignals(true);
     ui->Slider->setValue((ui->Value->value() - ui->Min->value()) / (ui->Max->value() - ui->Min->value())*100.);
@@ -848,6 +851,7 @@ TaskPostCut::TaskPostCut(ViewProviderDocumentObject* view, App::PropertyLink* fu
 
     assert(view->isDerivedFrom(ViewProviderFemPostCut::getClassTypeId()));
     assert(function);
+    Q_UNUSED(function)
 
     fwidget = NULL;
 
@@ -867,7 +871,9 @@ TaskPostCut::TaskPostCut(ViewProviderDocumentObject* view, App::PropertyLink* fu
 
     //add the function creation command
     Gui::CommandManager &rcCmdMgr = Gui::Application::Instance->commandManager();
-    rcCmdMgr.getCommandByName("Fem_PostCreateFunctions")->getAction()->addTo(ui->CreateButton);
+    Gui::Command* cmd = rcCmdMgr.getCommandByName("FEM_PostCreateFunctions");
+    if (cmd && cmd->getAction())
+        cmd->getAction()->addTo(ui->CreateButton);
     ui->CreateButton->setPopupMode(QToolButton::InstantPopup);
 }
 
@@ -900,7 +906,7 @@ void TaskPostCut::collectImplicitFunctions() {
     }
 }
 
-void TaskPostCut::on_CreateButton_triggered(QAction* a) {
+void TaskPostCut::on_CreateButton_triggered(QAction*) {
 
     collectImplicitFunctions();
     recompute();

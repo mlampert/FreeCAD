@@ -27,7 +27,7 @@ __title__="FreeCAD Arch Space"
 __author__ = "Yorik van Havre"
 __url__ = "http://www.freecadweb.org"
 
-Roles = ["Space"]
+Roles = ["Undefined","Space"]
 
 SpaceTypes = [
 "Undefined",
@@ -229,9 +229,11 @@ class _CommandSpace:
         if sel:
             FreeCADGui.Control.closeDialog()
             if len(sel) == 1:
-                FreeCADGui.doCommand("Arch.makeSpace(FreeCADGui.Selection.getSelection())")
+                FreeCADGui.doCommand("obj = Arch.makeSpace(FreeCADGui.Selection.getSelection())")
             else:
-                FreeCADGui.doCommand("Arch.makeSpace(FreeCADGui.Selection.getSelectionEx())")
+                FreeCADGui.doCommand("obj = Arch.makeSpace(FreeCADGui.Selection.getSelectionEx())")
+            FreeCADGui.addModule("Draft")
+            FreeCADGui.doCommand("Draft.autogroup(obj)")
             FreeCAD.ActiveDocument.commitTransaction()
             FreeCAD.ActiveDocument.recompute()
         else:
@@ -263,23 +265,17 @@ class _Space(ArchComponent.Component):
         obj.SpaceType = SpaceTypes
         obj.Conditioning = ConditioningTypes
         obj.Role = Roles
+        obj.Role = "Space"
         obj.setEditorMode("HorizontalArea",2)
 
     def execute(self,obj):
         
         if self.clone(obj):
             return
-        
         self.getShape(obj)
 
     def onChanged(self,obj,prop):
-        if prop in ["Boundaries","Base"]:
-            self.getShape(obj)
-            if hasattr(obj.Area,"Value"):
-                a = self.getArea(obj)
-                if obj.Area.Value != a:
-                    obj.Area = a
-        elif prop == "Group":
+        if prop == "Group":
             if hasattr(obj,"EquipmentPower"):
                 if obj.AutoPower:
                     p = 0
@@ -290,6 +286,7 @@ class _Space(ArchComponent.Component):
                         obj.EquipmentPower = p
         if hasattr(obj,"Area"):
             obj.setEditorMode('Area',1)
+        ArchComponent.Component.onChanged(self,obj,prop)
 
     def addSubobjects(self,obj,subobjects):
         "adds subobjects to this space"
@@ -310,8 +307,10 @@ class _Space(ArchComponent.Component):
         import Part
         shape = None
         faces = []
+        
+        pl = obj.Placement
 
-        #print "starting compute"
+        #print("starting compute")
         # 1: if we have a base shape, we use it
 
         if obj.Base:
@@ -322,7 +321,7 @@ class _Space(ArchComponent.Component):
 
         # 2: if not, add all bounding boxes of considered objects and build a first shape
         if shape:
-            #print "got shape from base object"
+            #print("got shape from base object")
             bb = shape.BoundBox
         else:
             bb = None
@@ -335,18 +334,19 @@ class _Space(ArchComponent.Component):
             if not bb:
                 return
             shape = Part.makeBox(bb.XLength,bb.YLength,bb.ZLength,FreeCAD.Vector(bb.XMin,bb.YMin,bb.ZMin))
-            #print "created shape from boundbox"
+            #print("created shape from boundbox")
 
         # 3: identifing boundary faces
         goodfaces = []
         for b in obj.Boundaries:
                 if b[0].isDerivedFrom("Part::Feature"):
-                    if "Face" in b[1]:
-                        fn = int(b[1][4:])-1
-                        faces.append(b[0].Shape.Faces[fn])
-                        #print "adding face ",fn," of object ",b[0].Name
+                    for sub in b[1]:
+                        if "Face" in sub:
+                            fn = int(sub[4:])-1
+                            faces.append(b[0].Shape.Faces[fn])
+                            #print("adding face ",fn," of object ",b[0].Name)
 
-        #print "total: ", len(faces), " faces"
+        #print("total: ", len(faces), " faces")
 
         # 4: get cutvolumes from faces
         cutvolumes = []
@@ -355,22 +355,28 @@ class _Space(ArchComponent.Component):
             f.reverse()
             cutface,cutvolume,invcutvolume = ArchCommands.getCutVolume(f,shape)
             if cutvolume:
-                #print "generated 1 cutvolume"
+                #print("generated 1 cutvolume")
                 cutvolumes.append(cutvolume.copy())
                 #Part.show(cutvolume)
         for v in cutvolumes:
-            #print "cutting"
+            #print("cutting")
             shape = shape.cut(v)
 
         # 5: get the final shape
         if shape:
             if shape.Solids:
-                #print "setting objects shape"
+                #print("setting objects shape")
                 shape = shape.Solids[0]
                 obj.Shape = shape
+                pl = pl.multiply(obj.Placement)
+                obj.Placement = pl
+                if hasattr(obj.Area,"Value"):
+                    a = self.getArea(obj)
+                    if obj.Area.Value != a:
+                        obj.Area = a
                 return
 
-        print "Arch: error computing space boundary"
+        print("Arch: error computing space boundary")
 
     def getArea(self,obj):
         "returns the horizontal area at the center of the space"
@@ -400,6 +406,7 @@ class _Space(ArchComponent.Component):
                         a += f.Area
                     if a != obj.VerticalArea.Value:
                         obj.VerticalArea = a
+            #print "area of ",obj.Label," : ",f.Area
             return f.Area
 
 
@@ -412,7 +419,7 @@ class _ViewProviderSpace(ArchComponent.ViewProviderComponent):
         vobj.LineColor = (1.0,0.0,0.0,1.0)
         vobj.DrawStyle = "Dotted"
         vobj.addProperty("App::PropertyStringList",    "Text",        "Arch",QT_TRANSLATE_NOOP("App::Property","The text to show. Use $area, $label, $tag, $floor, $walls, $ceiling to insert the respective data"))
-        vobj.addProperty("App::PropertyString",        "FontName",    "Arch",QT_TRANSLATE_NOOP("App::Property","The name of the font"))
+        vobj.addProperty("App::PropertyFont",          "FontName",    "Arch",QT_TRANSLATE_NOOP("App::Property","The name of the font"))
         vobj.addProperty("App::PropertyColor",         "TextColor",   "Arch",QT_TRANSLATE_NOOP("App::Property","The color of the area text"))
         vobj.addProperty("App::PropertyLength",        "FontSize",    "Arch",QT_TRANSLATE_NOOP("App::Property","The size of the text font"))
         vobj.addProperty("App::PropertyLength",        "FirstLine",   "Arch",QT_TRANSLATE_NOOP("App::Property","The size of the first line of text"))
@@ -469,7 +476,7 @@ class _ViewProviderSpace(ArchComponent.ViewProviderComponent):
         self.onChanged(vobj,"FontName")
 
     def updateData(self,obj,prop):
-        if prop in ["Shape","Label","Tag"]:
+        if prop in ["Shape","Label","Tag","Area"]:
             self.onChanged(obj.ViewObject,"Text")
             self.onChanged(obj.ViewObject,"TextPosition")
 
@@ -500,8 +507,8 @@ class _ViewProviderSpace(ArchComponent.ViewProviderComponent):
                     if t:
                         if hasattr(vobj.Object,"Area"):
                             from FreeCAD import Units
-                            q = Units.Quantity(vobj.Object.Area,Units.Area).getUserPreferred()
-                            qt = vobj.Object.Area/q[1]
+                            q = Units.Quantity(vobj.Object.Area.Value,Units.Area).getUserPreferred()
+                            qt = vobj.Object.Area.Value/q[1]
                             if hasattr(vobj,"Decimals"):
                                 if vobj.Decimals == 0:
                                     qt = str(int(qt))
@@ -587,6 +594,7 @@ class _ViewProviderSpace(ArchComponent.ViewProviderComponent):
         taskd = SpaceTaskPanel()
         taskd.obj = self.Object
         taskd.update()
+        taskd.updateBoundaries()
         FreeCADGui.Control.showDialog(taskd)
         return True
 
@@ -600,12 +608,58 @@ class SpaceTaskPanel(ArchComponent.ComponentTaskPanel):
         self.editButton.setObjectName("editButton")
         self.editButton.setIcon(QtGui.QIcon(":/icons/Draft_Edit.svg"))
         self.grid.addWidget(self.editButton, 4, 0, 1, 2)
-        self.editButton.setText(QtGui.QApplication.translate("Arch", "Set text position", None, QtGui.QApplication.UnicodeUTF8))
+        self.editButton.setText(QtGui.QApplication.translate("Arch", "Set text position", None))
         QtCore.QObject.connect(self.editButton, QtCore.SIGNAL("clicked()"), self.setTextPos)
+        boundLabel = QtGui.QLabel(self.form)
+        self.grid.addWidget(boundLabel, 5, 0, 1, 2)
+        boundLabel.setText(QtGui.QApplication.translate("Arch", "Space boundaries", None))
+        self.boundList = QtGui.QListWidget(self.form)
+        self.grid.addWidget(self.boundList, 6, 0, 1, 2)
+        self.addCompButton = QtGui.QPushButton(self.form)
+        self.addCompButton.setObjectName("addCompButton")
+        self.addCompButton.setIcon(QtGui.QIcon(":/icons/Arch_Add.svg"))
+        self.grid.addWidget(self.addCompButton, 7, 0, 1, 1)
+        self.addCompButton.setText(QtGui.QApplication.translate("Arch", "Add", None))
+        QtCore.QObject.connect(self.addCompButton, QtCore.SIGNAL("clicked()"), self.addBoundary)
+        self.delCompButton = QtGui.QPushButton(self.form)
+        self.delCompButton.setObjectName("delCompButton")
+        self.delCompButton.setIcon(QtGui.QIcon(":/icons/Arch_Remove.svg"))
+        self.grid.addWidget(self.delCompButton, 7, 1, 1, 1)
+        self.delCompButton.setText(QtGui.QApplication.translate("Arch", "Remove", None))
+        QtCore.QObject.connect(self.delCompButton, QtCore.SIGNAL("clicked()"), self.delBoundary)
+    
+    def updateBoundaries(self):
+        self.boundList.clear()
+        if self.obj:
+            for b in self.obj.Boundaries:
+                s = b[0].Label
+                for n in b[1]:
+                    s += ", " + n
+                it = QtGui.QListWidgetItem(s)
+                it.setToolTip(b[0].Name)
+                self.boundList.addItem(it)
         
     def setTextPos(self):
         FreeCADGui.runCommand("Draft_Edit")
 
+    def addBoundary(self):
+        if self.obj:
+            if FreeCADGui.Selection.getSelectionEx():
+                self.obj.Proxy.addSubobjects(self.obj,FreeCADGui.Selection.getSelectionEx())
+                self.updateBoundaries()
+        
+    def delBoundary(self):
+        if self.boundList.currentRow() >= 0:
+            it = self.boundList.item(self.boundList.currentRow())
+            if it and self.obj:
+                on = it.toolTip()
+                bounds = self.obj.Boundaries
+                for b in bounds:
+                    if b[0].Name == on:
+                        bounds.remove(b)
+                        break
+                self.obj.Boundaries = bounds
+                self.updateBoundaries()
 
 if FreeCAD.GuiUp:
     FreeCADGui.addCommand('Arch_Space',_CommandSpace())

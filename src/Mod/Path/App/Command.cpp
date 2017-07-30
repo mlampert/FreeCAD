@@ -26,6 +26,8 @@
 #ifndef _PreComp_
 
 #endif
+#include <cinttypes>
+#include <iomanip>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <Base/Vector3D.h>
@@ -58,83 +60,78 @@ Command::~Command()
 
 // New methods
 
-Placement Command::getPlacement (void)
+Placement Command::getPlacement (void) const
 {
-    std::string x = "X";
-    std::string y = "Y";
-    std::string z = "Z";
-    std::string a = "A";
-    std::string b = "B";
-    std::string c = "C";
-    double xval = 0.0;
-    double yval = 0.0;
-    double zval = 0.0;
-    double aval = 0.0;
-    double bval = 0.0;
-    double cval = 0.0;
-    if (Parameters.count(x))
-        xval = Parameters[x];
-    if (Parameters.count(y))
-        yval = Parameters[y];
-    if (Parameters.count(z))
-        zval = Parameters[z];
-    if (Parameters.count(a))
-        aval = Parameters[a];
-    if (Parameters.count(b))
-        bval = Parameters[b];
-    if (Parameters.count(c))
-        cval = Parameters[c];
-    Vector3d vec(xval,yval,zval);
+    static const std::string x = "X";
+    static const std::string y = "Y";
+    static const std::string z = "Z";
+    static const std::string a = "A";
+    static const std::string b = "B";
+    static const std::string c = "C";
+    Vector3d vec(getParam(x),getParam(y),getParam(z));
     Rotation rot;
-    rot.setYawPitchRoll(aval,bval,cval);
+    rot.setYawPitchRoll(getParam(a),getParam(b),getParam(c));
     Placement plac(vec,rot);
     return plac;
 }
 
-Vector3d Command::getCenter (void)
+Vector3d Command::getCenter (void) const
 {
-    std::string i = "I";
-    std::string j = "J";
-    std::string k = "K";
-    double ival = 0.0;
-    double jval = 0.0;
-    double kval = 0.0;
-    if (Parameters.count(i))
-        ival = Parameters[i];
-    if (Parameters.count(j))
-        jval = Parameters[j];
-    if (Parameters.count(k))
-        kval = Parameters[k];
-    Vector3d vec(ival,jval,kval);
+    static const std::string i = "I";
+    static const std::string j = "J";
+    static const std::string k = "K";
+    Vector3d vec(getParam(i),getParam(j),getParam(k));
     return vec;
 }
 
-double Command::getValue(const std::string& attr)
+double Command::getValue(const std::string& attr) const
 {
     std::string a(attr);
     boost::to_upper(a);
-    double val = 0.0;
-    if (Parameters.count(a))
-        val = Parameters[a];
-    return val;
+    return getParam(a);
 }
 
-bool Command::has(const std::string& attr)
+bool Command::has(const std::string& attr) const
 {
     std::string a(attr);
     boost::to_upper(a);
     return Parameters.count(a) > 0;
 }
 
-std::string Command::toGCode (void) const
+std::string Command::toGCode (int precision, bool padzero) const
 {
     std::stringstream str;
-    str.precision(5);
+    str.fill('0');
     str << Name;
+    if(precision<0) 
+        precision = 0;
+    double scale = std::pow(10.0,precision+1);
+    std::int64_t iscale = static_cast<std::int64_t>(scale)/10;
     for(std::map<std::string,double>::const_iterator i = Parameters.begin(); i != Parameters.end(); ++i) {
-        std::string k = i->first;
-        std::string v = std::to_string(i->second);
-        str << " " << k << v;
+        if(i->first == "N") continue;
+
+        str << " " << i->first;
+
+        std::int64_t v = static_cast<std::int64_t>(i->second*scale);
+        if(v<0) {
+            v = -v;
+            str << '-'; //shall we allow -0 ?
+        }
+        v+=5;
+        v /= 10;
+        str << (v/iscale);
+        if(!precision) continue;
+
+        int width = precision;
+        std::int64_t digits = v%iscale;
+        if(!padzero) {
+            if(!digits) continue;
+            while(digits%10 == 0) {
+                digits/=10;
+                --width;
+            }
+        }
+        str << '.' << std::setw(width) << std::right << digits;
     }
     return str.str();
 }
@@ -209,12 +206,12 @@ void Command::setFromPlacement (const Base::Placement &plac)
 {
     Name = "G1";
     Parameters.clear();
-    std::string x = "X";
-    std::string y = "Y";
-    std::string z = "Z";
-    std::string a = "A";
-    std::string b = "B";
-    std::string c = "C";
+    static const std::string x = "X";
+    static const std::string y = "Y";
+    static const std::string z = "Z";
+    static const std::string a = "A";
+    static const std::string b = "B";
+    static const std::string c = "C";
     double xval, yval, zval, aval, bval, cval;
     xval = plac.getPosition().x;
     yval = plac.getPosition().y;
@@ -241,9 +238,9 @@ void Command::setCenter(const Base::Vector3d &pos, bool clockwise)
     } else {
         Name = "G3";
     }
-    std::string i = "I";
-    std::string j = "J";
-    std::string k = "K";
+    static const std::string i = "I";
+    static const std::string j = "J";
+    static const std::string k = "K";
     double ival, jval, kval;
     ival = pos.x;
     jval = pos.y;

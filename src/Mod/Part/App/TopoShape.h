@@ -81,6 +81,7 @@ public:
     Base::Matrix4D getTransform(void) const;
     /// Bound box from the CasCade shape
     Base::BoundBox3d getBoundBox(void)const;
+    virtual bool getCenterOfGravity(Base::Vector3d& center) const;
     static void convertTogpTrsf(const Base::Matrix4D& mtrx, gp_Trsf& trsf);
     static void convertToMatrix(const gp_Trsf& trsf, Base::Matrix4D& mtrx);
     //@}
@@ -147,18 +148,21 @@ public:
     //@{
     bool isNull() const;
     bool isValid() const;
-    bool analyze(std::ostream&) const;
+    bool analyze(bool runBopCheck, std::ostream&) const;
     bool isClosed() const;
     //@}
 
     /** @name Boolean operation*/
     //@{
     TopoDS_Shape cut(TopoDS_Shape) const;
+    TopoDS_Shape cut(const std::vector<TopoDS_Shape>&, Standard_Real tolerance = 0.0) const;
     TopoDS_Shape common(TopoDS_Shape) const;
+    TopoDS_Shape common(const std::vector<TopoDS_Shape>&, Standard_Real tolerance = 0.0) const;
     TopoDS_Shape fuse(TopoDS_Shape) const;
-    TopoDS_Shape multiFuse(const std::vector<TopoDS_Shape>&, Standard_Real tolerance = 0.0) const;
+    TopoDS_Shape fuse(const std::vector<TopoDS_Shape>&, Standard_Real tolerance = 0.0) const;
     TopoDS_Shape oldFuse(TopoDS_Shape) const;
     TopoDS_Shape section(TopoDS_Shape) const;
+    TopoDS_Shape section(const std::vector<TopoDS_Shape>&, Standard_Real tolerance = 0.0) const;
     std::list<TopoDS_Wire> slice(const Base::Vector3d&, double) const;
     TopoDS_Compound slices(const Base::Vector3d&, const std::vector<double>&) const;
     /**

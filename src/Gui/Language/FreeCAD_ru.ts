@@ -21,7 +21,7 @@
     </message>
     <message>
         <source>Angle Snap</source>
-        <translation>Прилипание угла</translation>
+        <translation>Угловая привязка</translation>
     </message>
     <message utf8="true">
         <source>1 °</source>
@@ -29,7 +29,7 @@
     </message>
     <message utf8="true">
         <source>2 °</source>
-        <translation>false</translation>
+        <translation>2 °</translation>
     </message>
     <message utf8="true">
         <source>5 °</source>
@@ -60,11 +60,31 @@
     <name>App::Property</name>
     <message>
         <source>The displayed size of the origin</source>
-        <translation type="unfinished"></translation>
+        <translation>Отображаемый размер начала координат</translation>
     </message>
     <message>
         <source>Visual size of the feature</source>
-        <translation type="unfinished"></translation>
+        <translation>Визуальный размер детали</translation>
+    </message>
+    <message>
+        <source>&lt;empty&gt;</source>
+        <translation>&lt;пусто&gt;</translation>
+    </message>
+    <message>
+        <source>Angle</source>
+        <translation>Угол</translation>
+    </message>
+    <message>
+        <source>Axis</source>
+        <translation>Ось</translation>
+    </message>
+    <message>
+        <source>Position</source>
+        <translation>Положение</translation>
+    </message>
+    <message>
+        <source>Base</source>
+        <translation>Основание</translation>
     </message>
 </context>
 <context>
@@ -97,7 +117,7 @@
     </message>
     <message>
         <source>Toggle measurement</source>
-        <translation>Скрыть/Показать всё</translation>
+        <translation>Переключить измерение</translation>
     </message>
 </context>
 <context>
@@ -160,33 +180,6 @@
     <message>
         <source>Ok</source>
         <translation>Да</translation>
-    </message>
-</context>
-<context>
-    <name>DlgUnitCalculator</name>
-    <message>
-        <source>Units calculator</source>
-        <translation type="obsolete">Конвертер величин</translation>
-    </message>
-    <message>
-        <source>as:</source>
-        <translation type="obsolete">в</translation>
-    </message>
-    <message>
-        <source>=&gt;</source>
-        <translation type="obsolete">=</translation>
-    </message>
-    <message>
-        <source>Help</source>
-        <translation type="obsolete">Справка</translation>
-    </message>
-    <message>
-        <source>Copy</source>
-        <translation type="obsolete">Скопировать</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="obsolete">Закрыть</translation>
     </message>
 </context>
 <context>
@@ -339,19 +332,19 @@ while doing a left or right click and move the mouse up or down</source>
     <name>Gui::DAG::Model</name>
     <message>
         <source>Rename</source>
-        <translation type="unfinished">Переименовать</translation>
+        <translation>Переименовать</translation>
     </message>
     <message>
         <source>Rename object</source>
-        <translation type="unfinished">Переименовать объект</translation>
+        <translation>Переименовать объект</translation>
     </message>
     <message>
         <source>Finish editing</source>
-        <translation type="unfinished">Завершить редактирование</translation>
+        <translation>Завершить редактирование</translation>
     </message>
     <message>
         <source>Finish editing object</source>
-        <translation type="unfinished">Завершить редактирование объекта</translation>
+        <translation>Завершить редактирование объекта</translation>
     </message>
 </context>
 <context>
@@ -381,10 +374,6 @@ while doing a left or right click and move the mouse up or down</source>
         <translation>Дата выпуска</translation>
     </message>
     <message>
-        <source>License...</source>
-        <translation type="obsolete">Лицензия ...</translation>
-    </message>
-    <message>
         <source>Copy to clipboard</source>
         <translation>Скопировать в буфер обмена</translation>
     </message>
@@ -398,15 +387,15 @@ while doing a left or right click and move the mouse up or down</source>
     </message>
     <message>
         <source>Credits</source>
-        <translation type="unfinished"></translation>
+        <translation>Благодарности</translation>
     </message>
     <message>
         <source>FreeCAD would be nowhere without their efforts:</source>
-        <translation type="unfinished"></translation>
+        <translation>FreeCAD не увидел бы свет без их участия:</translation>
     </message>
     <message>
         <source>License</source>
-        <translation type="unfinished"></translation>
+        <translation>Лицензионное соглашение</translation>
     </message>
 </context>
 <context>
@@ -417,14 +406,14 @@ while doing a left or right click and move the mouse up or down</source>
     </message>
     <message>
         <source>Out Of Range</source>
-        <translation>нет такой кнопки</translation>
+        <translation>За пределами диапазона</translation>
     </message>
 </context>
 <context>
     <name>Gui::Dialog::Clipping</name>
     <message>
         <source>Clipping</source>
-        <translation>Отсечения</translation>
+        <translation>Отсечение</translation>
     </message>
     <message>
         <source>Clipping X</source>
@@ -440,15 +429,15 @@ while doing a left or right click and move the mouse up or down</source>
     </message>
     <message>
         <source>Clipping Y</source>
-        <translation>Отсечение по Y</translation>
+        <translation>Отсечение по оси Y</translation>
     </message>
     <message>
         <source>Clipping Z</source>
-        <translation>Отсечение по Z</translation>
+        <translation>Отсечение по оси Z</translation>
     </message>
     <message>
         <source>Clipping custom direction</source>
-        <translation>Отсечение по произвольному направлению</translation>
+        <translation>Произвольное направление отсечения</translation>
     </message>
     <message>
         <source>View</source>
@@ -578,26 +567,26 @@ while doing a left or right click and move the mouse up or down</source>
     <name>Gui::Dialog::DlgCheckableMessageBox</name>
     <message>
         <source>Dialog</source>
-        <translation type="unfinished">Диалог</translation>
+        <translation>Диалог</translation>
     </message>
     <message>
         <source>TextLabel</source>
-        <translation type="unfinished">Текстовая метка</translation>
+        <translation>Текстовая надпись</translation>
     </message>
     <message>
         <source>CheckBox</source>
-        <translation type="unfinished"></translation>
+        <translation>Флажок</translation>
     </message>
 </context>
 <context>
     <name>Gui::Dialog::DlgChooseIcon</name>
     <message>
         <source>Choose Icon</source>
-        <translation>Выберите иконку</translation>
+        <translation>Выберите значок</translation>
     </message>
     <message>
         <source>Icon folders...</source>
-        <translation>Список папок...</translation>
+        <translation>Папки значков...</translation>
     </message>
 </context>
 <context>
@@ -608,11 +597,11 @@ while doing a left or right click and move the mouse up or down</source>
     </message>
     <message>
         <source>Setup Custom Macros</source>
-        <translation>Настройка пользовательских макросов</translation>
+        <translation>Настройте пользовательские макрокоманды</translation>
     </message>
     <message>
         <source>Macro:</source>
-        <translation>Макрос:</translation>
+        <translation>Макрокоманда:</translation>
     </message>
     <message>
         <source>...</source>
@@ -620,7 +609,7 @@ while doing a left or right click and move the mouse up or down</source>
     </message>
     <message>
         <source>Pixmap</source>
-        <translation>Изображение</translation>
+        <translation>Растровое изображение</translation>
     </message>
     <message>
         <source>Accelerator:</source>
@@ -640,7 +629,7 @@ while doing a left or right click and move the mouse up or down</source>
     </message>
     <message>
         <source>Menu text:</source>
-        <translation>В меню:</translation>
+        <translation>Текст меню:</translation>
     </message>
     <message>
         <source>Add</source>
@@ -659,7 +648,7 @@ while doing a left or right click and move the mouse up or down</source>
     <name>Gui::Dialog::DlgCustomActionsImp</name>
     <message>
         <source>Icons</source>
-        <translation>Иконки</translation>
+        <translation>Значки</translation>
     </message>
     <message>
         <source>Macros</source>
@@ -667,27 +656,27 @@ while doing a left or right click and move the mouse up or down</source>
     </message>
     <message>
         <source>No macro</source>
-        <translation>Нет макросов</translation>
+        <translation>Макрокоманда отсутствует</translation>
     </message>
     <message>
         <source>No macros found.</source>
-        <translation>Нет ни одного макроса.</translation>
+        <translation>Макрокоманды не обнаружены.</translation>
     </message>
     <message>
         <source>Macro not found</source>
-        <translation>Макрос не найден</translation>
+        <translation>Макрокоманда не обнаружена</translation>
     </message>
     <message>
         <source>Sorry, couldn&apos;t find macro file &apos;%1&apos;.</source>
-        <translation>К сожалению не удалось найти файл макроса &apos;%1&apos;.</translation>
+        <translation>К сожалению, не удалось найти файл макрокоманды &apos;%1&apos;.</translation>
     </message>
     <message>
         <source>Empty macro</source>
-        <translation>Пустой макрос</translation>
+        <translation>Пустая макрокоманда</translation>
     </message>
     <message>
         <source>Please specify the macro first.</source>
-        <translation>Сначала укажите макрос. </translation>
+        <translation>Сначала укажите макрокоманду, пожалуйста.</translation>
     </message>
     <message>
         <source>Empty text</source>
@@ -695,7 +684,7 @@ while doing a left or right click and move the mouse up or down</source>
     </message>
     <message>
         <source>Please specify the menu text first.</source>
-        <translation>Пожалуйста, укажите сначала текст в меню.</translation>
+        <translation>Пожалуйста, сначала укажите текст меню.</translation>
     </message>
     <message>
         <source>No item selected</source>
@@ -703,7 +692,7 @@ while doing a left or right click and move the mouse up or down</source>
     </message>
     <message>
         <source>Please select a macro item first.</source>
-        <translation>Пожалуйста, сначала выберите макрос.</translation>
+        <translation>Пожалуйста, сначала выберите макрокоманду.</translation>
     </message>
 </context>
 <context>
@@ -725,7 +714,7 @@ while doing a left or right click and move the mouse up or down</source>
     </message>
     <message>
         <source>Icon</source>
-        <translation>Иконка</translation>
+        <translation>Значок</translation>
     </message>
     <message>
         <source>Command</source>
@@ -756,7 +745,7 @@ while doing a left or right click and move the mouse up or down</source>
     </message>
     <message>
         <source>Press &amp;new shortcut:</source>
-        <translation>Нажмите &amp;новую комбинацию клавиш:</translation>
+        <translation>Нажмите &amp;новое сочетание клавиш:</translation>
     </message>
     <message>
         <source>Currently assigned to:</source>
@@ -792,14 +781,14 @@ while doing a left or right click and move the mouse up or down</source>
     </message>
     <message>
         <source>Clear</source>
-        <translation type="unfinished">Очистить</translation>
+        <translation>Очистить</translation>
     </message>
 </context>
 <context>
     <name>Gui::Dialog::DlgCustomKeyboardImp</name>
     <message>
         <source>Icon</source>
-        <translation>Иконка</translation>
+        <translation>Значок</translation>
     </message>
     <message>
         <source>Command</source>
@@ -811,11 +800,11 @@ while doing a left or right click and move the mouse up or down</source>
     </message>
     <message>
         <source>Multiple defined shortcut</source>
-        <translation>Несколько ссылок</translation>
+        <translation>Многократно определенное сочетание клавиш</translation>
     </message>
     <message>
         <source>The shortcut &apos;%1&apos; is defined more than once. This could result into unexpected behaviour.</source>
-        <translation>Сочетанию клавиш &apos;%1&apos; назначено более одного действия. Это может привести к неожиданному поведению.</translation>
+        <translation>Сочетание клавиш &apos;%1&apos; назначено для нескольких разных операций. Это может привести к неожиданному поведению.</translation>
     </message>
     <message>
         <source>Already defined shortcut</source>
@@ -825,7 +814,7 @@ while doing a left or right click and move the mouse up or down</source>
         <source>The shortcut &apos;%1&apos; is already assigned to &apos;%2&apos;.
 
 Please define another shortcut.</source>
-        <translation>Сочетание &apos;%1&apos; уже назначено: &apos;%2&apos;.
+        <translation>Сочетание &apos;%1&apos; уже назначено для &apos;%2&apos;.
 
 Пожалуйста, измените сочетание.</translation>
     </message>
@@ -849,7 +838,7 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>Move right</source>
-        <translation>Добавить</translation>
+        <translation>Переместить вправо</translation>
     </message>
     <message>
         <source>&lt;b&gt;Move the selected item one level down.&lt;/b&gt;&lt;p&gt;This will also change the level of the parent item.&lt;/p&gt;</source>
@@ -857,7 +846,7 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>Move left</source>
-        <translation>Удалить</translation>
+        <translation>Переместить влево</translation>
     </message>
     <message>
         <source>&lt;b&gt;Move the selected item one level up.&lt;/b&gt;&lt;p&gt;This will also change the level of the parent item.&lt;/p&gt;</source>
@@ -869,7 +858,7 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>&lt;b&gt;Move the selected item down.&lt;/b&gt;&lt;p&gt;The item will be moved within the hierarchy level.&lt;/p&gt;</source>
-        <translation>&lt;b&gt;Move the selected item down.&lt;/b&gt;&lt;p&gt;The item will be moved within the hierarchy level.&lt;/p&gt;</translation>
+        <translation>&lt;b&gt;Переместите выбранный элемент вниз.&lt;/b&gt;&lt;p&gt;Элемент будет перемещен внутри уровня иерархии.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Move up</source>
@@ -877,7 +866,7 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>&lt;b&gt;Move the selected item up.&lt;/b&gt;&lt;p&gt;The item will be moved within the hierarchy level.&lt;/p&gt;</source>
-        <translation>&lt;b&gt;Move the selected item up.&lt;/b&gt;&lt;p&gt;The item will be moved within the hierarchy level.&lt;/p&gt;</translation>
+        <translation>&lt;b&gt;Переместите выбранный элемент вверх.&lt;/b&gt;&lt;p&gt;Элемент будет перемещен внутри уровня иерархии.&lt;/p&gt;</translation>
     </message>
     <message>
         <source>New...</source>
@@ -893,7 +882,7 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>Icon</source>
-        <translation>Иконка</translation>
+        <translation>Значок</translation>
     </message>
     <message>
         <source>Command</source>
@@ -909,7 +898,7 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>Toolbar name:</source>
-        <translation>Имя панели инструментов: </translation>
+        <translation>Наименование панели инструментов:</translation>
     </message>
     <message>
         <source>Duplicated name</source>
@@ -917,7 +906,7 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>The toolbar name &apos;%1&apos; is already used</source>
-        <translation>Имя панели инструментов &apos;%1&apos; уже используется</translation>
+        <translation>Название панели инструментов &apos;%1&apos; уже используется</translation>
     </message>
     <message>
         <source>Rename toolbar</source>
@@ -929,7 +918,7 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>Global</source>
-        <translation>Глобально</translation>
+        <translation>Глобальный</translation>
     </message>
 </context>
 <context>
@@ -955,14 +944,14 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>No Spaceball Present</source>
-        <translation>Spaceball не присутствует</translation>
+        <translation>Spaceball отсутствует</translation>
     </message>
 </context>
 <context>
     <name>Gui::Dialog::DlgCustomizeSpaceball</name>
     <message>
         <source>No Spaceball Present</source>
-        <translation>Spaceball не присутствует</translation>
+        <translation>Spaceball отсутствует</translation>
     </message>
     <message>
         <source>Buttons</source>
@@ -1017,7 +1006,7 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>Plot mode:</source>
-        <translation>Режим графика:</translation>
+        <translation>Режим графопостроения:</translation>
     </message>
     <message>
         <source></source>
@@ -1033,11 +1022,11 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>Shape color:</source>
-        <translation>Цвет граней:</translation>
+        <translation>Цвет фигуры:</translation>
     </message>
     <message>
         <source>Color plot:</source>
-        <translation>Цветографик:</translation>
+        <translation>Цветной график:</translation>
     </message>
     <message>
         <source>Document window:</source>
@@ -1120,7 +1109,7 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>Shiny plastic</source>
-        <translation>Бликующий пластик</translation>
+        <translation>Блестящий пластик</translation>
     </message>
     <message>
         <source>Silver</source>
@@ -1159,7 +1148,7 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>Insert spaces</source>
-        <translation>Заменять на пробелы</translation>
+        <translation>Вставить пробелы</translation>
     </message>
     <message>
         <source>Tab size:</source>
@@ -1171,15 +1160,15 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>Keep tabs</source>
-        <translation>Символы табуляции</translation>
+        <translation>Сохранять знаки табуляции</translation>
     </message>
     <message>
         <source>Display Items</source>
-        <translation>Раскрашивание кода</translation>
+        <translation>Отображаемые элементы</translation>
     </message>
     <message>
         <source>Family:</source>
-        <translation>Шрифт:</translation>
+        <translation>Семейство:</translation>
     </message>
     <message>
         <source>Size:</source>
@@ -1202,11 +1191,11 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>Start up</source>
-        <translation>Запуск</translation>
+        <translation>Настройки запуска</translation>
     </message>
     <message>
         <source>Enable splash screen at start up</source>
-        <translation>Включить заставку при запуске</translation>
+        <translation>Включение экрана-заставки при запуске</translation>
     </message>
     <message>
         <source>Switch to tab of report window:</source>
@@ -1214,7 +1203,7 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>Auto load module after start up:</source>
-        <translation>Автоматическая загружать верстак:</translation>
+        <translation>При запуске автоматически загружать верстак:</translation>
     </message>
     <message>
         <source>Language</source>
@@ -1222,7 +1211,7 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>Change language:</source>
-        <translation>Изменить язык (Change language):</translation>
+        <translation>Изменить язык:</translation>
     </message>
     <message>
         <source>Main window</source>
@@ -1238,7 +1227,7 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>Size of toolbar icons:</source>
-        <translation>Размер значков на панели инструментов:</translation>
+        <translation>Размер значков на панелях инструментов:</translation>
     </message>
     <message>
         <source>Enable tiled background</source>
@@ -1248,28 +1237,40 @@ Please define another shortcut.</source>
         <source>Style sheet:</source>
         <translation>Таблицы стилей:</translation>
     </message>
+    <message>
+        <source>Python console</source>
+        <translation>Консоль Python</translation>
+    </message>
+    <message>
+        <source>Enable word wrap</source>
+        <translation>Включить перенос слов</translation>
+    </message>
 </context>
 <context>
     <name>Gui::Dialog::DlgGeneralImp</name>
     <message>
-        <source>Default (%1 x %1)</source>
-        <translation>Обычные (%1х%1)</translation>
-    </message>
-    <message>
-        <source>Small (%1 x %1)</source>
-        <translation>Мелкие (%1%х%1)</translation>
-    </message>
-    <message>
-        <source>Large (%1 x %1)</source>
-        <translation>Крупные (%1 x %1)</translation>
-    </message>
-    <message>
-        <source>Extra large (%1 x %1)</source>
-        <translation>Очень крупные (%1 х %1)</translation>
-    </message>
-    <message>
         <source>No style sheet</source>
         <translation>Без таблицы стилей</translation>
+    </message>
+    <message>
+        <source>Small (%1px)</source>
+        <translation>Малый (%1px)</translation>
+    </message>
+    <message>
+        <source>Medium (%1px)</source>
+        <translation>Средний (%1px)</translation>
+    </message>
+    <message>
+        <source>Large (%1px)</source>
+        <translation>Крупный (%1px)</translation>
+    </message>
+    <message>
+        <source>Extra large (%1px)</source>
+        <translation>Очень крупный (%1px)</translation>
+    </message>
+    <message>
+        <source>Custom (%1px)</source>
+        <translation>Пользовательский (%1px)</translation>
     </message>
 </context>
 <context>
@@ -1294,11 +1295,11 @@ Please define another shortcut.</source>
     <name>Gui::Dialog::DlgMacroExecute</name>
     <message>
         <source>Execute macro</source>
-        <translation>Выполнить макрос</translation>
+        <translation>Выполнить макрокоманду</translation>
     </message>
     <message>
         <source>Macro name:</source>
-        <translation>Имя макроса:</translation>
+        <translation>Имя макрокоманды:</translation>
     </message>
     <message>
         <source>Execute</source>
@@ -1310,7 +1311,7 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>Create</source>
-        <translation>Запаковать</translation>
+        <translation>Создать</translation>
     </message>
     <message>
         <source>Delete</source>
@@ -1322,15 +1323,15 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>User macros</source>
-        <translation>Пользовательские макросы</translation>
+        <translation>Пользовательские макрокоманды</translation>
     </message>
     <message>
         <source>System macros</source>
-        <translation>Системные макросы</translation>
+        <translation>Системные макрокоманды</translation>
     </message>
     <message>
         <source>User macros location:</source>
-        <translation>Расположение пользовательских макросов:</translation>
+        <translation>Расположение пользовательских макрокоманд:</translation>
     </message>
 </context>
 <context>
@@ -1341,7 +1342,7 @@ Please define another shortcut.</source>
     </message>
     <message>
         <source>Macro file</source>
-        <translation>Файл макроса</translation>
+        <translation>Файл макрокоманды</translation>
     </message>
     <message>
         <source>Enter a file name, please:</source>
@@ -1354,15 +1355,16 @@ Please define another shortcut.</source>
     <message>
         <source>&apos;%1&apos;.
 This file already exists.</source>
-        <translation>&apos;%1&apos;. Этот файл уже существует.</translation>
+        <translation>&apos;%1&apos;.
+Этот файл уже существует.</translation>
     </message>
     <message>
         <source>Delete macro</source>
-        <translation>Удалить макрос</translation>
+        <translation>Удалить макрокоманду</translation>
     </message>
     <message>
         <source>Do you really want to delete the macro &apos;%1&apos;?</source>
-        <translation>Вы действительно хотите удалить макрос &apos;%1&apos; ?</translation>
+        <translation>Вы действительно хотите удалить макрокоманду &apos;%1&apos; ?</translation>
     </message>
     <message>
         <source>Cannot create file</source>
@@ -1381,11 +1383,11 @@ This file already exists.</source>
     <name>Gui::Dialog::DlgMacroRecord</name>
     <message>
         <source>Macro recording</source>
-        <translation>Запись макроса</translation>
+        <translation>Запись макрокоманды</translation>
     </message>
     <message>
         <source>Macro name:</source>
-        <translation>Имя макроса:</translation>
+        <translation>Имя макрокоманды:</translation>
     </message>
     <message>
         <source>Stop</source>
@@ -1397,7 +1399,7 @@ This file already exists.</source>
     </message>
     <message>
         <source>Macro path:</source>
-        <translation>Куда записывать макросы:</translation>
+        <translation>Путь к Макрокомандам:</translation>
     </message>
     <message>
         <source>...</source>
@@ -1412,7 +1414,7 @@ This file already exists.</source>
     <name>Gui::Dialog::DlgMacroRecordImp</name>
     <message>
         <source>Macro recorder</source>
-        <translation>Средство записи макросов</translation>
+        <translation>Средство записи макрокоманд</translation>
     </message>
     <message>
         <source>Specify first a place to save.</source>
@@ -1420,23 +1422,23 @@ This file already exists.</source>
     </message>
     <message>
         <source>Existing macro</source>
-        <translation>Уже есть</translation>
+        <translation>Существующая макрокоманда</translation>
     </message>
     <message>
         <source>The macro &apos;%1&apos; already exists. Do you want to overwrite?</source>
-        <translation>Макрос &apos;% 1&apos; уже существует. Вы хотите переписать?</translation>
+        <translation>Макрокоманда &apos;% 1&apos; уже существует. Хотите переписать?</translation>
     </message>
     <message>
         <source>The macro directory doesn&apos;t exist. Please, choose another one.</source>
-        <translation>Указанная директория не существует. Пожалуйста, укажите другую.</translation>
+        <translation>Каталога макрокоманд не существует. Пожалуйста, выберите другой.</translation>
     </message>
     <message>
         <source>Choose macro directory</source>
-        <translation>Выберите директорию для макросов</translation>
+        <translation>Выберите каталог для макрокоманд</translation>
     </message>
     <message>
         <source>You have no write permission for the directory. Please, choose another one.</source>
-        <translation>У вас отсутствуют права для записи в эту папку. Пожалуйста выберите другую.</translation>
+        <translation>У вас нет разрешения на запись в этот каталог. Пожалуйста, выберите другой.</translation>
     </message>
 </context>
 <context>
@@ -1455,11 +1457,11 @@ This file already exists.</source>
     </message>
     <message>
         <source>Specular color:</source>
-        <translation>Цвет блеска:</translation>
+        <translation>Отраженный цвет:</translation>
     </message>
     <message>
         <source>Shininess:</source>
-        <translation>Яркость:</translation>
+        <translation>Блеск:</translation>
     </message>
     <message>
         <source>%</source>
@@ -1467,7 +1469,7 @@ This file already exists.</source>
     </message>
     <message>
         <source>Ambient color:</source>
-        <translation>Окружающий цвет:</translation>
+        <translation>Цвет окружающей среды:</translation>
     </message>
     <message>
         <source></source>
@@ -1475,14 +1477,14 @@ This file already exists.</source>
     </message>
     <message>
         <source>Emissive color:</source>
-        <translation>Цвет свечения:</translation>
+        <translation>Излучаемый цвет:</translation>
     </message>
 </context>
 <context>
     <name>Gui::Dialog::DlgOnlineHelp</name>
     <message>
         <source>On-line help</source>
-        <translation>Он-лайн помощь</translation>
+        <translation>Он-лайн справка</translation>
     </message>
     <message>
         <source>Help viewer</source>
@@ -1503,12 +1505,13 @@ This file already exists.</source>
         <source>Access denied to &apos;%1&apos;
 
 Specify another directory, please.</source>
-        <translation>Отказано в доступе к &apos;% 1&apos;
+        <translation>Отказано в доступе к &apos;%1&apos;
+
 Укажите другой каталог, пожалуйста.</translation>
     </message>
     <message>
         <source>HTML files</source>
-        <translation>HTML файлы</translation>
+        <translation>HTML-файлы</translation>
     </message>
 </context>
 <context>
@@ -1550,11 +1553,11 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>User parameter</source>
-        <translation>Пользовательские параметры</translation>
+        <translation>Пользовательский параметр</translation>
     </message>
     <message>
         <source>Invalid input</source>
-        <translation>Неправильный ввод</translation>
+        <translation>Неверный ввод</translation>
     </message>
     <message>
         <source>Invalid key name &apos;%1&apos;</source>
@@ -1562,14 +1565,14 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>System parameter</source>
-        <translation>Параметры системы</translation>
+        <translation>Системный параметр</translation>
     </message>
 </context>
 <context>
     <name>Gui::Dialog::DlgPreferences</name>
     <message>
         <source>Preferences</source>
-        <translation>Настройка</translation>
+        <translation>Предпочтения</translation>
     </message>
     <message>
         <source></source>
@@ -1588,11 +1591,11 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>Do you want to clear all your user settings?</source>
-        <translation>Вы действительно хотите очистить все Ваши пользовательские настройки?</translation>
+        <translation>Вы хотите очистить все пользовательские настройки?</translation>
     </message>
     <message>
         <source>If you agree all your settings will be cleared.</source>
-        <translation>Если Вы согласитесь, то все Ваши пользовательские настройки будут очищены.</translation>
+        <translation>Если Вы согласны, то все Ваши пользовательские настройки будут очищены.</translation>
     </message>
 </context>
 <context>
@@ -1686,7 +1689,7 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>Create</source>
-        <translation>Запаковать</translation>
+        <translation>Создать</translation>
     </message>
     <message>
         <source>Load project file after creation</source>
@@ -1730,6 +1733,18 @@ Specify another directory, please.</source>
     <message>
         <source>Please select an object from the list</source>
         <translation>Выберите объект из списка</translation>
+    </message>
+    <message>
+        <source>Search</source>
+        <translation>Поиск</translation>
+    </message>
+    <message>
+        <source>A search pattern to filter the results above</source>
+        <translation>Шаблон фильтрации приведенных выше результатов</translation>
+    </message>
+    <message>
+        <source>None (Remove link)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1799,7 +1814,7 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>TextLabel</source>
-        <translation>Текстовая метка</translation>
+        <translation>Текстовая надпись</translation>
     </message>
     <message>
         <source>Advanced &gt;&gt;</source>
@@ -1930,11 +1945,15 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>Or&amp;thographic rendering</source>
-        <translation type="unfinished">Or&amp;thographic rendering</translation>
+        <translation>Прорисовка ор&amp;тогональной проекции</translation>
     </message>
     <message>
         <source>Perspective renderin&amp;g</source>
-        <translation type="unfinished">Perspective renderin&amp;g</translation>
+        <translation>Прорисовка &amp;перспективной проекции</translation>
+    </message>
+    <message>
+        <source>Use OpenGL Vertex Buffer Object (experimental)</source>
+        <translation>Используйте объект OpenGL Vertex Buffer (экспериментальный)</translation>
     </message>
 </context>
 <context>
@@ -1945,7 +1964,7 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>Open a new viewer or restart %1 to apply anti-aliasing changes.</source>
-        <translation type="unfinished">Open a new viewer or restart %1 to apply anti-aliasing changes.</translation>
+        <translation>Для вступления в силу изменений в режиме сглаживания, откройте новое окно просмотра или перезапустите %1.</translation>
     </message>
 </context>
 <context>
@@ -2068,7 +2087,7 @@ Specify another directory, please.</source>
         <source>Document save compression level
 (0 = none, 9 = highest, 3 = default)</source>
         <translation>Уровень сжатия сохраняемого документа
-(0 = нет, 9 = высокий, 3 = по умолчанию)</translation>
+(0 = нет, 9 = наивысший, 3 = по умолчанию)</translation>
     </message>
     <message>
         <source>Create new document at start up</source>
@@ -2076,7 +2095,7 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>Storage</source>
-        <translation>Сохранение</translation>
+        <translation>Хранилище</translation>
     </message>
     <message>
         <source>Saving transactions (Auto-save)</source>
@@ -2120,7 +2139,7 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The name to use on document creation.&lt;/p&gt;&lt;p&gt;Keep blank for anonymous.&lt;/p&gt;&lt;p&gt;You can also use the form:&lt;/p&gt;&lt;p&gt;John Doe &amp;lt;john@doe.com&amp;gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Какое имя использовать при создании документов.&lt;/p&gt;&lt;p&gt;Можно оставить пустым.&lt;/p&gt;&lt;p&gt;Также можно написать что-то вроде этого:&lt;/p&gt;&lt;p&gt;John Doe &amp;lt;john@doe.com&amp;gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Какое имя использовать при создании документов.&lt;/p&gt;&lt;p&gt;Для сохранения анонимности оставьте поле пустым.&lt;/p&gt;&lt;p&gt;Также можно придерживаться формы:&lt;/p&gt;&lt;p&gt;John Doe &amp;lt;john@doe.com&amp;gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>If this is checked, the &quot;Last modified by&quot; field will be set when saving the file</source>
@@ -2192,7 +2211,7 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>The default company to use for new files</source>
-        <translation>Какую компанию указывать во всех новых файлах</translation>
+        <translation>Какую компанию указывать в новых файлах</translation>
     </message>
     <message>
         <source>Run AutoRecovery at startup</source>
@@ -2200,8 +2219,7 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>Save AutoRecovery information every</source>
-        <translation>Автосохранение каждые
-</translation>
+        <translation>Сохранять данные для автовосстановления каждые</translation>
     </message>
 </context>
 <context>
@@ -2248,7 +2266,7 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>Define name</source>
-        <translation>Символ препроцессора</translation>
+        <translation>Задать имя</translation>
     </message>
     <message>
         <source>Operator</source>
@@ -2303,7 +2321,7 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>Pixel</source>
-        <translation>пикс.</translation>
+        <translation>Пиксель</translation>
     </message>
     <message>
         <source>&amp;Width:</source>
@@ -2315,15 +2333,15 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>Icon       32  x 32</source>
-        <translation>Иконка 32х32</translation>
+        <translation>Значок 32х32</translation>
     </message>
     <message>
         <source>Icon       64 x 64</source>
-        <translation>Иконка 64х64</translation>
+        <translation>Значок 64х64</translation>
     </message>
     <message>
         <source>Icon       128 x 128</source>
-        <translation>Иконка 128х128</translation>
+        <translation>Значок 128х128</translation>
     </message>
     <message>
         <source>CGA       320 x 200</source>
@@ -2415,7 +2433,7 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>&amp;Screen</source>
-        <translation>&amp;Экрана</translation>
+        <translation>&amp;Экран</translation>
     </message>
     <message>
         <source>Alt+S</source>
@@ -2457,16 +2475,24 @@ Specify another directory, please.</source>
         <source>Insert comment</source>
         <translation>Вставить комментарий</translation>
     </message>
+    <message>
+        <source>Transparent</source>
+        <translation>Прозрачный</translation>
+    </message>
+    <message>
+        <source>Add watermark</source>
+        <translation>Добавить водяной знак</translation>
+    </message>
 </context>
 <context>
     <name>Gui::Dialog::DlgSettingsMacro</name>
     <message>
         <source>Macro</source>
-        <translation>Макрос</translation>
+        <translation>Макрокоманда</translation>
     </message>
     <message>
         <source>Macro recording settings</source>
-        <translation>Настройки записи макросов</translation>
+        <translation>Настройки записи макрокоманд</translation>
     </message>
     <message>
         <source>Logging Commands</source>
@@ -2474,11 +2500,11 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>Show script commands in python console</source>
-        <translation>Показывать команды скриптов в консоли Python</translation>
+        <translation>Показывать в консоли Python команды сценариев</translation>
     </message>
     <message>
         <source>Log all commands issued by menus to file:</source>
-        <translation>Записывать все команды интерфейса в файл:</translation>
+        <translation>Регистрация всех команд меню в файле:</translation>
     </message>
     <message>
         <source>FullScript.FCScript</source>
@@ -2498,15 +2524,15 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>Macro path</source>
-        <translation>Куда записывать макросы</translation>
+        <translation>Куда записывать макрокоманды</translation>
     </message>
     <message>
         <source>General macro settings</source>
-        <translation>Общие параметры макросов</translation>
+        <translation>Общие параметры макрокоманд</translation>
     </message>
     <message>
         <source>Run macros in local environment</source>
-        <translation>Запуск макросов в локальном окружении</translation>
+        <translation>Запуск макрокоманд в локальном окружении</translation>
     </message>
 </context>
 <context>
@@ -2533,7 +2559,7 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>Unit</source>
-        <translation>Юнит</translation>
+        <translation>Единица измерения</translation>
     </message>
     <message>
         <source>User system:</source>
@@ -2553,11 +2579,11 @@ Specify another directory, please.</source>
     </message>
     <message utf8="true">
         <source>Building Euro (cm/m²/m³)</source>
-        <translation type="unfinished"></translation>
+        <translation>Строительство Евро (см/м²/м³)</translation>
     </message>
     <message>
         <source>Building US (ft-in/sqft/cuft)</source>
-        <translation type="unfinished"></translation>
+        <translation>Строительство US (Футы-дюймы/кв. футы/куб. футы)</translation>
     </message>
 </context>
 <context>
@@ -2596,105 +2622,53 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>Pick radius (px):</source>
-        <translation type="unfinished"></translation>
+        <translation>Укажите радиус (px):</translation>
     </message>
     <message>
         <source>Sets the area of confusion for picking elements in 3D view. Larger value make it easier to pick stuff, but will make some small features impossible to select.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>PickRadius</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>View</source>
-        <translation type="unfinished">Вид</translation>
+        <translation>Задает зону неясности для выбора элементов в 3D режиме. Большее значение облегчает выбор элементов, но сделает невозможным выбор некоторых мелких деталей.</translation>
     </message>
 </context>
 <context>
     <name>Gui::Dialog::DlgTipOfTheDay</name>
-    <message>
-        <source>Tip of the day</source>
-        <translation type="obsolete">Полезный совет</translation>
-    </message>
-    <message>
-        <source>&lt;b&gt;&lt;font face=&quot;Times New Roman&quot;&gt;&lt;font size=&quot;+3&quot;&gt;Did you know...&lt;/font&gt;&lt;/font&gt;&lt;/b&gt;</source>
-        <translation type="obsolete">&lt;b&gt;&lt;font face=&quot;Times New Roman&quot;&gt;&lt;font size=&quot;+3&quot;&gt;Знаете ли вы...&lt;/font&gt;&lt;/font&gt;&lt;/b&gt;</translation>
-    </message>
-    <message>
-        <source>&amp;Show tips at start up</source>
-        <translation type="obsolete">&amp;Показывать советы при запуске</translation>
-    </message>
-    <message>
-        <source>Alt+S</source>
-        <translation type="obsolete">Alt+S</translation>
-    </message>
-    <message>
-        <source>&amp;Next Tip</source>
-        <translation type="obsolete">&amp;Следующий совет</translation>
-    </message>
-    <message>
-        <source>Alt+N</source>
-        <translation type="obsolete">Alt+N</translation>
-    </message>
-    <message>
-        <source>&amp;Close</source>
-        <translation type="obsolete">&amp;Закрыть</translation>
-    </message>
-    <message>
-        <source>Alt+C</source>
-        <translation type="obsolete">ALT + C</translation>
-    </message>
     <message>
         <source></source>
         <translation>О программе</translation>
     </message>
 </context>
 <context>
-    <name>Gui::Dialog::DlgTipOfTheDayImp</name>
-    <message>
-        <source>Download failed: %1
-</source>
-        <translation type="obsolete">Ошибка загрузки: %1 </translation>
-    </message>
-    <message>
-        <source>If you want to learn more about FreeCAD you must go to %1 or press the Help item in the Help menu.</source>
-        <translation type="obsolete">Если вы хотите узнать больше о FreeCAD, вам необходимо посетить %1 или выбрать пункт «Содержание» в меню «Справка».</translation>
-    </message>
-</context>
-<context>
     <name>Gui::Dialog::DlgUnitCalculator</name>
     <message>
         <source>Units calculator</source>
-        <translation type="unfinished">Конвертер величин</translation>
+        <translation>Конвертер величин</translation>
     </message>
     <message>
         <source>as:</source>
-        <translation type="unfinished">в</translation>
+        <translation>в</translation>
     </message>
     <message>
         <source>=&gt;</source>
-        <translation type="unfinished">=</translation>
+        <translation>=</translation>
     </message>
     <message>
         <source>Quantity:</source>
-        <translation type="unfinished"></translation>
+        <translation>Количество:</translation>
     </message>
     <message>
         <source>Units:</source>
-        <translation type="unfinished"></translation>
+        <translation>Единицы измерения:</translation>
     </message>
     <message>
         <source>Help</source>
-        <translation type="unfinished">Справка</translation>
+        <translation>Справка</translation>
     </message>
     <message>
         <source>Copy</source>
-        <translation type="unfinished">Скопировать</translation>
+        <translation>Скопировать</translation>
     </message>
     <message>
         <source>Close</source>
-        <translation type="unfinished">Закрыть</translation>
+        <translation>Закрыть</translation>
     </message>
 </context>
 <context>
@@ -2712,11 +2686,11 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>Enabled workbenches</source>
-        <translation type="unfinished">Enabled workbenches</translation>
+        <translation>Подключенные верстаки</translation>
     </message>
     <message>
         <source>Disabled workbenches</source>
-        <translation type="unfinished">Disabled workbenches</translation>
+        <translation>Отключенные верстаки</translation>
     </message>
     <message>
         <source>Move down</source>
@@ -2728,27 +2702,27 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>Move left</source>
-        <translation>Удалить</translation>
+        <translation>Переместить влево</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Remove the selected workbench from enabled workbenches&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Remove the selected workbench from enabled workbenches&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt; &lt;body&gt;&lt;p&gt;&lt;span style=&quot;font-weight:600;&quot;&gt; удалите выбранный верстак из списка подключенных верстаков.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Move right</source>
-        <translation>Добавить</translation>
+        <translation>Переместить вправо</translation>
     </message>
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Move the selected workbench to enabled workbenches.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Move the selected workbench to enabled workbenches.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt; &lt;body&gt;&lt;p&gt;&lt;span style=&quot;font-weight:600;&quot;&gt; переместите выбранный верстак в список подключенных верстаков.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <source>Sort enabled workbenches</source>
-        <translation type="unfinished">Sort enabled workbenches</translation>
+        <translation>Сортировка подключеных верстаков</translation>
     </message>
     <message>
         <source>&lt;b&gt;Sort enabled workbenches&lt;/p&gt;</source>
-        <translation type="unfinished">&lt;b&gt;Sort enabled workbenches&lt;/p&gt;</translation>
+        <translation>&lt;b&gt;Сортировка подключенных верстаков&lt;/p&gt;</translation>
     </message>
     <message>
         <source>Move up</source>
@@ -2764,7 +2738,7 @@ Specify another directory, please.</source>
     </message>
     <message>
         <source>Add all to enabled workbenches</source>
-        <translation type="unfinished">Add all to enabled workbenches</translation>
+        <translation>Добавьте все в список подключенных верстаков</translation>
     </message>
 </context>
 <context>
@@ -2784,7 +2758,7 @@ Specify another directory, please.</source>
         <source>Press &apos;Start Recovery&apos; to start the recovery process of the doument listed below.
 
 The &apos;Status&apos; column shows whether the document could be recovered.</source>
-        <translation>Нажмите &apos;Начать восстановление&apos; чтобы начать процесс восстановления документов, перечисленных ниже.
+        <translation type="obsolete">Нажмите &apos;Начать восстановление&apos; чтобы начать процесс восстановления документов, перечисленных ниже.
 
 Колонка &apos;Статус&apos; показывает возможно ли восстановление документа.</translation>
     </message>
@@ -2826,82 +2800,45 @@ The &apos;Status&apos; column shows whether the document could be recovered.</so
     </message>
     <message>
         <source>Cleanup...</source>
-        <translation type="unfinished"></translation>
+        <translation>Очистка…</translation>
     </message>
     <message>
         <source>Delete</source>
-        <translation type="unfinished">Удалить</translation>
+        <translation>Удалить</translation>
     </message>
     <message>
         <source>Cleanup</source>
-        <translation type="unfinished"></translation>
+        <translation>Очистка</translation>
     </message>
     <message>
         <source>Are you sure you want to delete the selected transient directories?</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы уверены, что хотите удалить выбранные временные директории?</translation>
     </message>
     <message>
         <source>When deleting the selected transient directory you won&apos;t be able to recover any files afterwards.</source>
-        <translation type="unfinished"></translation>
+        <translation>При удалении выбранного временного каталога, вы не сможете потом восстановить какие-либо файлы.</translation>
     </message>
     <message>
         <source>Are you sure you want to delete all transient directories?</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы уверены, что хотите удалить все временные каталоги?</translation>
     </message>
     <message>
         <source>When deleting all transient directory you won&apos;t be able to recover any files afterwards.</source>
-        <translation type="unfinished"></translation>
+        <translation>При удалении всех временных каталогов, вы не сможете потом восстановить какие-либо файлы.</translation>
     </message>
     <message>
         <source>Finished</source>
-        <translation type="unfinished"></translation>
+        <translation>Завершено</translation>
     </message>
     <message>
         <source>Transient directories deleted.</source>
+        <translation>Временные каталоги удалены.</translation>
+    </message>
+    <message>
+        <source>Press &apos;Start Recovery&apos; to start the recovery process of the document listed below.
+
+The &apos;Status&apos; column shows whether the document could be recovered.</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Gui::Dialog::DownloadDialog</name>
-    <message>
-        <source>Download</source>
-        <translation type="obsolete">Скачать</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="obsolete">Отмена</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="obsolete">Закрыть</translation>
-    </message>
-    <message>
-        <source>There already exists a file called %1 in the current directory. Overwrite?</source>
-        <translation type="obsolete">Файл с именем %1 уже существует в текущем каталоге. Перезаписать?</translation>
-    </message>
-    <message>
-        <source>Unable to save the file %1: %2.</source>
-        <translation type="obsolete">Не удается сохранить файл %1: %2.</translation>
-    </message>
-    <message>
-        <source>Downloading %1.</source>
-        <translation type="obsolete">Загрузка %1.</translation>
-    </message>
-    <message>
-        <source>Download canceled.</source>
-        <translation type="obsolete">Загрузка отменена.</translation>
-    </message>
-    <message>
-        <source>Download failed: %1.</source>
-        <translation type="obsolete">Ошибка загрузки: %1.</translation>
-    </message>
-    <message>
-        <source>Downloaded %1 to current directory.</source>
-        <translation type="obsolete">Загружено %1 в текущий каталог.</translation>
-    </message>
-    <message>
-        <source>%1 at %2</source>
-        <translation type="obsolete">%1 в %2</translation>
     </message>
 </context>
 <context>
@@ -3041,13 +2978,6 @@ The &apos;Status&apos; column shows whether the document could be recovered.</so
     <message>
         <source>X:</source>
         <translation>X:</translation>
-    </message>
-</context>
-<context>
-    <name>Gui::Dialog::LicenseDialog</name>
-    <message>
-        <source>Copyright</source>
-        <translation type="obsolete">Авторское право</translation>
     </message>
 </context>
 <context>
@@ -3273,6 +3203,10 @@ The &apos;Status&apos; column shows whether the document could be recovered.</so
         <source>Euler angles (XY&apos;Z&apos;&apos;)</source>
         <translation>Углы Эйлера (XY&apos;Z&apos;&apos;)</translation>
     </message>
+    <message>
+        <source>Use center of mass</source>
+        <translation>Использовать центр масс</translation>
+    </message>
 </context>
 <context>
     <name>Gui::Dialog::PrintModel</name>
@@ -3327,7 +3261,7 @@ The &apos;Status&apos; column shows whether the document could be recovered.</so
     </message>
     <message>
         <source>Global</source>
-        <translation>Глобально</translation>
+        <translation>Глобальный</translation>
     </message>
     <message>
         <source>Environment</source>
@@ -3400,45 +3334,6 @@ The &apos;Status&apos; column shows whether the document could be recovered.</so
     </message>
 </context>
 <context>
-    <name>Gui::DockWnd::HelpView</name>
-    <message>
-        <source>Previous</source>
-        <translation type="obsolete">Предыдущий</translation>
-    </message>
-    <message>
-        <source>Next</source>
-        <translation type="obsolete">Следующий</translation>
-    </message>
-    <message>
-        <source>Home</source>
-        <translation type="obsolete">В начало</translation>
-    </message>
-    <message>
-        <source>Open</source>
-        <translation type="obsolete">Открыть</translation>
-    </message>
-    <message>
-        <source>Open file</source>
-        <translation type="obsolete">Открыть файл</translation>
-    </message>
-    <message>
-        <source>All HTML files (*.html *.htm)</source>
-        <translation type="obsolete">Все файлы HTML (*.html *.htm)</translation>
-    </message>
-    <message>
-        <source>External browser</source>
-        <translation type="obsolete">Внешний браузер</translation>
-    </message>
-    <message>
-        <source>No external browser found. Specify in preferences, please</source>
-        <translation type="obsolete">Внешний браузер не найден. Пожалуйста, укажите в настройках,</translation>
-    </message>
-    <message>
-        <source>Starting of %1 failed</source>
-        <translation type="obsolete">Запуск %1 невозможен</translation>
-    </message>
-</context>
-<context>
     <name>Gui::DockWnd::PropertyDockView</name>
     <message>
         <source>Property View</source>
@@ -3507,7 +3402,7 @@ The &apos;Status&apos; column shows whether the document could be recovered.</so
     <name>Gui::DockWnd::SelectionView</name>
     <message>
         <source>Property View</source>
-        <translation>Просмотр свойств</translation>
+        <translation type="obsolete">Просмотр свойств</translation>
     </message>
     <message>
         <source>Search</source>
@@ -3559,70 +3454,31 @@ The &apos;Status&apos; column shows whether the document could be recovered.</so
     </message>
     <message>
         <source>Reveals this object and its subelements in the python console.</source>
-        <translation type="unfinished">Reveals this object and its subelements in the python console.</translation>
+        <translation>Раскрывает в консоли python этот объект и его подэлементы.</translation>
     </message>
     <message>
         <source>Mark to recompute</source>
-        <translation type="unfinished"></translation>
+        <translation>Пометьте для повторного вычисления</translation>
     </message>
     <message>
         <source>Mark this object to be recomputed</source>
+        <translation>Пометьте этот объект повторного вычисления</translation>
+    </message>
+    <message>
+        <source>Selection View</source>
         <translation type="unfinished"></translation>
     </message>
-</context>
-<context>
-    <name>Gui::DockWnd::TextBrowser</name>
     <message>
-        <source>Could not open file.</source>
-        <translation type="obsolete">Невозможно открыть файл.</translation>
+        <source>The number of selected items</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>You tried to access the address %1 which is currently unavailable. Please make sure that the URL exists and try reloading the page.</source>
-        <translation type="obsolete">Вы попытались получить доступ к адресу %1, который в настоящее время недоступен. Пожалуйста, убедитесь, что URL-адрес существует и попробуйте перезагрузить страницу.</translation>
+        <source>Duplicate subshape</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Connecting to %1</source>
-        <translation type="obsolete">Подключение к %1</translation>
-    </message>
-    <message>
-        <source>Sending to %1</source>
-        <translation type="obsolete">Отправить %1</translation>
-    </message>
-    <message>
-        <source>Reading from %1</source>
-        <translation type="obsolete">Чтение из %1</translation>
-    </message>
-    <message>
-        <source>Download failed: %1.</source>
-        <translation type="obsolete">Ошибка загрузки: %1.</translation>
-    </message>
-    <message>
-        <source>Previous</source>
-        <translation type="obsolete">Предыдущий</translation>
-    </message>
-    <message>
-        <source>Forward</source>
-        <translation type="obsolete">Вперед</translation>
-    </message>
-    <message>
-        <source>Home</source>
-        <translation type="obsolete">В начало</translation>
-    </message>
-    <message>
-        <source>Refresh</source>
-        <translation type="obsolete">Обновить</translation>
-    </message>
-    <message>
-        <source>Copy</source>
-        <translation type="obsolete">Скопировать</translation>
-    </message>
-    <message>
-        <source>Select all</source>
-        <translation type="obsolete">Выделить все</translation>
-    </message>
-    <message>
-        <source>No description for</source>
-        <translation type="obsolete">Нет описания для</translation>
+        <source>Creates a standalone copy of this subshape in the document</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3760,7 +3616,7 @@ Do you want to save your changes?</source>
     </message>
     <message>
         <source>Drag the screen with one finger. Or press left mouse button. In Sketcher and other edit modes, hold Alt in addition.</source>
-        <translation type="unfinished">Drag the screen with one finger. Or press left mouse button. In Sketcher and other edit modes, hold Alt in addition.</translation>
+        <translation>Перетащите окно одним пальцем. Или нажмите левую кнопку мыши. В Sketcher и других режимах редактирования, кроме того, удерживайте клавишу Alt.</translation>
     </message>
     <message>
         <source>Pinch (put two fingers on the screen and drag them apart/to each other). Or scroll middle mouse button. Or PgUp/PgDown on keyboard.</source>
@@ -3930,15 +3786,15 @@ Do you want to copy them, too?</source>
     </message>
     <message>
         <source>There is a rendering issue on MacOS.</source>
-        <translation type="unfinished">There is a rendering issue on MacOS.</translation>
-    </message>
-    <message>
-        <source>See &lt;a href=&quot;http://www.freecadweb.org/wiki/index.php?title=OpenGL_on_MacOS&quot;&gt; the wiki&lt;/a&gt; for more information</source>
-        <translation type="unfinished">See &lt;a href=&quot;http://www.freecadweb.org/wiki/index.php?title=OpenGL_on_MacOS&quot;&gt; the wiki&lt;/a&gt; for more information</translation>
+        <translation type="obsolete">В MacOS существует проблема прорисовки.</translation>
     </message>
     <message>
         <source>Don&apos;t show again</source>
-        <translation>Не показывать снова</translation>
+        <translation type="obsolete">Не показывать снова</translation>
+    </message>
+    <message>
+        <source>See &lt;a href=&quot;http://www.freecadweb.org/wiki/OpenGL_on_MacOS&quot;&gt; the wiki&lt;/a&gt; for more information</source>
+        <translation type="obsolete">За дополнительной информацией см. &lt;a href=&quot;http://www.freecadweb.org/wiki/OpenGL_on_MacOS&quot;&gt; wiki&lt;/a&gt;</translation>
     </message>
 </context>
 <context>
@@ -4041,7 +3897,7 @@ How do you want to proceed?</source>
     </message>
     <message>
         <source>Drag the screen with one finger. Or press ALT + left mouse button. In Sketcher and other edit modes, hold Alt in addition.</source>
-        <translation type="unfinished">Drag the screen with one finger. Or press ALT + left mouse button. In Sketcher and other edit modes, hold Alt in addition.</translation>
+        <translation>Перетащите окно одним пальцем. Или нажмите Alt + левую кнопку мыши. В Sketcher и других режимах редактирования, кроме того, удерживайте клавишу Alt.</translation>
     </message>
     <message>
         <source>Pinch (put two fingers on the screen and drag them apart/to each other). Or scroll middle mouse button. Or press ALT + right mouse button. Or PgUp/PgDown on keyboard.</source>
@@ -4125,7 +3981,11 @@ How do you want to proceed?</source>
     <name>Gui::PropertyEditor::LinkLabel</name>
     <message>
         <source>Edit...</source>
-        <translation>Изменить...</translation>
+        <translation type="obsolete">Изменить...</translation>
+    </message>
+    <message>
+        <source>Change the linked object</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4363,22 +4223,22 @@ Do you want to specify another directory?</source>
     <name>Gui::TaskCSysDragger</name>
     <message>
         <source>Increments</source>
-        <translation type="unfinished"></translation>
+        <translation>Приращения</translation>
     </message>
     <message>
         <source>Translation Increment: </source>
-        <translation type="unfinished"></translation>
+        <translation>Приращение перевода: </translation>
     </message>
     <message>
         <source>Rotation Increment: </source>
-        <translation type="unfinished"></translation>
+        <translation>Шаг поворота: </translation>
     </message>
 </context>
 <context>
     <name>Gui::TaskView::TaskAppearance</name>
     <message>
         <source>Plot mode:</source>
-        <translation>Режим графика:</translation>
+        <translation>Режим графопостроения:</translation>
     </message>
     <message>
         <source>Point size:</source>
@@ -4504,19 +4364,23 @@ Do you want to specify another directory?</source>
     </message>
     <message>
         <source>Skip recomputes</source>
-        <translation type="unfinished"></translation>
+        <translation>Пропуск повторных вычислений</translation>
     </message>
     <message>
         <source>Enable or disable recomputations of document</source>
-        <translation type="unfinished"></translation>
+        <translation>Включение или отключение повторных вычислений документа</translation>
     </message>
     <message>
         <source>Mark to recompute</source>
-        <translation type="unfinished"></translation>
+        <translation>Пометьте для повторного вычисления</translation>
     </message>
     <message>
         <source>Mark this object to be recomputed</source>
-        <translation type="unfinished"></translation>
+        <translation>Пометьте этот объект повторного вычисления</translation>
+    </message>
+    <message>
+        <source>%1, Internal name: %2</source>
+        <translation>%1, Internal name: %2</translation>
     </message>
 </context>
 <context>
@@ -4535,7 +4399,7 @@ Do you want to specify another directory?</source>
     </message>
     <message>
         <source>Can&apos;t open file &apos;%1&apos; for writing.</source>
-        <translation type="unfinished">Can&apos;t open file &apos;%1&apos; for writing.</translation>
+        <translation>Не удается открыть файл «%1» для записи.</translation>
     </message>
 </context>
 <context>
@@ -4549,31 +4413,31 @@ Do you want to specify another directory?</source>
     <name>MAC_APPLICATION_MENU</name>
     <message>
         <source>Services</source>
-        <translation type="unfinished"></translation>
+        <translation>Службы</translation>
     </message>
     <message>
         <source>Hide %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Hide %1</translation>
     </message>
     <message>
         <source>Hide Others</source>
-        <translation type="unfinished"></translation>
+        <translation>Скрыть остальное</translation>
     </message>
     <message>
         <source>Show All</source>
-        <translation type="unfinished"></translation>
+        <translation>Показать Все</translation>
     </message>
     <message>
         <source>Preferences...</source>
-        <translation type="unfinished"></translation>
+        <translation>Предпочтения...</translation>
     </message>
     <message>
         <source>Quit %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Завершить %1</translation>
     </message>
     <message>
         <source>About %1</source>
-        <translation type="unfinished">О %1</translation>
+        <translation>О %1</translation>
     </message>
 </context>
 <context>
@@ -4670,7 +4534,7 @@ Do you want to specify another directory?</source>
     <name>PropertyListDialog</name>
     <message>
         <source>Invalid input</source>
-        <translation>Неправильный ввод</translation>
+        <translation>Неверный ввод</translation>
     </message>
     <message>
         <source>Input in line %1 is not a number</source>
@@ -4713,7 +4577,7 @@ Do you want to specify another directory?</source>
     </message>
     <message>
         <source>DAG View</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">DAG View</translation>
     </message>
 </context>
 <context>
@@ -4815,18 +4679,6 @@ Do you want to continue?</source>
     <message>
         <source>Cannot open file &apos;%1&apos;.</source>
         <translation>Не удается открыть файл &apos;%1&apos;.</translation>
-    </message>
-    <message>
-        <source>Docked</source>
-        <translation type="obsolete">Встроенное</translation>
-    </message>
-    <message>
-        <source>Undocked</source>
-        <translation type="obsolete">Отдельное</translation>
-    </message>
-    <message>
-        <source>Fullscreen</source>
-        <translation type="obsolete">На весь экран</translation>
     </message>
     <message>
         <source>files</source>
@@ -5059,7 +4911,7 @@ Be aware the point where you click matters.</source>
     </message>
     <message>
         <source>Frozen views</source>
-        <translation type="unfinished">Frozen views</translation>
+        <translation>Замороженные виды</translation>
     </message>
     <message>
         <source>Saving document failed</source>
@@ -5071,46 +4923,46 @@ Be aware the point where you click matters.</source>
     </message>
     <message>
         <source>Delete macro</source>
-        <translation>Удалить макрос</translation>
+        <translation>Удалить макрокоманду</translation>
     </message>
     <message>
         <source>Not allowed to delete system-wide macros</source>
-        <translation type="unfinished">Not allowed to delete system-wide macros</translation>
+        <translation>Не разрешается удалять системные макросы</translation>
     </message>
     <message>
         <source>Origin</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Origin</translation>
     </message>
     <message>
         <source> %1.%2.%3 </source>
-        <translation type="unfinished"></translation>
+        <translation> %1.%2.%3 </translation>
     </message>
     <message>
         <source>Translation: </source>
-        <translation type="unfinished"></translation>
+        <translation>Перевод: </translation>
     </message>
     <message>
         <source>Rotation: </source>
-        <translation type="unfinished"></translation>
+        <translation>Вращение: </translation>
     </message>
     <message>
         <source>Delete group content?</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить содержимое группы?</translation>
     </message>
     <message>
-        <source>The %1 is not empty, delete it&apos;s content as well?</source>
-        <translation type="unfinished"></translation>
+        <source>The %1 is not empty, delete its content as well?</source>
+        <translation>%1 не является пустым, удалить его содержимое?</translation>
     </message>
 </context>
 <context>
     <name>SelectionFilter</name>
     <message>
         <source>Not allowed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Не допускается:</translation>
     </message>
     <message>
         <source>Selection not allowed by filter</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор отвергнут фильтром</translation>
     </message>
 </context>
 <context>
@@ -5368,22 +5220,22 @@ Be aware the point where you click matters.</source>
     </message>
     <message>
         <source>Opens a dialog to let you execute a recorded macro</source>
-        <translation>Открывает диалоговое окно, чтобы выполнить написанный макрос</translation>
+        <translation>Открыть диалоговое окно, чтобы выполнить написанный макрос</translation>
     </message>
     <message>
         <source>Macro</source>
-        <translation>Макрос</translation>
+        <translation>Макрокоманда</translation>
     </message>
 </context>
 <context>
     <name>StdCmdDlgMacroExecuteDirect</name>
     <message>
         <source>Macro</source>
-        <translation>Макрос</translation>
+        <translation>Макрокоманда</translation>
     </message>
     <message>
         <source>Execute macro</source>
-        <translation>Выполнить макрос</translation>
+        <translation>Выполнить макрокоманду</translation>
     </message>
     <message>
         <source>Execute the macro in the editor</source>
@@ -5402,7 +5254,7 @@ Be aware the point where you click matters.</source>
     </message>
     <message>
         <source>Macro</source>
-        <translation>Макрос</translation>
+        <translation>Макрокоманда</translation>
     </message>
 </context>
 <context>
@@ -5447,7 +5299,7 @@ Be aware the point where you click matters.</source>
     </message>
     <message>
         <source>List of available dock panels</source>
-        <translation type="unfinished">List of available dock panels</translation>
+        <translation>Список доступных швартуемых панелей</translation>
     </message>
 </context>
 <context>
@@ -5556,7 +5408,7 @@ Be aware the point where you click matters.</source>
     </message>
     <message>
         <source>FreeCAD FAQ</source>
-        <translation type="unfinished">FreeCAD FAQ</translation>
+        <translation>FreeCAD ЧаВО</translation>
     </message>
     <message>
         <source>Frequently Asked Questions on the FreeCAD website</source>
@@ -5707,7 +5559,7 @@ Be aware the point where you click matters.</source>
     <name>StdCmdMacroStartDebug</name>
     <message>
         <source>Macro</source>
-        <translation>Макрос</translation>
+        <translation>Макрокоманда</translation>
     </message>
     <message>
         <source>Debug macro</source>
@@ -5722,7 +5574,7 @@ Be aware the point where you click matters.</source>
     <name>StdCmdMacroStepInto</name>
     <message>
         <source>Macro</source>
-        <translation>Макрос</translation>
+        <translation>Макрокоманда</translation>
     </message>
     <message>
         <source>Step into</source>
@@ -5733,7 +5585,7 @@ Be aware the point where you click matters.</source>
     <name>StdCmdMacroStepOver</name>
     <message>
         <source>Macro</source>
-        <translation>Макрос</translation>
+        <translation>Макрокоманда</translation>
     </message>
     <message>
         <source>Step over</source>
@@ -5744,7 +5596,7 @@ Be aware the point where you click matters.</source>
     <name>StdCmdMacroStopDebug</name>
     <message>
         <source>Macro</source>
-        <translation>Макрос</translation>
+        <translation>Макрокоманда</translation>
     </message>
     <message>
         <source>Stop debugging</source>
@@ -5759,7 +5611,7 @@ Be aware the point where you click matters.</source>
     <name>StdCmdMacroStopRecord</name>
     <message>
         <source>Macro</source>
-        <translation>Макрос</translation>
+        <translation>Макрокоманда</translation>
     </message>
     <message>
         <source>S&amp;top macro recording</source>
@@ -6098,11 +5950,11 @@ Be aware the point where you click matters.</source>
     </message>
     <message>
         <source>Revert</source>
-        <translation type="unfinished">Revert</translation>
+        <translation>Вернуться</translation>
     </message>
     <message>
         <source>Reverts to the saved version of this file</source>
-        <translation type="unfinished">Reverts to the saved version of this file</translation>
+        <translation>Возвращает к сохраненной версии этого файла</translation>
     </message>
 </context>
 <context>
@@ -6184,15 +6036,15 @@ Be aware the point where you click matters.</source>
     <name>StdCmdSelectVisibleObjects</name>
     <message>
         <source>Standard-View</source>
-        <translation type="unfinished">Стандартный вид</translation>
+        <translation>Стандартный вид</translation>
     </message>
     <message>
         <source>Select visible objects</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите видимые объекты</translation>
     </message>
     <message>
         <source>Select visible objects in the active document</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите видимые объекты в активном документе</translation>
     </message>
 </context>
 <context>
@@ -6289,7 +6141,7 @@ Be aware the point where you click matters.</source>
     <name>StdCmdToggleBreakpoint</name>
     <message>
         <source>Macro</source>
-        <translation>Макрос</translation>
+        <translation>Макрокоманда</translation>
     </message>
     <message>
         <source>Toggle breakpoint</source>
@@ -6338,7 +6190,7 @@ Be aware the point where you click matters.</source>
     </message>
     <message>
         <source>Toggles visibility of all objects in the active document</source>
-        <translation>Спрятать все видимые объекты документа и показать все невидимые</translation>
+        <translation>Скрыть все видимые объекты и показать все невидимые</translation>
     </message>
 </context>
 <context>
@@ -6364,11 +6216,11 @@ Be aware the point where you click matters.</source>
     </message>
     <message>
         <source>Toggle visibility</source>
-        <translation>Скрыть/показать выделенное</translation>
+        <translation>Изменить видимость</translation>
     </message>
     <message>
         <source>Toggles visibility</source>
-        <translation>Переключает видимость выделенных объектов</translation>
+        <translation>Переключить видимость выделенных объектов</translation>
     </message>
 </context>
 <context>
@@ -6488,7 +6340,7 @@ Be aware the point where you click matters.</source>
     </message>
     <message>
         <source>Set to axonometric view</source>
-        <translation type="unfinished">Set to axonometric view</translation>
+        <translation>Установите аксонометрический вид</translation>
     </message>
 </context>
 <context>
@@ -6907,15 +6759,15 @@ Be aware the point where you click matters.</source>
     <name>StdViewDock</name>
     <message>
         <source>Standard-View</source>
-        <translation type="unfinished">Стандартный вид</translation>
+        <translation>Стандартный вид</translation>
     </message>
     <message>
         <source>Docked</source>
-        <translation type="unfinished">Встроенное</translation>
+        <translation>Встроенное</translation>
     </message>
     <message>
         <source>Display the active view either in fullscreen, in undocked or docked mode</source>
-        <translation type="unfinished">Отображать активный вид в полноэкранном режиме, встроенном окне или в отдельном окне</translation>
+        <translation>Отображать активный вид в полноэкранном режиме, встроенном окне или в отдельном окне</translation>
     </message>
 </context>
 <context>
@@ -6937,15 +6789,15 @@ Be aware the point where you click matters.</source>
     <name>StdViewFullscreen</name>
     <message>
         <source>Standard-View</source>
-        <translation type="unfinished">Стандартный вид</translation>
+        <translation>Стандартный вид</translation>
     </message>
     <message>
         <source>Fullscreen</source>
-        <translation type="unfinished">На весь экран</translation>
+        <translation>На весь экран</translation>
     </message>
     <message>
         <source>Display the active view either in fullscreen, in undocked or docked mode</source>
-        <translation type="unfinished">Отображать активный вид в полноэкранном режиме, встроенном окне или в отдельном окне</translation>
+        <translation>Отображать активный вид в полноэкранном режиме, встроенном окне или в отдельном окне</translation>
     </message>
 </context>
 <context>
@@ -6967,15 +6819,15 @@ Be aware the point where you click matters.</source>
     <name>StdViewUndock</name>
     <message>
         <source>Standard-View</source>
-        <translation type="unfinished">Стандартный вид</translation>
+        <translation>Стандартный вид</translation>
     </message>
     <message>
         <source>Undocked</source>
-        <translation type="unfinished">Отдельное</translation>
+        <translation>Отдельное</translation>
     </message>
     <message>
         <source>Display the active view either in fullscreen, in undocked or docked mode</source>
-        <translation type="unfinished">Отображать активный вид в полноэкранном режиме, встроенном окне или в отдельном окне</translation>
+        <translation>Отображать активный вид в полноэкранном режиме, встроенном окне или в отдельном окне</translation>
     </message>
 </context>
 <context>
@@ -7007,17 +6859,16 @@ Be aware the point where you click matters.</source>
         <translation>Зависимости объектов</translation>
     </message>
     <message>
-        <source>This object is referenced by other objects and thus these objects might get broken.
-Are you sure to continue?</source>
-        <translation type="obsolete">На этот объект ссылаются другие объекты, по-этому эти объекты могут разрушиться. Вы действительно хотите продолжить?</translation>
-    </message>
-    <message>
         <source>The following, referencing objects might break.
 
 Are you sure you want to continue?
 
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Последующие ссылки на объекты могут быть нарушены.
+
+Уверены ли Вы, что хотите продолжить?
+
+</translation>
     </message>
 </context>
 <context>
@@ -7048,7 +6899,7 @@ Are you sure you want to continue?
     </message>
     <message>
         <source>Shaded</source>
-        <translation>только грани</translation>
+        <translation>Только грани</translation>
     </message>
     <message>
         <source>Shaded mode</source>
@@ -7061,6 +6912,22 @@ Are you sure you want to continue?
     <message>
         <source>Points mode</source>
         <translation>Точечный режим</translation>
+    </message>
+    <message>
+        <source>Hidden line</source>
+        <translation>Скрытая линия</translation>
+    </message>
+    <message>
+        <source>Hidden line mode</source>
+        <translation>Режим скрытых линий</translation>
+    </message>
+    <message>
+        <source>No shading</source>
+        <translation>Без затенения</translation>
+    </message>
+    <message>
+        <source>No shading mode</source>
+        <translation>Режим без затенения</translation>
     </message>
 </context>
 <context>
@@ -7111,16 +6978,12 @@ Do you want to specify its installation path if it&apos;s already installed?</so
         <translation>Это отменит все изменения, внесенные с момента последнего сохранения фала.</translation>
     </message>
     <message>
-        <source>Are you sure?</source>
-        <translation type="obsolete">Вы уверены?</translation>
-    </message>
-    <message>
         <source>Revert document</source>
-        <translation type="unfinished"></translation>
+        <translation>Возврат документа</translation>
     </message>
     <message>
         <source>Do you want to continue?</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы хотите продолжить?</translation>
     </message>
 </context>
 <context>
@@ -7179,7 +7042,7 @@ Do you want to specify its installation path if it&apos;s already installed?</so
     </message>
     <message>
         <source>Macro</source>
-        <translation>Макрос</translation>
+        <translation>Макрокоманда</translation>
     </message>
     <message>
         <source>View</source>

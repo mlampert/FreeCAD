@@ -164,12 +164,17 @@ App::DocumentObjectExecReturn *MultiFuse::execute(void)
                 }
             }
             if (hGrp->GetBool("RefineModel", false)) {
-                TopoDS_Shape oldShape = resShape;
-                BRepBuilderAPI_RefineModel mkRefine(oldShape);
-                resShape = mkRefine.Shape();
-                ShapeHistory hist = buildHistory(mkRefine, TopAbs_FACE, resShape, oldShape);
-                for (std::vector<ShapeHistory>::iterator jt = history.begin(); jt != history.end(); ++jt)
-                    *jt = joinHistory(*jt, hist);
+                try {
+                    TopoDS_Shape oldShape = resShape;
+                    BRepBuilderAPI_RefineModel mkRefine(oldShape);
+                    resShape = mkRefine.Shape();
+                    ShapeHistory hist = buildHistory(mkRefine, TopAbs_FACE, resShape, oldShape);
+                    for (std::vector<ShapeHistory>::iterator jt = history.begin(); jt != history.end(); ++jt)
+                        *jt = joinHistory(*jt, hist);
+                }
+                catch (Standard_Failure) {
+                    // do nothing
+                }
             }
 
             this->Shape.setValue(resShape);
@@ -199,7 +204,7 @@ App::DocumentObjectExecReturn *MultiFuse::execute(void)
             this->History.setValues(history);
         }
         catch (Standard_Failure) {
-            Handle_Standard_Failure e = Standard_Failure::Caught();
+            Handle(Standard_Failure) e = Standard_Failure::Caught();
             return new App::DocumentObjectExecReturn(e->GetMessageString());
         }
     }

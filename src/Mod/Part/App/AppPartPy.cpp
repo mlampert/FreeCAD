@@ -143,20 +143,22 @@ extern const char* BRepBuilderAPI_FaceErrorText(BRepBuilderAPI_FaceError fe);
 namespace Part {
 struct EdgePoints {
     gp_Pnt v1, v2;
+    std::list<TopoDS_Edge>::iterator it;
     TopoDS_Edge edge;
 };
 
-static std::list<TopoDS_Edge> sort_Edges(double tol3d, const std::vector<TopoDS_Edge>& edges)
+PartExport std::list<TopoDS_Edge> sort_Edges(double tol3d, std::list<TopoDS_Edge>& edges)
 {
     tol3d = tol3d * tol3d;
     std::list<EdgePoints>  edge_points;
     TopExp_Explorer xp;
-    for (std::vector<TopoDS_Edge>::const_iterator it = edges.begin(); it != edges.end(); ++it) {
+    for (std::list<TopoDS_Edge>::iterator it = edges.begin(); it != edges.end(); ++it) {
         EdgePoints ep;
         xp.Init(*it,TopAbs_VERTEX);
         ep.v1 = BRep_Tool::Pnt(TopoDS::Vertex(xp.Current()));
         xp.Next();
         ep.v2 = BRep_Tool::Pnt(TopoDS::Vertex(xp.Current()));
+        ep.it = it;
         ep.edge = *it;
         edge_points.push_back(ep);
     }
@@ -170,6 +172,7 @@ static std::list<TopoDS_Edge> sort_Edges(double tol3d, const std::vector<TopoDS_
     last  = edge_points.front().v2;
 
     sorted.push_back(edge_points.front().edge);
+    edges.erase(edge_points.front().it);
     edge_points.erase(edge_points.begin());
 
     while (!edge_points.empty()) {
@@ -179,6 +182,7 @@ static std::list<TopoDS_Edge> sort_Edges(double tol3d, const std::vector<TopoDS_
             if (pEI->v1.SquareDistance(last) <= tol3d) {
                 last = pEI->v2;
                 sorted.push_back(pEI->edge);
+                edges.erase(pEI->it);
                 edge_points.erase(pEI);
                 pEI = edge_points.begin();
                 break;
@@ -186,6 +190,7 @@ static std::list<TopoDS_Edge> sort_Edges(double tol3d, const std::vector<TopoDS_
             else if (pEI->v2.SquareDistance(first) <= tol3d) {
                 first = pEI->v1;
                 sorted.push_front(pEI->edge);
+                edges.erase(pEI->it);
                 edge_points.erase(pEI);
                 pEI = edge_points.begin();
                 break;
@@ -193,11 +198,12 @@ static std::list<TopoDS_Edge> sort_Edges(double tol3d, const std::vector<TopoDS_
             else if (pEI->v2.SquareDistance(last) <= tol3d) {
                 last = pEI->v1;
                 Standard_Real first, last;
-                const Handle_Geom_Curve & curve = BRep_Tool::Curve(pEI->edge, first, last);
+                const Handle(Geom_Curve) & curve = BRep_Tool::Curve(pEI->edge, first, last);
                 first = curve->ReversedParameter(first);
                 last = curve->ReversedParameter(last);
                 TopoDS_Edge edgeReversed = BRepBuilderAPI_MakeEdge(curve->Reversed(), last, first);
                 sorted.push_back(edgeReversed);
+                edges.erase(pEI->it);
                 edge_points.erase(pEI);
                 pEI = edge_points.begin();
                 break;
@@ -205,11 +211,12 @@ static std::list<TopoDS_Edge> sort_Edges(double tol3d, const std::vector<TopoDS_
             else if (pEI->v1.SquareDistance(first) <= tol3d) {
                 first = pEI->v2;
                 Standard_Real first, last;
-                const Handle_Geom_Curve & curve = BRep_Tool::Curve(pEI->edge, first, last);
+                const Handle(Geom_Curve) & curve = BRep_Tool::Curve(pEI->edge, first, last);
                 first = curve->ReversedParameter(first);
                 last = curve->ReversedParameter(last);
                 TopoDS_Edge edgeReversed = BRepBuilderAPI_MakeEdge(curve->Reversed(), last, first);
                 sorted.push_front(edgeReversed);
+                edges.erase(pEI->it);
                 edge_points.erase(pEI);
                 pEI = edge_points.begin();
                 break;
@@ -279,10 +286,30 @@ public:
             "By default pnt=Vector(0,0,0) and dir=Vector(0,0,1)"
         );
         add_varargs_method("makeLine",&Module::makeLine,
-            "makeLine((x1,y1,z1),(x2,y2,z2)) -- Make a line of two points"
+            "makeLine(startpnt,endpnt) -- Make a line between two points\n"
+            "\n"
+            "Args:\n"
+            "    startpnt (Vector or tuple): Vector or 3 element tuple \n"
+            "        containing the x,y and z coordinates of the start point,\n"
+            "        i.e. (x1,y1,z1).\n"
+            "    endpnt (Vector or tuple): Vector or 3 element tuple \n"
+            "        containing the x,y and z coordinates of the start point,\n"
+            "        i.e. (x1,y1,z1).\n"
+            "\n"
+            "Returns:\n"
+            "    Edge: Part.Edge object\n"
         );
         add_varargs_method("makePolygon",&Module::makePolygon,
-            "makePolygon(list) -- Make a polygon of a list of points"
+            "makePolygon(pntslist) -- Make a polygon from a list of points\n"
+            "\n"
+            "Args:\n"
+            "    pntslist (list(Vector)): list of Vectors representing the \n"
+            "        points of the polygon.\n"
+            "\n"
+            "Returns:\n"
+            "    Wire: Part.Wire object. If the last point in the list is \n"
+            "        not the same as the first point, the Wire will not be \n"
+            "        closed and cannot be used to create a face.\n"
         );
         add_varargs_method("makeCircle",&Module::makeCircle,
             "makeCircle(radius,[pnt,dir,angle1,angle2]) -- Make a circle with a given radius\n"
@@ -356,6 +383,9 @@ public:
         add_varargs_method("__sortEdges__",&Module::sortEdges,
             "__sortEdges__(list of edges) -- Helper method to sort an unsorted list of edges so that afterwards\n"
             "two adjacent edges share a common vertex"
+        );
+        add_varargs_method("sortEdges",&Module::sortEdges2,
+            "sortEdges(list of edges) -- Helper method to sort a list of edges into a list of list of connected edges"
         );
         add_varargs_method("__toPythonOCC__",&Module::toPythonOCC,
             "__toPythonOCC__(shape) -- Helper method to convert an internal shape to pythonocc shape"
@@ -588,7 +618,7 @@ private:
             }
         }
         catch (Standard_Failure) {
-            Handle_Standard_Failure e = Standard_Failure::Caught();
+            Handle(Standard_Failure) e = Standard_Failure::Caught();
             throw Py::Exception(PartExceptionOCCError, e->GetMessageString());
         }
 
@@ -625,7 +655,7 @@ private:
             }
         }
         catch (Standard_Failure) {
-            Handle_Standard_Failure e = Standard_Failure::Caught();
+            Handle(Standard_Failure) e = Standard_Failure::Caught();
             throw Py::Exception(PartExceptionOCCError, e->GetMessageString());
         }
 
@@ -682,7 +712,7 @@ private:
             throw Py::Exception(Base::BaseExceptionFreeCADError, std::string("Argument type signature not recognized. Should be either (list, string), or (shape, string)"));
 
         } catch (Standard_Failure) {
-            Handle_Standard_Failure e = Standard_Failure::Caught();
+            Handle(Standard_Failure) e = Standard_Failure::Caught();
             throw Py::Exception(PartExceptionOCCError, e->GetMessageString());
         } catch (Base::Exception &e){
             throw Py::Exception(Base::BaseExceptionFreeCADError, e.what());
@@ -744,7 +774,7 @@ private:
             }
         }
         catch (Standard_Failure) {
-            Handle_Standard_Failure e = Standard_Failure::Caught();
+            Handle(Standard_Failure) e = Standard_Failure::Caught();
             throw Py::Exception(PartExceptionOCCError, e->GetMessageString());
         }
     }
@@ -826,7 +856,7 @@ private:
                 Base::Vector3d vec = static_cast<Base::VectorPy*>(pDirZ)->value();
                 d.SetCoord(vec.x, vec.y, vec.z);
             }
-            Handle_Geom_Plane aPlane;
+            Handle(Geom_Plane) aPlane;
             if (pDirX) {
                 Base::Vector3d vec = static_cast<Base::VectorPy*>(pDirX)->value();
                 gp_Dir dx;
@@ -1036,7 +1066,7 @@ private:
             return Py::asObject(new TopoShapeWirePy(new TopoShape(mkPoly.Wire())));
         }
         catch (Standard_Failure) {
-            Handle_Standard_Failure e = Standard_Failure::Caught();
+            Handle(Standard_Failure) e = Standard_Failure::Caught();
             throw Py::Exception(PartExceptionOCCError, e->GetMessageString());
         }
     }
@@ -1067,7 +1097,7 @@ private:
             circle.SetAxis(axis);
             circle.SetRadius(radius);
 
-            Handle_Geom_Circle hCircle = new Geom_Circle (circle);
+            Handle(Geom_Circle) hCircle = new Geom_Circle (circle);
             BRepBuilderAPI_MakeEdge aMakeEdge(hCircle, angle1*(M_PI/180), angle2*(M_PI/180));
             TopoDS_Edge edge = aMakeEdge.Edge();
             return Py::asObject(new TopoShapeEdgePy(new TopoShape(edge)));
@@ -1216,7 +1246,7 @@ private:
             return Py::asObject(new TopoShapeWirePy(new TopoShape(wire)));
         }
         catch (Standard_Failure) {
-            Handle_Standard_Failure e = Standard_Failure::Caught();
+            Handle(Standard_Failure) e = Standard_Failure::Caught();
             throw Py::Exception(PartExceptionOCCError, e->GetMessageString());
         }
     }
@@ -1236,7 +1266,7 @@ private:
             return Py::asObject(new TopoShapeWirePy(new TopoShape(wire)));
         }
         catch (Standard_Failure) {
-            Handle_Standard_Failure e = Standard_Failure::Caught();
+            Handle(Standard_Failure) e = Standard_Failure::Caught();
             throw Py::Exception(PartExceptionOCCError, e->GetMessageString());
         }
     }
@@ -1252,7 +1282,7 @@ private:
             return Py::asObject(new TopoShapeWirePy(new TopoShape(wire)));
         }
         catch (Standard_Failure) {
-            Handle_Standard_Failure e = Standard_Failure::Caught();
+            Handle(Standard_Failure) e = Standard_Failure::Caught();
             throw Py::Exception(PartExceptionOCCError, e->GetMessageString());
         }
     }
@@ -1261,7 +1291,7 @@ private:
         double vmin = DBL_MAX, vmax=-DBL_MAX;
         double angle=360;
         PyObject *pPnt=0, *pDir=0, *pCrv;
-        Handle_Geom_Curve curve;
+        Handle(Geom_Curve) curve;
         union PyType_Object defaultType = {&Part::TopoShapeSolidPy::Type};
         PyObject* type = defaultType.o;
         if (PyArg_ParseTuple(args.ptr(), "O!|dddO!O!O!", &(GeometryPy::Type), &pCrv,
@@ -1270,7 +1300,7 @@ private:
                                                    &(Base::VectorPy::Type), &pDir,
                                                    &(PyType_Type), &type)) {
             GeometryPy* pcGeo = static_cast<GeometryPy*>(pCrv);
-            curve = Handle_Geom_Curve::DownCast
+            curve = Handle(Geom_Curve)::DownCast
                 (pcGeo->getGeometryPtr()->handle());
             if (curve.IsNull()) {
                 throw Py::Exception(PyExc_TypeError, "geometry is not a curve");
@@ -1300,10 +1330,10 @@ private:
             const TopoDS_Edge& edge = TopoDS::Edge(shape);
             BRepAdaptor_Curve adapt(edge);
 
-            const Handle_Geom_Curve& hCurve = adapt.Curve().Curve();
+            const Handle(Geom_Curve)& hCurve = adapt.Curve().Curve();
             // Apply placement of the shape to the curve
             TopLoc_Location loc = edge.Location();
-            curve = Handle_Geom_Curve::DownCast(hCurve->Transformed(loc.Transformation()));
+            curve = Handle(Geom_Curve)::DownCast(hCurve->Transformed(loc.Transformation()));
             if (curve.IsNull()) {
                 throw Py::Exception(PartExceptionOCCError, "invalid curve in edge");
             }
@@ -1418,7 +1448,7 @@ private:
             return Py::asObject(new TopoShapeFacePy(new TopoShape(face)));
         }
         catch (Standard_Failure) {
-            Handle_Standard_Failure e = Standard_Failure::Caught();
+            Handle(Standard_Failure) e = Standard_Failure::Caught();
             throw Py::Exception(PartExceptionOCCError, e->GetMessageString());
         }
     }
@@ -1443,7 +1473,7 @@ private:
             return Py::asObject(new TopoShapeFacePy(new TopoShape(face)));
         }
         catch (Standard_Failure) {
-            Handle_Standard_Failure e = Standard_Failure::Caught();
+            Handle(Standard_Failure) e = Standard_Failure::Caught();
             throw Py::Exception(PartExceptionOCCError, e->GetMessageString());
         }
     }
@@ -1454,11 +1484,11 @@ private:
         if (!PyArg_ParseTuple(args.ptr(), "O", &pcObj))
             throw Py::Exception;
 
-        NCollection_List<Handle_Geom_Curve> theSections;
+        NCollection_List<Handle(Geom_Curve)> theSections;
         Py::Sequence list(pcObj);
         for (Py::Sequence::iterator it = list.begin(); it != list.end(); ++it) {
             if (PyObject_TypeCheck((*it).ptr(), &(Part::GeometryCurvePy::Type))) {
-                Handle_Geom_Curve hCurve = Handle_Geom_Curve::DownCast(
+                Handle(Geom_Curve) hCurve = Handle(Geom_Curve)::DownCast(
                     static_cast<GeometryCurvePy*>((*it).ptr())->getGeomCurvePtr()->handle());
                 theSections.Append(hCurve);
             }
@@ -1466,13 +1496,13 @@ private:
 
         //populate section generator
         GeomFill_SectionGenerator aSecGenerator;
-        for (NCollection_List<Handle_Geom_Curve>::Iterator anIt(theSections); anIt.More(); anIt.Next()) {
-            const Handle_Geom_Curve& aCurve = anIt.Value();
+        for (NCollection_List<Handle(Geom_Curve)>::Iterator anIt(theSections); anIt.More(); anIt.Next()) {
+            const Handle(Geom_Curve)& aCurve = anIt.Value();
             aSecGenerator.AddCurve (aCurve);
         }
         aSecGenerator.Perform (Precision::PConfusion());
 
-        Handle_GeomFill_Line aLine = new GeomFill_Line (theSections.Size());
+        Handle(GeomFill_Line) aLine = new GeomFill_Line (theSections.Size());
 
         //parameters
         const Standard_Integer aMinDeg = 1, aMaxDeg = BSplCLib::MaxDegree(), aNbIt = 0;
@@ -1487,7 +1517,7 @@ private:
             return 0;
         }
 
-        Handle_Geom_BSplineSurface aRes;
+        Handle(Geom_BSplineSurface) aRes;
         aRes = new Geom_BSplineSurface(anAlgo.SurfPoles(), anAlgo.SurfWeights(),
             anAlgo.SurfUKnots(), anAlgo.SurfVKnots(), anAlgo.SurfUMults(), anAlgo.SurfVMults(),
             anAlgo.UDegree(), anAlgo.VDegree());
@@ -1559,8 +1589,14 @@ private:
             }
         }
 
+#if PY_MAJOR_VERSION >= 3
+        //FIXME: Test this!
+        if (PyBytes_Check(intext)) {
+            PyObject *p = Base::PyAsUnicodeObject(PyBytes_AsString(intext));
+#else
         if (PyString_Check(intext)) {
-            PyObject *p = Base::PyAsUnicodeObject(PyString_AsString(intext));    
+            PyObject *p = Base::PyAsUnicodeObject(PyString_AsString(intext));
+#endif
             if (!p) {
                 throw Py::TypeError("** makeWireString can't convert PyString.");
             }
@@ -1635,8 +1671,13 @@ private:
         PyErr_Clear();
         PyObject* index_or_value;
         if (PyArg_ParseTuple(args.ptr(), "sO", &name, &index_or_value)) {
+#if PY_MAJOR_VERSION >= 3
+            if (PyLong_Check(index_or_value)) {
+                int ival = (int)PyLong_AsLong(index_or_value);
+#else
             if (PyInt_Check(index_or_value)) {
                 int ival = (int)PyInt_AsLong(index_or_value);
+#endif
                 if (!Interface_Static::SetIVal(name, ival)) {
                     std::stringstream str;
                     str << "Failed to set '" << name << "'";
@@ -1742,7 +1783,7 @@ private:
         }
 
         Py::Sequence list(obj);
-        std::vector<TopoDS_Edge> edges;
+        std::list<TopoDS_Edge> edges;
         for (Py::Sequence::iterator it = list.begin(); it != list.end(); ++it) {
             PyObject* item = (*it).ptr();
             if (PyObject_TypeCheck(item, &(Part::TopoShapePy::Type))) {
@@ -1765,6 +1806,41 @@ private:
         }
 
         return sorted_list;
+    }
+    Py::Object sortEdges2(const Py::Tuple& args)
+    {
+        PyObject *obj;
+        if (!PyArg_ParseTuple(args.ptr(), "O", &obj)) {
+            throw Py::Exception(PartExceptionOCCError, "list of edges expected");
+        }
+
+        Py::Sequence list(obj);
+        std::list<TopoDS_Edge> edges;
+        for (Py::Sequence::iterator it = list.begin(); it != list.end(); ++it) {
+            PyObject* item = (*it).ptr();
+            if (PyObject_TypeCheck(item, &(Part::TopoShapePy::Type))) {
+                const TopoDS_Shape& sh = static_cast<Part::TopoShapePy*>(item)->getTopoShapePtr()->getShape();
+                if (sh.ShapeType() == TopAbs_EDGE)
+                    edges.push_back(TopoDS::Edge(sh));
+                else {
+                    throw Py::TypeError("shape is not an edge");
+                }
+            }
+            else {
+                throw Py::TypeError("item is not a shape");
+            }
+        }
+
+        Py::List root_list;
+        while(edges.size()) {
+            std::list<TopoDS_Edge> sorted = sort_Edges(Precision::Confusion(), edges);
+            Py::List sorted_list;
+            for (std::list<TopoDS_Edge>::iterator it = sorted.begin(); it != sorted.end(); ++it) {
+                sorted_list.append(Py::Object(new TopoShapeEdgePy(new TopoShape(*it)),true));
+            }
+            root_list.append(sorted_list);
+        }
+        return root_list;
     }
     Py::Object toPythonOCC(const Py::Tuple& args)
     {

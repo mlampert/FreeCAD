@@ -4,21 +4,534 @@
   <context>
     <name>Active</name>
     <message>
+      <location filename="PathHelix.py" line="253"/>
+      <source>Set to False to disable code generation</source>
+      <translation type="unfinished">Set to False to disable code generation</translation>
+    </message>
+    <message>
       <location filename="PathProfile.py" line="51"/>
       <source>Make False, to prevent operation from generating code</source>
       <translation>Abwählen, damit die Aktion keinen Code generiert</translation>
     </message>
   </context>
   <context>
-    <name>Clearance Height</name>
+    <name>App::Property</name>
     <message>
-      <location filename="PathProfile.py" line="59"/>
+      <location filename="PathFromShape.py" line="46"/>
+      <source>The base Shape of this toolpath</source>
+      <translation>Die Basisform für die Bewegungsbahn</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="56"/>
+      <source>The base geometry of this toolpath</source>
+      <translation>Die Basis-Geometrie dieses Werkzeugweges</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="57"/>
+      <source>Make False, to prevent operation from generating code</source>
+      <translation>Abwählen, damit die Aktion keinen Code generiert</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="58"/>
+      <source>An optional comment for this profile</source>
+      <translation>Ein optionaler Kommentar für dieses Profil</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="59"/>
+      <source>User Assigned Label</source>
+      <translation type="unfinished">User Assigned Label</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="55"/>
+      <source>The library to use to generate the path</source>
+      <translation type="unfinished">The library to use to generate the path</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="64"/>
+      <source>The tool number in use</source>
+      <translation>Die eingesetzte Werkzeugnummer</translation>
+    </message>
+    <message>
+      <location filename="PathEngrave.py" line="65"/>
+      <source>The description of the tool </source>
+      <translation>Die Beschreibung des Werkzeugs </translation>
+    </message>
+    <message>
+      <location filename="PathSurface.py" line="69"/>
+      <source>The Sample Interval.  Small values cause long wait</source>
+      <translation type="unfinished">The Sample Interval.  Small values cause long wait</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="71"/>
       <source>The height needed to clear clamps and obstructions</source>
       <translation>Die erforderliche Höhe, um Spannmittel oder Besfestigungsmittel zu entfernen</translation>
+    </message>
+    <message>
+      <location filename="PathEngrave.py" line="70"/>
+      <source>Rapid Safety Height between locations.</source>
+      <translation type="unfinished">Rapid Safety Height between locations.</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="73"/>
+      <source>Incremental Step Down of Tool</source>
+      <translation>Inkrementaler Abwärtsschritt des Werkzeugs</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="75"/>
+      <source>Starting Depth of Tool- first cut depth in Z</source>
+      <translation>Starttiefe des Werkzeugs - erste Schnitttiefe in Z</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="76"/>
+      <source>Final Depth of Tool- lowest value in Z</source>
+      <translation>Endgültige Tiefe des Werkzegs - niedrigster Wert in Z</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="72"/>
+      <source>Maximum material removed on final pass.</source>
+      <translation>Maximal zu entfernendes Material im letzten Arbeitsschritt.</translation>
+    </message>
+    <message>
+      <location filename="PathCopy.py" line="45"/>
+      <source>The path to be copied</source>
+      <translation>Der zu kopierende Pfad</translation>
+    </message>
+    <message>
+      <location filename="PathDressup.py" line="48"/>
+      <source>The base path to modify</source>
+      <translation>Zu ändernder Basispfad</translation>
+    </message>
+    <message>
+      <location filename="PathDressupDragknife.py" line="57"/>
+      <source>Angles less than filter angle will not receive corner actions</source>
+      <translation type="unfinished">Angles less than filter angle will not receive corner actions</translation>
+    </message>
+    <message>
+      <location filename="PathDressupDragknife.py" line="58"/>
+      <source>Distance the point trails behind the spindle</source>
+      <translation type="unfinished">Distance the point trails behind the spindle</translation>
+    </message>
+    <message>
+      <location filename="PathDressupDragknife.py" line="59"/>
+      <source>Height to raise during corner action</source>
+      <translation type="unfinished">Height to raise during corner action</translation>
+    </message>
+    <message>
+      <location filename="PathHop.py" line="46"/>
+      <source>The object to be reached by this hop</source>
+      <translation>Das Objekt, welches durch diese Sprung erreicht werden soll</translation>
+    </message>
+    <message>
+      <location filename="PathHop.py" line="47"/>
+      <source>The Z height of the hop</source>
+      <translation>Die Z-Höhe dieses Sprungs</translation>
+    </message>
+    <message>
+      <location filename="PathFixture.py" line="43"/>
+      <source>Fixture Offset Number</source>
+      <translation>Abstand von der Einspannung</translation>
+    </message>
+    <message>
+      <location filename="PathCompoundExtended.py" line="45"/>
+      <source>An ptional description of this compounded operation</source>
+      <translation type="unfinished">An ptional description of this compounded operation</translation>
+    </message>
+    <message>
+      <location filename="PathCompoundExtended.py" line="48"/>
+      <source>The safe height for this operation</source>
+      <translation>Die sichere Höhe für diese Operation</translation>
+    </message>
+    <message>
+      <location filename="PathCompoundExtended.py" line="49"/>
+      <source>The retract height, above top surface of part, between compounded operations inside clamping area</source>
+      <translation>Die Rückzug-Höhe, entweder über der obersten Fläche eines Teils oder zwischen den Verbundoperationen in einer Spannfläche</translation>
+    </message>
+    <message>
+      <location filename="PathCustom.py" line="46"/>
+      <source>The gcode to be inserted</source>
+      <translation type="unfinished">The gcode to be inserted</translation>
+    </message>
+    <message>
+      <location filename="PathContour.py" line="58"/>
+      <source>An optional comment for this Contour</source>
+      <translation>Ein optionaler Kommentar für diese Kontur</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="79"/>
+      <source>The start point of this path</source>
+      <translation>Der Startpunkt dieses Pfades</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="80"/>
+      <source>make True, if specifying a Start Point</source>
+      <translation>Auf Wahr setzen, wenn ein Startpunkt angegeben werden soll</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="81"/>
+      <source>extra length of tool path before start of part edge</source>
+      <translation>extra Weg der Bewegungsbahn for begin einer Kante</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="82"/>
+      <source>length of straight segment of toolpath that comes in at angle to first part edge</source>
+      <translation>länge eines geraden Linensegments der Bewegungsbahn mit dem in einem gegebenen Winkel die erste Kante angefahren wird</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="85"/>
+      <source>make True, if specifying an End Point</source>
+      <translation>Auf Wahr setzen, wenn ein Endpunkt angegeben werden soll</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="86"/>
+      <source>extra length of tool path after end of part edge</source>
+      <translation>extra Weg der Bewegungsbahn nach ende einer Kante</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="87"/>
+      <source>length of straight segment of toolpath that comes in at angle to last part edge</source>
+      <translation>Extra Weg der Bewegungsbahn nach ende einer länge eines geraden Linensegments der Bewegungsbahn mit dem in einem gegebenen Winkel die erste Kante angefahren wirdKante</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="88"/>
+      <source>The end point of this path</source>
+      <translation>Der Endpunkt dieses Pfades</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="93"/>
+      <source>The direction that the toolpath should go around the part ClockWise CW or CounterClockWise CCW</source>
+      <translation>Die Richtung, die der Werkzeugweg um das Teil beschreibt. Im Uhrzeigersinn(CW) oder entgegen des Uhrzeigersinns(CCW)</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="95"/>
+      <source>make True, if using Cutter Radius Compensation</source>
+      <translation>auf Wahr setzen, wenn die Fräser-Radiuskompensation verwendet werden soll</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="99"/>
+      <source>Tesselation  value for tool paths made from beziers, bsplines, and ellipses</source>
+      <translation>Approximierungswert für Bewegungsbahnen aus Bezierkurven, Bsplines und Ellipsen</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="100"/>
+      <source>Plunge angle with which the tool enters the work piece. Straight down is 90 degrees, if set small enough or zero the tool will descent exactly one layer depth down per turn</source>
+      <translation type="unfinished">Plunge angle with which the tool enters the work piece. Straight down is 90 degrees, if set small enough or zero the tool will descent exactly one layer depth down per turn</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="102"/>
+      <source>List of holding tag locations</source>
+      <translation type="unfinished">List of holding tag locations</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="106"/>
+      <source>List of angles for the holding tags</source>
+      <translation type="unfinished">List of angles for the holding tags</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="91"/>
+      <source>Side of edge that tool should cut</source>
+      <translation>Die Seite der Kante, welche das Werkzeug schneiden soll</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="97"/>
+      <source>Radius at start and end</source>
+      <translation>Radius am Anfang und Ende</translation>
+    </message>
+    <message>
+      <location filename="PathContour.py" line="96"/>
+      <source>Extra value to stay away from final Contour- good for roughing toolpath</source>
+      <translation type="unfinished">Extra value to stay away from final Contour- good for roughing toolpath</translation>
+    </message>
+    <message>
+      <location filename="PathDrilling.py" line="57"/>
+      <source>Incremental Drill depth before retracting to clear chips</source>
+      <translation>Inkrementale Bohrtiefe vor dem rück ziehen aus dem Material</translation>
+    </message>
+    <message>
+      <location filename="PathDrilling.py" line="61"/>
+      <source>Height to clear top of materil</source>
+      <translation type="unfinished">Height to clear top of materil</translation>
+    </message>
+    <message>
+      <location filename="PathDrilling.py" line="62"/>
+      <source>The height where feed starts and height during retract tool when path is finished</source>
+      <translation>Die Höhe, bei der die Positionierbewegung beginnt und der Rückzug am Bahnende durchgeführt wird</translation>
+    </message>
+    <message>
+      <location filename="PathDrilling.py" line="63"/>
+      <source>The time to dwell between peck cycles</source>
+      <translation type="unfinished">The time to dwell between peck cycles</translation>
+    </message>
+    <message>
+      <location filename="PathPlane.py" line="44"/>
+      <source>Orientation plane of CNC path</source>
+      <translation>Orientierungsebene des CNC-Pfades</translation>
+    </message>
+    <message>
+      <location filename="PathEngrave.py" line="50"/>
+      <source>The base geometry of this object</source>
+      <translation>Die Basis-Geometrie dieses Objekts</translation>
+    </message>
+    <message>
+      <location filename="PathMillFace.py" line="79"/>
+      <source>How far the cutter should extend past the boundary</source>
+      <translation type="unfinished">How far the cutter should extend past the boundary</translation>
+    </message>
+    <message>
+      <location filename="PathMillFace.py" line="80"/>
+      <source>Start Faceing at center or boundary</source>
+      <translation type="unfinished">Start Faceing at center or boundary</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="80"/>
+      <source>Percent of cutter diameter to step over on each pass</source>
+      <translation type="unfinished">Percent of cutter diameter to step over on each pass</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="82"/>
+      <source>Attempts to avoid unnecessary retractions.</source>
+      <translation type="unfinished">Attempts to avoid unnecessary retractions.</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="83"/>
+      <source>Lifts tool at the end of each pass to respect cut mode.</source>
+      <translation type="unfinished">Lifts tool at the end of each pass to respect cut mode.</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="84"/>
+      <source>Use Zig Zag pattern to clear area.</source>
+      <translation type="unfinished">Use Zig Zag pattern to clear area.</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="85"/>
+      <source>Angle of the zigzag pattern</source>
+      <translation type="unfinished">Angle of the zigzag pattern</translation>
+    </message>
+    <message>
+      <location filename="PathMillFace.py" line="88"/>
+      <source>Shape to use for calculating Boundary</source>
+      <translation type="unfinished">Shape to use for calculating Boundary</translation>
+    </message>
+    <message>
+      <location filename="PathToolController.py" line="47"/>
+      <source>The active tool</source>
+      <translation>Das aktive Werkzeug</translation>
+    </message>
+    <message>
+      <location filename="PathToolController.py" line="49"/>
+      <source>The speed of the cutting spindle in RPM</source>
+      <translation>Die Drehgeschwindigkeit der Spindel in u/min</translation>
+    </message>
+    <message>
+      <location filename="PathToolController.py" line="50"/>
+      <source>Direction of spindle rotation</source>
+      <translation>Drehrichtung der Spindel</translation>
+    </message>
+    <message>
+      <location filename="PathToolController.py" line="52"/>
+      <source>Feed rate for vertical moves in Z</source>
+      <translation>Zustell-Rate für vertikale Bewegungen in Z</translation>
+    </message>
+    <message>
+      <location filename="PathToolController.py" line="53"/>
+      <source>Feed rate for horizontal moves</source>
+      <translation>Vorschubgeschwindigkeit für horizontale Bewegungen</translation>
+    </message>
+    <message>
+      <location filename="PathToolController.py" line="54"/>
+      <source>Rapid rate for vertical moves in Z</source>
+      <translation type="unfinished">Rapid rate for vertical moves in Z</translation>
+    </message>
+    <message>
+      <location filename="PathToolController.py" line="55"/>
+      <source>Rapid rate for horizontal moves</source>
+      <translation type="unfinished">Rapid rate for horizontal moves</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="77"/>
+      <source>Amount of material to leave</source>
+      <translation>Menge des zurückzulassenden Materials</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="78"/>
+      <source>Start pocketing at center or boundary</source>
+      <translation>Vertiefung im Mittelpunkt oder am Rand starten</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="88"/>
+      <source>Allow Cutter enter material with a straight plunge.</source>
+      <translation type="unfinished">Allow Cutter enter material with a straight plunge.</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="89"/>
+      <source>The minimum fraction of tool diameter to use for ramp length</source>
+      <translation type="unfinished">The minimum fraction of tool diameter to use for ramp length</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="91"/>
+      <source>The fraction of tool diameter to use for calculating helix size.</source>
+      <translation type="unfinished">The fraction of tool diameter to use for calculating helix size.</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="93"/>
+      <source>The Angle of the ramp entry.</source>
+      <translation type="unfinished">The Angle of the ramp entry.</translation>
+    </message>
+    <message>
+      <location filename="PathFacePocket.py" line="46"/>
+      <source>The distance between the face and the path</source>
+      <translation type="unfinished">The distance between the face and the path</translation>
+    </message>
+    <message>
+      <location filename="PathEngrave.py" line="72"/>
+      <source>The vertex index to start the path from</source>
+      <translation type="unfinished">The vertex index to start the path from</translation>
+    </message>
+    <message>
+      <location filename="PathFacePocket.py" line="48"/>
+      <source>The type of the first move</source>
+      <translation>Die Art der ersten Bewegung</translation>
+    </message>
+    <message>
+      <location filename="PathDressup.py" line="49"/>
+      <source>The position of this dressup in the base path</source>
+      <translation>Die Position dieser Erweiterung in der Basisbewegungsbahn</translation>
+    </message>
+    <message>
+      <location filename="PathDressup.py" line="50"/>
+      <source>The modification to be added</source>
+      <translation>Die Änderung, welche hinzugefügt werden soll</translation>
+    </message>
+    <message>
+      <location filename="PathStop.py" line="43"/>
+      <source>Add Optional or Mandatory Stop to the program</source>
+      <translation>Ein optionaler oder obligatorischer Programmstop</translation>
+    </message>
+    <message>
+      <location filename="PathStock.py" line="47"/>
+      <source>extra allownace from part width</source>
+      <translation>Aufmaß der Teil-Breite</translation>
+    </message>
+    <message>
+      <location filename="PathStock.py" line="48"/>
+      <source>The base object this represents</source>
+      <translation type="unfinished">The base object this represents</translation>
+    </message>
+    <message>
+      <location filename="PathToolLenOffset.py" line="44"/>
+      <source>The Height offset number of the active tool</source>
+      <translation>Der Höhen-Versatz des aktiven Werkzeugs</translation>
+    </message>
+    <message>
+      <location filename="PathToolLenOffset.py" line="46"/>
+      <source>The first height value in Z, to rapid to, before making a feed move in Z</source>
+      <translation>Der erste Höhenwert in Z zum Anfahren, bevor die Zustellbewegung in Z erfolgt</translation>
+    </message>
+    <message>
+      <location filename="PathJob.py" line="53"/>
+      <source>The NC output file for this project</source>
+      <translation>Die NC-Ausgabedatei für dieses Projekt</translation>
+    </message>
+    <message>
+      <location filename="PathJob.py" line="57"/>
+      <source>An optional description for this job</source>
+      <translation type="unfinished">An optional description for this job</translation>
+    </message>
+    <message>
+      <location filename="PathJob.py" line="58"/>
+      <source>Select the Post Processor</source>
+      <translation>Wählen Sie den Postprozessor aus</translation>
+    </message>
+    <message>
+      <location filename="PathJob.py" line="61"/>
+      <source>Arguments for the Post Processor (specific to the script)</source>
+      <translation type="unfinished">Arguments for the Post Processor (specific to the script)</translation>
+    </message>
+    <message>
+      <location filename="PathJob.py" line="63"/>
+      <source>Name of the Machine that will use the CNC program</source>
+      <translation>Name der Maschine, die das CNC-Programm verwenden wird</translation>
+    </message>
+    <message>
+      <location filename="PathJob.py" line="65"/>
+      <source>The tooltable used for this CNC program</source>
+      <translation>Die Werkzeugtabelle für dieses CNC-Programm</translation>
+    </message>
+    <message>
+      <location filename="PathJob.py" line="67"/>
+      <source>Units that the machine works in, ie Metric or Inch</source>
+      <translation>Einheitensystem, mit dem die Maschine arbeitet z. B. angloamerikanisches (inch) oder metrisches System</translation>
+    </message>
+    <message>
+      <location filename="PathJob.py" line="72"/>
+      <source>The Maximum distance in X the machine can travel</source>
+      <translation>Der maximale Fahrweg, der in X-Richtung verfahren werden kann</translation>
+    </message>
+    <message>
+      <location filename="PathJob.py" line="76"/>
+      <source>The Minimum distance in X the machine can travel</source>
+      <translation>Der minimale Fahrweg, der in X-Richtung verfahren werden kann</translation>
+    </message>
+    <message>
+      <location filename="PathFacePocket.py" line="49"/>
+      <source>The height to travel at between loops</source>
+      <translation type="unfinished">The height to travel at between loops</translation>
+    </message>
+    <message>
+      <location filename="PathFacePocket.py" line="50"/>
+      <source>Perform only one loop or fill the whole shape</source>
+      <translation type="unfinished">Perform only one loop or fill the whole shape</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="98"/>
+      <source>Extra value to stay away from final profile- good for roughing toolpath</source>
+      <translation>Aufmaß zum Endprofil - Geeignet für die schruppende Vor-Bearbeitung</translation>
+    </message>
+    <message>
+      <location filename="PathProfile.py" line="99"/>
+      <source>Profile holes as well as the outline</source>
+      <translation type="unfinished">Profile holes as well as the outline</translation>
+    </message>
+    <message>
+      <location filename="PathProfile.py" line="100"/>
+      <source>Profile the outline</source>
+      <translation type="unfinished">Profile the outline</translation>
+    </message>
+    <message>
+      <location filename="PathEngrave.py" line="55"/>
+      <source>The library or Algorithm used to generate the path</source>
+      <translation type="unfinished">The library or Algorithm used to generate the path</translation>
+    </message>
+    <message>
+      <location filename="PathEngrave.py" line="59"/>
+      <source>The tool controller to use</source>
+      <translation type="unfinished">The tool controller to use</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="67"/>
+      <source>The description of the tool</source>
+      <translation>Die Beschreibung des Werkzeugs</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="72"/>
+      <source>Rapid Safety Height between locations</source>
+      <translation type="unfinished">Rapid Safety Height between locations</translation>
+    </message>
+  </context>
+  <context>
+    <name>Clearance</name>
+    <message>
+      <location filename="PathHelix.py" line="271"/>
+      <source>Safe distance above the top of the hole to which to retract the tool</source>
+      <translation type="unfinished">Safe distance above the top of the hole to which to retract the tool</translation>
     </message>
   </context>
   <context>
     <name>Comment</name>
+    <message>
+      <location filename="PathHelix.py" line="255"/>
+      <source>An optional comment for this profile, will appear in G-Code</source>
+      <translation type="unfinished">An optional comment for this profile, will appear in G-Code</translation>
+    </message>
     <message>
       <location filename="PathComment.py" line="41"/>
       <source>Comment or note for CNC program</source>
@@ -31,15 +544,25 @@
     </message>
   </context>
   <context>
-    <name>Current Tool</name>
+    <name>DeltaR</name>
     <message>
-      <location filename="PathLoadTool.py" line="137"/>
-      <source>Tool Number to Load</source>
-      <translation>Lade Werkzeugnummer</translation>
+      <location filename="PathHelix.py" line="267"/>
+      <source>Radius increment (must be smaller than tool diameter)</source>
+      <translation type="unfinished">Radius increment (must be smaller than tool diameter)</translation>
     </message>
   </context>
   <context>
     <name>Direction</name>
+    <message>
+      <location filename="PathHelix.py" line="259"/>
+      <source>The direction of the circular cuts, clockwise (CW), or counter clockwise (CCW)</source>
+      <translation type="unfinished">The direction of the circular cuts, clockwise (CW), or counter clockwise (CCW)</translation>
+    </message>
+    <message>
+      <location filename="PathHelix.py" line="263"/>
+      <source>Start cutting from the inside or outside</source>
+      <translation type="unfinished">Start cutting from the inside or outside</translation>
+    </message>
     <message>
       <location filename="PathProfile.py" line="86"/>
       <source>The direction that the toolpath should go around the part ClockWise CW or CounterClockWise CCW</source>
@@ -47,65 +570,20 @@
     </message>
   </context>
   <context>
-    <name>Edge 1</name>
+    <name>Features</name>
     <message>
-      <location filename="PathProfile.py" line="49"/>
-      <source>First Selected Edge to help determine which geometry to make a toolpath around</source>
-      <translation>Erste ausgewählte Kante zum bestimmen, für welche Geometrie ein Werkzeugpfad erstellt werden soll</translation>
-    </message>
-  </context>
-  <context>
-    <name>Edge 2</name>
-    <message>
-      <location filename="PathProfile.py" line="50"/>
-      <source>Second Selected Edge to help determine which geometry to make a toolpath around</source>
-      <translation>Zweite ausgewählte Kante zum bestimmen, für welche Geometrie ein Werkzeugpfad erstellt werden soll</translation>
-    </message>
-  </context>
-  <context>
-    <name>Edge List</name>
-    <message>
-      <location filename="PathKurve.py" line="70"/>
-      <source>List of edges selected</source>
-      <translation>Liste der ausgewählten Kanten</translation>
-    </message>
-  </context>
-  <context>
-    <name>End Point</name>
-    <message>
-      <location filename="PathKurve.py" line="45"/>
-      <source>Linked End Point of Profile</source>
-      <translation>Verknüpfter Endpunkt des Profils</translation>
-    </message>
-    <message>
-      <location filename="PathKurve.py" line="81"/>
-      <source>The name of the end point of this path</source>
-      <translation>Der Name des Endpunkts dieses Pfades</translation>
-    </message>
-    <message>
-      <location filename="PathProfile.py" line="81"/>
-      <source>The end point of this path</source>
-      <translation>Der Endpunkt dieses Pfades</translation>
-    </message>
-  </context>
-  <context>
-    <name>Face1</name>
-    <message>
-      <location filename="PathProfile.py" line="46"/>
-      <source>First Selected Face to help determine where final depth of tool path is</source>
-      <translation>Erste ausgewählte Fläche zur Bestimmung der endgültigen Tiefe des Werkzeugpfades</translation>
-    </message>
-  </context>
-  <context>
-    <name>Face2</name>
-    <message>
-      <location filename="PathProfile.py" line="47"/>
-      <source>Second Selected Face to help determine where the upper level of tool path is</source>
-      <translation>Zweite ausgewählte Fläche zur Bestimmung der endgültigen Tiefe des Werkzeugpfades</translation>
+      <location filename="PathHelix.py" line="251"/>
+      <source>Selected features for the drill operation</source>
+      <translation type="unfinished">Selected features for the drill operation</translation>
     </message>
   </context>
   <context>
     <name>Final Depth</name>
+    <message>
+      <location filename="PathHelix.py" line="281"/>
+      <source>Final Depth of Tool - lowest value in Z</source>
+      <translation type="unfinished">Final Depth of Tool - lowest value in Z</translation>
+    </message>
     <message>
       <location filename="PathProfile.py" line="63"/>
       <source>Final Depth of Tool- lowest value in Z</source>
@@ -113,93 +591,44 @@
     </message>
   </context>
   <context>
-    <name>Fixture Offset</name>
-    <message>
-      <location filename="PathFixture.py" line="41"/>
-      <source>Fixture Offset Number</source>
-      <translation>Abstand von der Einspannung</translation>
-    </message>
-  </context>
-  <context>
-    <name>Height</name>
-    <message>
-      <location filename="PathToolLenOffset.py" line="43"/>
-      <source>The first height value in Z, to rapid to, before making a feed move in Z</source>
-      <translation>Der erste Höhenwert in Z zum Anfahren, bevor die Zustellbewegung in Z erfolgt</translation>
-    </message>
-  </context>
-  <context>
-    <name>Height Allowance</name>
-    <message>
-      <location filename="PathStock.py" line="45"/>
-      <source>extra allownace from part width</source>
-      <translation>Aufmaß der Teil-Breite</translation>
-    </message>
-  </context>
-  <context>
-    <name>Height Offset Number</name>
-    <message>
-      <location filename="PathToolLenOffset.py" line="41"/>
-      <source>The Height offset number of the active tool</source>
-      <translation>Der Höhen-Versatz des aktiven Werkzeugs</translation>
-    </message>
-  </context>
-  <context>
-    <name>Horiz Feed</name>
-    <message>
-      <location filename="PathProfile.py" line="69"/>
-      <source>Feed rate for horizontal moves</source>
-      <translation>Vorschubgeschwindigkeit für horizontale Bewegungen</translation>
-    </message>
-    <message>
-      <location filename="PathKurve.py" line="62"/>
-      <source>Feed rate (in units per minute) for horizontal moves</source>
-      <translation>Vorschubgeschwindigkeit (in Einheiten pro Minute) für horizontale Bewegungen</translation>
-    </message>
-  </context>
-  <context>
-    <name>Length Allowance</name>
-    <message>
-      <location filename="PathStock.py" line="43"/>
-      <source>extra allownace from part width</source>
-      <translation>Aufmaß der Teil-Breite</translation>
-    </message>
-  </context>
-  <context>
-    <name>OffsetExtra</name>
-    <message>
-      <location filename="PathProfile.py" line="90"/>
-      <source>Extra value to stay away from final profile- good for roughing toolpath</source>
-      <translation>Aufmaß zum Endprofil - Geeignet für die schruppende Vor-Bearbeitung</translation>
-    </message>
-  </context>
-  <context>
-    <name>OutputFile</name>
-    <message>
-      <location filename="PathProject.py" line="49"/>
-      <source>The NC output file for this project</source>
-      <translation>Die NC-Ausgabe-Datei für dieses Projekt</translation>
-    </message>
-  </context>
-  <context>
-    <name>Parent Object</name>
-    <message>
-      <location filename="PathProfile.py" line="45"/>
-      <source>The base geometry of this toolpath</source>
-      <translation>Die Basis-Geometrie dieses Werkzeugweges</translation>
-    </message>
-  </context>
-  <context>
     <name>Path</name>
+    <message>
+      <location filename="PathContour.py" line="396"/>
+      <source>Create a Contour</source>
+      <translation>Kontur erzeugen</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="153"/>
+      <source>this object already in the list
+</source>
+      <translation>Objekt bereits in Liste enthalten</translation>
+    </message>
+    <message>
+      <location filename="PathMillFace.py" line="148"/>
+      <source>Please select features from the Job model object
+</source>
+      <translation type="unfinished">Please select features from the Job model object
+</translation>
+    </message>
+    <message>
+      <location filename="PathProfile.py" line="444"/>
+      <source>Create a Profile</source>
+      <translation>Profil erzeugen</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="430"/>
+      <source>Create a Profile based on edge selection</source>
+      <translation>Profil mit ausgewählten Kanten erzeugen</translation>
+    </message>
     <message>
       <location filename="InitGui.py" line="85"/>
       <source>Project Setup</source>
       <translation>Projekt-Einstellungen</translation>
     </message>
     <message>
-      <location filename="InitGui.py" line="86"/>
-      <source>Partial Commands</source>
-      <translation>Partielle Befehle</translation>
+      <location filename="InitGui.py" line="97"/>
+      <source>Tool Commands</source>
+      <translation>Werkzeugbefehle</translation>
     </message>
     <message>
       <location filename="InitGui.py" line="87"/>
@@ -216,70 +645,261 @@
       <source>Path</source>
       <translation>Pfad</translation>
     </message>
-  </context>
-  <context>
-    <name>Path Closed</name>
     <message>
-      <location filename="PathProfile.py" line="48"/>
-      <source>If the toolpath is a closed polyline this is True</source>
-      <translation>Der Wert ist "Wahr", wenn der Werkzeugweg ein geschlossener Linienzug ist</translation>
+      <location filename="InitGui.py" line="101"/>
+      <source>Helpful Tools</source>
+      <translation>Hilfreiche Werkzeuge</translation>
+    </message>
+    <message>
+      <location filename="InitGui.py" line="118"/>
+      <source>&amp;Path</source>
+      <translation type="unfinished">&amp;Path</translation>
+    </message>
+    <message>
+      <location filename="InitGui.py" line="106"/>
+      <source>Path Dressup</source>
+      <translation type="unfinished">Path Dressup</translation>
+    </message>
+    <message>
+      <location filename="InitGui.py" line="86"/>
+      <source>Partial Commands</source>
+      <translation>Partielle Befehle</translation>
     </message>
   </context>
   <context>
-    <name>PathCompoundExtended</name>
+    <name>Path Job</name>
     <message>
-      <location filename="PathCompoundExtended.py" line="44"/>
-      <source>An optional description of this compounded operation</source>
-      <translation>Eine optionale Beschreibung der Verbundoperation</translation>
-    </message>
-    <message>
-      <location filename="PathCompoundExtended.py" line="47"/>
-      <source>The safe height for this operation</source>
-      <translation>Die sichere Höhe für diese Operation</translation>
-    </message>
-    <message>
-      <location filename="PathCompoundExtended.py" line="48"/>
-      <source>The retract height, above top surface of part, between compounded operations inside clamping area</source>
-      <translation>Die Rückzug-Höhe, entweder über der obersten Fläche eines Teils oder zwischen den Verbundoperationen in einer Spannfläche</translation>
+      <location filename="PathJob.py" line="341"/>
+      <source>All Files (*.*)</source>
+      <translation>Alle Dateien (*.*)</translation>
     </message>
   </context>
   <context>
-    <name>PathCopy</name>
+    <name>PathContour</name>
     <message>
-      <location filename="PathCopy.py" line="44"/>
-      <source>The path to be copied</source>
-      <translation>Der zu kopierende Pfad</translation>
+      <location filename="PathContour.py" line="381"/>
+      <source>Contour</source>
+      <translation>Kontur</translation>
+    </message>
+    <message>
+      <location filename="PathContour.py" line="383"/>
+      <source>Creates a Contour Path for the Base Object </source>
+      <translation type="unfinished">Creates a Contour Path for the Base Object </translation>
     </message>
   </context>
   <context>
-    <name>PathDressup</name>
+    <name>PathDressup_Dogbone</name>
     <message>
-      <location filename="PathDressup.py" line="44"/>
+      <location filename="PathDressupDogbone.py" line="357"/>
       <source>The base path to modify</source>
       <translation>Zu ändernder Basispfad</translation>
     </message>
     <message>
-      <location filename="PathDressup.py" line="45"/>
-      <source>The position of this dressup in the base path</source>
-      <translation>Die Position dieser Erweiterung in der Basisbewegungsbahn</translation>
+      <location filename="PathDressupDogbone.py" line="358"/>
+      <source>The side of path to insert bones</source>
+      <translation type="unfinished">The side of path to insert bones</translation>
     </message>
     <message>
-      <location filename="PathDressup.py" line="46"/>
-      <source>The modification to be added</source>
-      <translation>Die Änderung, welche hinzugefügt werden soll</translation>
+      <location filename="PathDressupDogbone.py" line="354"/>
+      <source>The style of bones</source>
+      <translation type="unfinished">The style of bones</translation>
+    </message>
+    <message>
+      <location filename="PathDressupDogbone.py" line="364"/>
+      <source>Bones that aren't dressed up</source>
+      <translation type="unfinished">Bones that aren't dressed up</translation>
+    </message>
+    <message>
+      <location filename="PathDressupDogbone.py" line="367"/>
+      <source>The algorithm to determine the bone length</source>
+      <translation type="unfinished">The algorithm to determine the bone length</translation>
+    </message>
+    <message>
+      <location filename="PathDressupDogbone.py" line="361"/>
+      <source>The style of boness</source>
+      <translation type="unfinished">The style of boness</translation>
+    </message>
+    <message>
+      <location filename="PathDressupDogbone.py" line="370"/>
+      <source>Dressup length if Incision == custom</source>
+      <translation type="unfinished">Dressup length if Incision == custom</translation>
+    </message>
+    <message>
+      <location filename="PathDressupDogbone.py" line="808"/>
+      <source>Edit Dogbone Dress-up</source>
+      <translation type="unfinished">Edit Dogbone Dress-up</translation>
+    </message>
+    <message>
+      <location filename="PathDressupDogbone.py" line="974"/>
+      <source>Dogbone Dress-up</source>
+      <translation type="unfinished">Dogbone Dress-up</translation>
+    </message>
+    <message>
+      <location filename="PathDressupDogbone.py" line="975"/>
+      <source>Creates a Dogbone Dress-up object from a selected path</source>
+      <translation type="unfinished">Creates a Dogbone Dress-up object from a selected path</translation>
+    </message>
+    <message>
+      <location filename="PathDressupDogbone.py" line="989"/>
+      <source>Please select one path object
+</source>
+      <translation>Bitte eine einzelne Bewegungsbahn auswählen
+</translation>
+    </message>
+    <message>
+      <location filename="PathDressupDogbone.py" line="993"/>
+      <source>The selected object is not a path
+</source>
+      <translation>Das ausgewählte Objekt ist keine Bewegungsbahn
+</translation>
+    </message>
+    <message>
+      <location filename="PathDressupDogbone.py" line="999"/>
+      <source>Please select a Profile or Dogbone Dressup object</source>
+      <translation type="unfinished">Please select a Profile or Dogbone Dressup object</translation>
+    </message>
+    <message>
+      <location filename="PathDressupDogbone.py" line="1003"/>
+      <source>Create Dogbone Dress-up</source>
+      <translation type="unfinished">Create Dogbone Dress-up</translation>
     </message>
   </context>
   <context>
-    <name>PathHop</name>
+    <name>PathDressup_DragKnife</name>
     <message>
-      <location filename="PathHop.py" line="44"/>
-      <source>The object to be reached by this hop</source>
-      <translation>Das Objekt, welches durch diese Sprung erreicht werden soll</translation>
+      <location filename="PathDressupDragknife.py" line="474"/>
+      <source>DragKnife Dress-up</source>
+      <translation type="unfinished">DragKnife Dress-up</translation>
     </message>
     <message>
-      <location filename="PathHop.py" line="45"/>
-      <source>The Z height of the hop</source>
-      <translation>Die Z-Höhe dieses Sprungs</translation>
+      <location filename="PathDressupDragknife.py" line="475"/>
+      <source>Modifies a path to add dragknife corner actions</source>
+      <translation type="unfinished">Modifies a path to add dragknife corner actions</translation>
+    </message>
+    <message>
+      <location filename="PathDressupDragknife.py" line="489"/>
+      <source>Please select one path object
+</source>
+      <translation>Bitte eine einzelne Bewegungsbahn auswählen
+</translation>
+    </message>
+    <message>
+      <location filename="PathDressupDragknife.py" line="493"/>
+      <source>The selected object is not a path
+</source>
+      <translation>Das ausgewählte Objekt ist keine Bewegungsbahn
+</translation>
+    </message>
+    <message>
+      <location filename="PathDressupDragknife.py" line="497"/>
+      <source>Please select a Path object</source>
+      <translation>Bitte wählen Sie ein Pfadobjekt</translation>
+    </message>
+    <message>
+      <location filename="PathDressupDragknife.py" line="502"/>
+      <source>Create Dress-up</source>
+      <translation>Erzeuge Erweiterung</translation>
+    </message>
+  </context>
+  <context>
+    <name>PathDressup_HoldingTags</name>
+    <message>
+      <location filename="PathDressupHoldingTags.py" line="714"/>
+      <source>The base path to modify</source>
+      <translation>Zu ändernder Basispfad</translation>
+    </message>
+    <message>
+      <location filename="PathDressupHoldingTags.py" line="715"/>
+      <source>Width of tags.</source>
+      <translation type="unfinished">Width of tags.</translation>
+    </message>
+    <message>
+      <location filename="PathDressupHoldingTags.py" line="716"/>
+      <source>Height of tags.</source>
+      <translation type="unfinished">Height of tags.</translation>
+    </message>
+    <message>
+      <location filename="PathDressupHoldingTags.py" line="717"/>
+      <source>Angle of tag plunge and ascent.</source>
+      <translation type="unfinished">Angle of tag plunge and ascent.</translation>
+    </message>
+    <message>
+      <location filename="PathDressupHoldingTags.py" line="718"/>
+      <source>Radius of the fillet for the tag.</source>
+      <translation type="unfinished">Radius of the fillet for the tag.</translation>
+    </message>
+    <message>
+      <location filename="PathDressupHoldingTags.py" line="719"/>
+      <source>Locations of insterted holding tags</source>
+      <translation type="unfinished">Locations of insterted holding tags</translation>
+    </message>
+    <message>
+      <location filename="PathDressupHoldingTags.py" line="720"/>
+      <source>Ids of disabled holding tags</source>
+      <translation type="unfinished">Ids of disabled holding tags</translation>
+    </message>
+    <message>
+      <location filename="PathDressupHoldingTags.py" line="721"/>
+      <source>Factor determining the # segments used to approximate rounded tags.</source>
+      <translation type="unfinished">Factor determining the # segments used to approximate rounded tags.</translation>
+    </message>
+    <message>
+      <location filename="PathDressupHoldingTags.py" line="1383"/>
+      <source>HoldingTags Dress-up</source>
+      <translation type="unfinished">HoldingTags Dress-up</translation>
+    </message>
+    <message>
+      <location filename="PathDressupHoldingTags.py" line="1384"/>
+      <source>Creates a HoldingTags Dress-up object from a selected path</source>
+      <translation type="unfinished">Creates a HoldingTags Dress-up object from a selected path</translation>
+    </message>
+  </context>
+  <context>
+    <name>PathFace</name>
+    <message>
+      <location filename="PathMillFace.py" line="171"/>
+      <source>Generating toolpath with libarea offsets.
+</source>
+      <translation type="unfinished">Generating toolpath with libarea offsets.
+</translation>
+    </message>
+    <message>
+      <location filename="PathMillFace.py" line="305"/>
+      <source>Pick Start Point</source>
+      <translation type="unfinished">Pick Start Point</translation>
+    </message>
+    <message>
+      <location filename="PathMillFace.py" line="350"/>
+      <source>Face</source>
+      <translation>Fläche</translation>
+    </message>
+    <message>
+      <location filename="PathMillFace.py" line="352"/>
+      <source>Create a Facing Operation from a model or face</source>
+      <translation type="unfinished">Create a Facing Operation from a model or face</translation>
+    </message>
+    <message>
+      <location filename="PathMillFace.py" line="367"/>
+      <source>Create Face</source>
+      <translation type="unfinished">Create Face</translation>
+    </message>
+  </context>
+  <context>
+    <name>PathHelix</name>
+    <message>
+      <location filename="PathHelix.py" line="449"/>
+      <source>PathHelix</source>
+      <translation type="unfinished">PathHelix</translation>
+    </message>
+    <message>
+      <location filename="PathHelix.py" line="450"/>
+      <source>Creates a helix cut from selected circles</source>
+      <translation type="unfinished">Creates a helix cut from selected circles</translation>
+    </message>
+    <message>
+      <location filename="PathHelix.py" line="464"/>
+      <source>Create a helix cut</source>
+      <translation type="unfinished">Create a helix cut</translation>
     </message>
   </context>
   <context>
@@ -287,23 +907,159 @@
     <message>
       <location filename="PathInspect.py" line="131"/>
       <source>&lt;b&gt;Note&lt;/b&gt;: Pressing OK will commit any change you make above to the object, but if the object is parametric, these changes will be overridden on recompute.</source>
-      <translation>&lt;b&gt;Hinweis&lt;/b&gt;: Drücken von OK wird jede Änderung die Sie oben auf das Objekt machen übernehmen, aber wenn das Objekt parametrische ist, werden diese Änderungen bei Neuberechnungen wieder überschrieben.</translation>
+      <translation>&lt;b&gt;Hinweis&lt;/b&gt;: Drücken von OK wird die Änderung/en am Objekt übernehmen, die aber bei parametrischen Objekten bei Neuberechnung überschrieben werden.</translation>
+    </message>
+  </context>
+  <context>
+    <name>PathJob</name>
+    <message>
+      <location filename="PathJob.py" line="341"/>
+      <source>Select Output File</source>
+      <translation>Ausgabedatei auswählen</translation>
+    </message>
+  </context>
+  <context>
+    <name>PathKurve</name>
+    <message>
+      <location filename="PathPocket.py" line="412"/>
+      <source>libarea needs to be installed for this command to work.
+</source>
+      <translation type="unfinished">libarea needs to be installed for this command to work.
+</translation>
+    </message>
+  </context>
+  <context>
+    <name>PathPocket</name>
+    <message>
+      <location filename="PathPocket.py" line="177"/>
+      <source>Generating toolpath with libarea offsets.
+</source>
+      <translation type="unfinished">Generating toolpath with libarea offsets.
+</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="226"/>
+      <source>Generating toolpath with OCC native offsets.
+</source>
+      <translation type="unfinished">Generating toolpath with OCC native offsets.
+</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="267"/>
+      <source>Helical Entry location not found.
+</source>
+      <translation type="unfinished">Helical Entry location not found.
+</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="273"/>
+      <source>Attempting ramp entry.
+</source>
+      <translation type="unfinished">Attempting ramp entry.
+</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="280"/>
+      <source>Ramp Entry location not found.
+</source>
+      <translation type="unfinished">Ramp Entry location not found.
+</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="441"/>
+      <source>Pick Start Point</source>
+      <translation type="unfinished">Pick Start Point</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="486"/>
+      <source>Pocket</source>
+      <translation>Tasche</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="488"/>
+      <source>Creates a Path Pocket object from a face or faces</source>
+      <translation type="unfinished">Creates a Path Pocket object from a face or faces</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="503"/>
+      <source>Create Pocket</source>
+      <translation>Erzeuge Tasche</translation>
+    </message>
+  </context>
+  <context>
+    <name>PathPreferencesPathDressup</name>
+    <message>
+      <location filename="PathPreferencesPathDressup.py" line="50"/>
+      <source>Dressups</source>
+      <translation type="unfinished">Dressups</translation>
     </message>
   </context>
   <context>
     <name>PathProfile</name>
     <message>
+      <location filename="PathHelix.py" line="289"/>
+      <source>The current tool in use</source>
+      <translation type="unfinished">The current tool in use</translation>
+    </message>
+    <message>
       <location filename="PathProfile.py" line="54"/>
       <source>The tool number in use</source>
       <translation>Die eingesetzte Werkzeugnummer</translation>
+    </message>
+    <message>
+      <location filename="PathProfile.py" line="429"/>
+      <source>Face Profile</source>
+      <translation>Flächen-Profil</translation>
+    </message>
+    <message>
+      <location filename="PathProfile.py" line="431"/>
+      <source>Profile based on face or faces</source>
+      <translation>auf umrandeter Fläche/n basiertes Profil</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="415"/>
+      <source>Edge Profile</source>
+      <translation>Kanten-basiertes Profil</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="417"/>
+      <source>Profile based on Edges</source>
+      <translation>auf Kanten basierendes Profil</translation>
     </message>
   </context>
   <context>
     <name>PathProject</name>
     <message>
-      <location filename="PathPocket.py" line="107"/>
-      <source>An optional comment for this profile</source>
-      <translation>Ein optionaler Kommentar für dieses Profil</translation>
+      <location filename="PathDrilling.py" line="443"/>
+      <source>Please select at least one Drillable Location
+</source>
+      <translation type="unfinished">Please select at least one Drillable Location
+</translation>
+    </message>
+    <message>
+      <location filename="PathProfile.py" line="587"/>
+      <source>Please select only faces from one solid
+</source>
+      <translation>nur eine Teil-Oberfläche des Körpers auswählen</translation>
+    </message>
+    <message>
+      <location filename="PathProfile.py" line="594"/>
+      <source>Please select faces from one solid
+</source>
+      <translation>Oberflächen eines Körpers auswählen</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="564"/>
+      <source>Please select only Edges from the Base model
+</source>
+      <translation>nur eine Kante eines Grundkörpers auswählen</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="571"/>
+      <source>Please select one or more edges from the Base model
+</source>
+      <translation type="unfinished">Please select one or more edges from the Base model
+</translation>
     </message>
     <message>
       <location filename="PathPocket.py" line="76"/>
@@ -328,7 +1084,7 @@
     <message>
       <location filename="PathPocket.py" line="87"/>
       <source>make True, if manually specifying a Start Start Depth</source>
-      <translation>auf Wahr setzten, wenn die Starttiefe manuell gesetzt werden soll</translation>
+      <translation>bei manuell bestimmter Starttiefe auf Wahr stellen</translation>
     </message>
     <message>
       <location filename="PathPocket.py" line="88"/>
@@ -338,7 +1094,7 @@
     <message>
       <location filename="PathPocket.py" line="89"/>
       <source>The height desired to retract tool when path is finished</source>
-      <translation>Die Höhe, zu der das Werkzeug zurückgezogen werden soll nachdem die Bewegungsbahn beendet wurde</translation>
+      <translation>Höhe, zu der Werkzeug zurückgezogen werden soll, nachdem  Bewegung beendet ist</translation>
     </message>
     <message>
       <location filename="PathPocket.py" line="91"/>
@@ -366,6 +1122,11 @@
       <translation>Abwählen, damit die Aktion keinen Code generiert</translation>
     </message>
     <message>
+      <location filename="PathPocket.py" line="107"/>
+      <source>An optional comment for this profile</source>
+      <translation>Ein optionaler Kommentar für dieses Profil</translation>
+    </message>
+    <message>
       <location filename="PathProject.py" line="53"/>
       <source>An optional description for this project</source>
       <translation>Eine optionale Beschreibung des Projektes</translation>
@@ -376,12 +1137,39 @@
     <message>
       <location filename="PathStock.py" line="96"/>
       <source>Stock</source>
-      <translation>Lager</translation>
+      <translation>Vorratslager</translation>
     </message>
     <message>
       <location filename="PathStock.py" line="104"/>
       <source>Creates a 3D object to represent raw stock to mill the part out of</source>
-      <translation>Erzeugt ein 3D Objekt welches das Rohmaterial repräsentiert, aus dem das Teil gefräst wird</translation>
+      <translation>erzeugt einen Rohling, aus dem der Körper  herausgefräst werden kann</translation>
+    </message>
+  </context>
+  <context>
+    <name>PathSurface</name>
+    <message>
+      <location filename="PathSurface.py" line="257"/>
+      <source>Hold on.  This might take a minute.
+</source>
+      <translation>bitte etwa 1 Minute lang warten </translation>
+    </message>
+    <message>
+      <location filename="PathSurface.py" line="311"/>
+      <source>This operation requires OpenCamLib to be installed.
+</source>
+      <translation>Installation von OpenCamLib erforderlich</translation>
+    </message>
+    <message>
+      <location filename="PathSurface.py" line="499"/>
+      <source>Please select a single solid object from the project tree
+</source>
+      <translation>einzelnen Körper im baumförmigen Verzeichnis wählen</translation>
+    </message>
+    <message>
+      <location filename="PathSurface.py" line="516"/>
+      <source>Cannot work with this object
+</source>
+      <translation>Arbeit mit diesem Objekt nicht möglich</translation>
     </message>
   </context>
   <context>
@@ -400,8 +1188,7 @@
       <location filename="PathArray.py" line="120"/>
       <source>Please select exactly one path object
 </source>
-      <translation>Bitte wählen Sie genau ein Bewegungsbahnobjekt
-</translation>
+      <translation>genau eine Bahn wählen</translation>
     </message>
   </context>
   <context>
@@ -441,6 +1228,24 @@
     </message>
   </context>
   <context>
+    <name>Path_Contour</name>
+    <message>
+      <location filename="PathContour.py" line="344"/>
+      <source>Pick Start Point</source>
+      <translation type="unfinished">Pick Start Point</translation>
+    </message>
+    <message>
+      <location filename="PathContour.py" line="363"/>
+      <source>Pick End Point</source>
+      <translation>Endpunkt wählen</translation>
+    </message>
+    <message>
+      <location filename="PathContour.py" line="308"/>
+      <source>Add Holding Tag</source>
+      <translation type="unfinished">Add Holding Tag</translation>
+    </message>
+  </context>
+  <context>
     <name>Path_Copy</name>
     <message>
       <location filename="PathCopy.py" line="83"/>
@@ -455,7 +1260,7 @@
     <message>
       <location filename="PathCopy.py" line="92"/>
       <source>Create Copy</source>
-      <translation>Kopie erstellen</translation>
+      <translation>Kopie erzeugen</translation>
     </message>
   </context>
   <context>
@@ -482,6 +1287,11 @@
       <location filename="PathDressup.py" line="100"/>
       <source>Creates a Path Dess-up object from a selected path</source>
       <translation>Erzeugt eine Erweiterung für die ausgewählte Bewegungsbahn</translation>
+    </message>
+    <message>
+      <location filename="PathDressup.py" line="114"/>
+      <source>Creates a Path Dress-up object from a selected path</source>
+      <translation type="unfinished">Creates a Path Dress-up object from a selected path</translation>
     </message>
     <message>
       <location filename="PathDressup.py" line="110"/>
@@ -524,6 +1334,33 @@
       <location filename="PathDrilling.py" line="168"/>
       <source>Create Drilling</source>
       <translation>Bohrung erstellen</translation>
+    </message>
+  </context>
+  <context>
+    <name>Path_Engrave</name>
+    <message>
+      <location filename="PathEngrave.py" line="272"/>
+      <source>ShapeString Engrave</source>
+      <translation type="unfinished">ShapeString Engrave</translation>
+    </message>
+    <message>
+      <location filename="PathEngrave.py" line="273"/>
+      <source>Creates an Engraving Path around a Draft ShapeString</source>
+      <translation type="unfinished">Creates an Engraving Path around a Draft ShapeString</translation>
+    </message>
+    <message>
+      <location filename="PathEngrave.py" line="352"/>
+      <source>Please select engraveable geometry
+</source>
+      <translation type="unfinished">Please select engraveable geometry
+</translation>
+    </message>
+    <message>
+      <location filename="PathEngrave.py" line="356"/>
+      <source>Please select valid geometry
+</source>
+      <translation>Bitte gültige Geometrie auswählen
+</translation>
     </message>
   </context>
   <context>
@@ -685,92 +1522,58 @@
       <location filename="PathInspect.py" line="181"/>
       <source>Please select exactly one path object
 </source>
-      <translation>Bitte wählen Sie genau ein Bewegungsbahnobjekt
-</translation>
+      <translation>genau eine Bahn wählen</translation>
     </message>
   </context>
   <context>
-    <name>Path_Kurve</name>
+    <name>Path_Job</name>
     <message>
-      <location filename="PathKurve.py" line="176"/>
-      <source>Profile</source>
-      <translation>Profil</translation>
+      <location filename="PathJob.py" line="184"/>
+      <source>Job</source>
+      <translation>Auftrag</translation>
     </message>
     <message>
-      <location filename="PathKurve.py" line="178"/>
-      <source>Creates a Path Profile object from selected edges, using libarea for offset algorithm</source>
-      <translation>Erzeugt ein Bewegungsbahn Profil-Objekt aus den gewählten Kanten mittels Offset-Algorithmus von libarea</translation>
+      <location filename="PathJob.py" line="186"/>
+      <source>Creates a Path Job object</source>
+      <translation type="unfinished">Creates a Path Job object</translation>
     </message>
     <message>
-      <location filename="PathKurve.py" line="184"/>
-      <source>Create a Profile operation using libarea</source>
-      <translation>Erzeuge eine Profiloperation mittels libarea</translation>
+      <location filename="PathJob.py" line="197"/>
+      <source>Create Job</source>
+      <translation>Auftrag erstellen</translation>
+    </message>
+    <message>
+      <location filename="PathJob.py" line="223"/>
+      <source>Edit Job</source>
+      <translation>Auftrag bearbeiten</translation>
+    </message>
+    <message>
+      <location filename="PathJob.py" line="257"/>
+      <source>Uncreate Job</source>
+      <translation type="unfinished">Uncreate Job</translation>
     </message>
   </context>
   <context>
-    <name>Path_LoadTool</name>
+    <name>Path_ToolController</name>
     <message>
-      <location filename="PathLoadTool.py" line="132"/>
+      <location filename="PathToolController.py" line="132"/>
       <source>Tool Number to Load</source>
       <translation>Lade Werkzeugnummer</translation>
     </message>
-  </context>
-  <context>
-    <name>Path_Machine</name>
     <message>
-      <location filename="PathMachine.py" line="44"/>
-      <source>Name of the Machine that will use the CNC program</source>
-      <translation>Name der Maschine, die das CNC-Programm verwenden wird</translation>
+      <location filename="PathToolController.py" line="156"/>
+      <source>Add Tool Controller to the Job</source>
+      <translation type="unfinished">Add Tool Controller to the Job</translation>
     </message>
     <message>
-      <location filename="PathMachine.py" line="46"/>
-      <source>Select the Post Processor file for this machine</source>
-      <translation>Wählen Sie die Post-Prozessor-Datei für diese Maschine</translation>
+      <location filename="PathToolController.py" line="157"/>
+      <source>Add Tool Controller</source>
+      <translation type="unfinished">Add Tool Controller</translation>
     </message>
     <message>
-      <location filename="PathMachine.py" line="48"/>
-      <source>Units that the machine works in, ie Metric or Inch</source>
-      <translation>Einheitensystem, mit dem die Maschine arbeitet z. B. angloamerikanisches (inch) oder metrisches System</translation>
-    </message>
-    <message>
-      <location filename="PathMachine.py" line="51"/>
-      <source>The tooltable used for this CNC program</source>
-      <translation>Die Werkzeugtabelle für dieses CNC-Programm</translation>
-    </message>
-    <message>
-      <location filename="PathMachine.py" line="55"/>
-      <source>The Maximum distance in X the machine can travel</source>
-      <translation>Der maximale Fahrweg, der in X-Richtung verfahren werden kann</translation>
-    </message>
-    <message>
-      <location filename="PathMachine.py" line="59"/>
-      <source>The Minimum distance in X the machine can travel</source>
-      <translation>Der minimale Fahrweg, der in X-Richtung verfahren werden kann</translation>
-    </message>
-    <message>
-      <location filename="PathMachine.py" line="61"/>
-      <source>Home position of machine, in X (mainly for visualization)</source>
-      <translation>Ausgangsposition der Maschine in X (hauptsächlich zur Visualisierung)</translation>
-    </message>
-    <message>
-      <location filename="PathMachine.py" line="62"/>
-      <source>Home position of machine, in Y (mainly for visualization)</source>
-      <translation>Ausgangsposition der Maschine in Y (hauptsächlich zur Visualisierung)</translation>
-    </message>
-    <message>
-      <location filename="PathMachine.py" line="63"/>
-      <source>Home position of machine, in Z (mainly for visualization)</source>
-      <translation>Ausgangsposition der Maschine in Z (hauptsächlich zur Visualisierung)</translation>
-    </message>
-    <message>
-      <location filename="PathMachine.py" line="202"/>
-      <source>Machine Object</source>
-      <translation>Maschinen-Objekt</translation>
-    </message>
-    <message>
-      <location filename="PathMachine.py" line="210"/>
-      <source>Create a Machine object</source>
-      <translation>Erstelle ein Maschinen-Objekt</translation>
+      <location filename="PathToolController.py" line="167"/>
+      <source>Create Tool Controller Object</source>
+      <translation type="unfinished">Create Tool Controller Object</translation>
     </message>
   </context>
   <context>
@@ -787,45 +1590,6 @@
     </message>
   </context>
   <context>
-    <name>Path_Pocket</name>
-    <message>
-      <location filename="PathPocket.py" line="265"/>
-      <source>Pocket</source>
-      <translation>Tasche</translation>
-    </message>
-    <message>
-      <location filename="PathPocket.py" line="267"/>
-      <source>Creates a Path Pocket object from a loop of edges or a face</source>
-      <translation>Erzeugt eine Bewegungsbahn-Tasche aus einem geschlossenen Zug von Kanten oder einer Fläche</translation>
-    </message>
-    <message>
-      <location filename="PathPocket.py" line="280"/>
-      <source>Please select an edges loop from one object, or a single face
-</source>
-      <translation>Bitte wählen sie eine geschlossene Form von Kanten oder eine Fläche aus
-</translation>
-    </message>
-    <message>
-      <location filename="PathPocket.py" line="285"/>
-      <source>Please select only edges or a single face
-</source>
-      <translation>Bitte nur Kanten oder eine einzelne Fläche auswählen
-</translation>
-    </message>
-    <message>
-      <location filename="PathPocket.py" line="292"/>
-      <source>The selected edges don't form a loop
-</source>
-      <translation>Die ausgewählten Kanten ergeben keine geschlossenen Form
-</translation>
-    </message>
-    <message>
-      <location filename="PathPocket.py" line="296"/>
-      <source>Create Pocket</source>
-      <translation>Erzeuge Tasche</translation>
-    </message>
-  </context>
-  <context>
     <name>Path_Post</name>
     <message>
       <location filename="PathPost.py" line="45"/>
@@ -838,6 +1602,11 @@
       <translation>Folgeprozess des ausgewählten Projekts</translation>
     </message>
     <message>
+      <location filename="PathPost.py" line="155"/>
+      <source>Post Process the selected Job</source>
+      <translation type="unfinished">Post Process the selected Job</translation>
+    </message>
+    <message>
       <location filename="PathPost.py" line="53"/>
       <source>Post Process the Selected path(s)</source>
       <translation>Folgeprozess der ausgewählten Bewegungsbahn(en)</translation>
@@ -845,6 +1614,21 @@
   </context>
   <context>
     <name>Path_Profile</name>
+    <message>
+      <location filename="PathProfileEdges.py" line="378"/>
+      <source>Pick Start Point</source>
+      <translation type="unfinished">Pick Start Point</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="397"/>
+      <source>Pick End Point</source>
+      <translation>Endpunkt wählen</translation>
+    </message>
+    <message>
+      <location filename="PathProfileEdges.py" line="342"/>
+      <source>Add Holding Tag</source>
+      <translation type="unfinished">Add Holding Tag</translation>
+    </message>
     <message>
       <location filename="PathProfile.py" line="203"/>
       <source>Profile</source>
@@ -862,21 +1646,56 @@
     </message>
   </context>
   <context>
-    <name>Path_Project</name>
+    <name>Path_Sanity</name>
     <message>
-      <location filename="PathProject.py" line="122"/>
-      <source>Project</source>
-      <translation>Projekt</translation>
+      <location filename="PathSanity.py" line="50"/>
+      <source>It appears the machine limits haven't been set.  Not able to check path extents.
+</source>
+      <translation>Maschinen-Limits offensichtlich unbekannt; Pfad-Ausdehnung nicht prüfbar</translation>
     </message>
     <message>
-      <location filename="PathProject.py" line="124"/>
-      <source>Creates a Path Project object</source>
-      <translation>Erzeugt ein Bewegungsbahn Projekt-Objekt</translation>
+      <location filename="PathSanity.py" line="72"/>
+      <source>A Tool Controller was not found. Default values are used which is dangerous.  Please add a Tool Controller.
+</source>
+      <translation type="unfinished">A Tool Controller was not found. Default values are used which is dangerous.  Please add a Tool Controller.
+</translation>
     </message>
     <message>
-      <location filename="PathProject.py" line="135"/>
-      <source>Create Project</source>
-      <translation>Projekt erstellen</translation>
+      <location filename="PathSanity.py" line="79"/>
+      <source>Check the Path project for common errors</source>
+      <translation type="unfinished">Check the Path project for common errors</translation>
+    </message>
+    <message>
+      <location filename="PathSanity.py" line="80"/>
+      <source>Check the Path Project for common errors</source>
+      <translation type="unfinished">Check the Path Project for common errors</translation>
+    </message>
+    <message>
+      <location filename="PathSanity.py" line="93"/>
+      <source>Please select a path Project to check
+</source>
+      <translation type="unfinished">Please select a path Project to check
+</translation>
+    </message>
+    <message>
+      <location filename="PathSanity.py" line="96"/>
+      <source>Please select a path project to check
+</source>
+      <translation type="unfinished">Please select a path project to check
+</translation>
+    </message>
+  </context>
+  <context>
+    <name>Path_SelectLoop</name>
+    <message>
+      <location filename="PathCommands.py" line="44"/>
+      <source>Finish Selecting Loop</source>
+      <translation type="unfinished">Finish Selecting Loop</translation>
+    </message>
+    <message>
+      <location filename="PathCommands.py" line="45"/>
+      <source>Complete loop selection from two edges</source>
+      <translation type="unfinished">Complete loop selection from two edges</translation>
     </message>
   </context>
   <context>
@@ -889,14 +1708,13 @@
     <message>
       <location filename="PathSimpleCopy.py" line="47"/>
       <source>Creates a non-parametric copy of another path</source>
-      <translation>Erstellt eine nicht-parametrische Kopie einer anderen Bewegungsbahn</translation>
+      <translation>erstellt eine nicht-parametrisierte Kopie einer anderen Bewegungsbahn</translation>
     </message>
     <message>
       <location filename="PathSimpleCopy.py" line="59"/>
       <source>Please select exactly one path object
 </source>
-      <translation>Bitte wählen Sie genau ein Bewegungsbahnobjekt
-</translation>
+      <translation>genau eine Bahn wählen</translation>
     </message>
   </context>
   <context>
@@ -913,16 +1731,24 @@
     </message>
   </context>
   <context>
-    <name>Path_ToolChange</name>
+    <name>Path_Surface</name>
     <message>
-      <location filename="PathToolChange.py" line="63"/>
-      <source>Tool Change</source>
-      <translation>Werkzeugwechsel</translation>
+      <location filename="PathSurface.py" line="387"/>
+      <source>Surfacing</source>
+      <translation type="unfinished">Surfacing</translation>
     </message>
     <message>
-      <location filename="PathToolChange.py" line="64"/>
-      <source>Changes the current tool</source>
-      <translation>Ändert das aktuelle Werkzeug</translation>
+      <location filename="PathSurface.py" line="389"/>
+      <source>Creates a Path Surfacing object</source>
+      <translation type="unfinished">Creates a Path Surfacing object</translation>
+    </message>
+  </context>
+  <context>
+    <name>Path_Surfacing</name>
+    <message>
+      <location filename="PathSurface.py" line="403"/>
+      <source>Create Surface</source>
+      <translation>Oberfläche erzeugen</translation>
     </message>
   </context>
   <context>
@@ -944,6 +1770,14 @@
     </message>
   </context>
   <context>
+    <name>Path_ToolTable</name>
+    <message>
+      <location filename="PathToolLibraryManager.py" line="603"/>
+      <source>Edit the Tool Library</source>
+      <translation>Werkzeug-Bibliothek editieren</translation>
+    </message>
+  </context>
+  <context>
     <name>Path_ToolTableEdit</name>
     <message>
       <location filename="PathToolTableEdit.py" line="40"/>
@@ -957,122 +1791,16 @@
     </message>
   </context>
   <context>
-    <name>PeckDepth</name>
-    <message>
-      <location filename="PathDrilling.py" line="54"/>
-      <source>Incremental Drill depth before retracting to clear chips</source>
-      <translation>Inkrementale Bohrtiefe vor dem rück ziehen aus dem Material</translation>
-    </message>
-  </context>
-  <context>
-    <name>Program Stop</name>
-    <message>
-      <location filename="PathStop.py" line="41"/>
-      <source>Add Optional or Mandatory Stop to the program</source>
-      <translation>Ein optionaler oder obligatorischer Programmstop</translation>
-    </message>
-  </context>
-  <context>
-    <name>Retract Height</name>
-    <message>
-      <location filename="PathDrilling.py" line="58"/>
-      <source>The height where feed starts and height during retract tool when path is finished</source>
-      <translation>Die Höhe, bei der die Positionierbewegung beginnt und der Rückzug am Bahnende durchgeführt wird</translation>
-    </message>
-    <message>
-      <location filename="PathProfile.py" line="64"/>
-      <source>The height desired to retract tool when path is finished</source>
-      <translation>Die Höhe, zu der das Werkzeug zurückgezogen werden soll nachdem die Bewegungsbahn beendet wurde</translation>
-    </message>
-  </context>
-  <context>
-    <name>Roll Radius</name>
-    <message>
-      <location filename="PathProfile.py" line="89"/>
-      <source>Radius at start and end</source>
-      <translation>Radius am Anfang und Ende</translation>
-    </message>
-  </context>
-  <context>
-    <name>Seg Len</name>
-    <message>
-      <location filename="PathProfile.py" line="91"/>
-      <source>Tesselation  value for tool paths made from beziers, bsplines, and ellipses</source>
-      <translation>Approximierungswert für Bewegungsbahnen aus Bezierkurven, Bsplines und Ellipsen</translation>
-    </message>
-  </context>
-  <context>
-    <name>Selection Plane</name>
-    <message>
-      <location filename="PathPlane.py" line="41"/>
-      <source>Orientation plane of CNC path</source>
-      <translation>Orientierungsebene des CNC-Pfades</translation>
-    </message>
-  </context>
-  <context>
-    <name>Shape Object</name>
-    <message>
-      <location filename="PathFromShape.py" line="44"/>
-      <source>The base Shape of this toolpath</source>
-      <translation>Die Basisform für die Bewegungsbahn</translation>
-    </message>
-  </context>
-  <context>
-    <name>ShowMinMaxTravel</name>
-    <message>
-      <location filename="PathMachine.py" line="112"/>
-      <source>Switch the machine max and minimum travel bounding box on/off</source>
-      <translation>Schalte den minimalen und maximalen Bewegungsrahmen der Maschine ein/aus</translation>
-    </message>
-  </context>
-  <context>
-    <name>Side</name>
-    <message>
-      <location filename="PathProfile.py" line="84"/>
-      <source>Side of edge that tool should cut</source>
-      <translation>Die Seite der Kante, welche das Werkzeug schneiden soll</translation>
-    </message>
-  </context>
-  <context>
-    <name>Spindle Dir</name>
-    <message>
-      <location filename="PathLoadTool.py" line="45"/>
-      <source>Direction of spindle rotation</source>
-      <translation>Drehrichtung der Spindel</translation>
-    </message>
-  </context>
-  <context>
-    <name>Spindle Speed</name>
-    <message>
-      <location filename="PathLoadTool.py" line="44"/>
-      <source>The speed of the cutting spindle in RPM</source>
-      <translation>Die Drehgeschwindigkeit der Spindel in u/min</translation>
-    </message>
-  </context>
-  <context>
     <name>Start Depth</name>
+    <message>
+      <location filename="PathHelix.py" line="277"/>
+      <source>Starting Depth of Tool - first cut depth in Z</source>
+      <translation type="unfinished">Starting Depth of Tool - first cut depth in Z</translation>
+    </message>
     <message>
       <location filename="PathProfile.py" line="62"/>
       <source>Starting Depth of Tool- first cut depth in Z</source>
       <translation>Starttiefe des Werkzeugs - erste Schnitttiefe in Z</translation>
-    </message>
-  </context>
-  <context>
-    <name>Start Point</name>
-    <message>
-      <location filename="PathKurve.py" line="44"/>
-      <source>Linked Start Point of Profile</source>
-      <translation>Verknüpfter Startpunkt des Profils</translation>
-    </message>
-    <message>
-      <location filename="PathKurve.py" line="75"/>
-      <source>The name of the start point of this path</source>
-      <translation>Der Name des Startpunktes dieses Pfades</translation>
-    </message>
-    <message>
-      <location filename="PathProfile.py" line="72"/>
-      <source>The start point of this path</source>
-      <translation>Der Startpunkt dieses Pfades</translation>
     </message>
   </context>
   <context>
@@ -1084,15 +1812,35 @@
     </message>
   </context>
   <context>
-    <name>Tool Number</name>
+    <name>Through Depth</name>
     <message>
-      <location filename="PathLoadTool.py" line="42"/>
-      <source>The active tool</source>
-      <translation>Das aktive Werkzeug</translation>
+      <location filename="PathHelix.py" line="283"/>
+      <source>Add this amount of additional cutting depth to open-ended holes. Only used if UseFinalDepth is False</source>
+      <translation type="unfinished">Add this amount of additional cutting depth to open-ended holes. Only used if UseFinalDepth is False</translation>
     </message>
   </context>
   <context>
     <name>TooltableEditor</name>
+    <message>
+      <location filename="TooltableEditor.py" line="593"/>
+      <source>Open tooltable</source>
+      <translation>Werkzeugtabelle öffnen</translation>
+    </message>
+    <message>
+      <location filename="TooltableEditor.py" line="593"/>
+      <source>Tooltable XML (*.xml);;HeeksCAD tooltable (*.tooltable)</source>
+      <translation>Werkzeugtabelle XML (XML); HeeksCAD tooltable (*.tooltable)</translation>
+    </message>
+    <message>
+      <location filename="TooltableEditor.py" line="610"/>
+      <source>Save tooltable</source>
+      <translation>Werkzeugtabelle speichern</translation>
+    </message>
+    <message>
+      <location filename="TooltableEditor.py" line="610"/>
+      <source>Tooltable XML (*.xml)</source>
+      <translation>Werkzeugtabelle XML (*.xml)</translation>
+    </message>
     <message>
       <location filename="TooltableEditor.py" line="388"/>
       <source>Tooltable editor</source>
@@ -1136,12 +1884,12 @@
     <message>
       <location filename="TooltableEditor.py" line="396"/>
       <source>Move up</source>
-      <translation>Noch oben verschieben</translation>
+      <translation>Nach oben verschieben</translation>
     </message>
     <message>
       <location filename="TooltableEditor.py" line="397"/>
       <source>Move down</source>
-      <translation>Nache unten verschieben</translation>
+      <translation>Nach unten verschieben</translation>
     </message>
     <message>
       <location filename="TooltableEditor.py" line="398"/>
@@ -1309,26 +2057,6 @@
       <translation>Schnittkantenhöhe</translation>
     </message>
     <message>
-      <location filename="TooltableEditor.py" line="593"/>
-      <source>Open tooltable</source>
-      <translation>Werkzeugtabelle öffnen</translation>
-    </message>
-    <message>
-      <location filename="TooltableEditor.py" line="593"/>
-      <source>Tooltable XML (*.xml);;HeeksCAD tooltable (*.tooltable)</source>
-      <translation>Werkzeugtabelle XML (XML); HeeksCAD tooltable (*.tooltable)</translation>
-    </message>
-    <message>
-      <location filename="TooltableEditor.py" line="610"/>
-      <source>Save tooltable</source>
-      <translation>Werkzeugtabelle speichern</translation>
-    </message>
-    <message>
-      <location filename="TooltableEditor.py" line="610"/>
-      <source>Tooltable XML (*.xml)</source>
-      <translation>Werkzeugtabelle XML (*.xml)</translation>
-    </message>
-    <message>
       <location filename="TooltableEditor.py" line="651"/>
       <source>Object not found</source>
       <translation>Objekt nicht gefunden</translation>
@@ -1337,6 +2065,508 @@
       <location filename="TooltableEditor.py" line="653"/>
       <source>Object doesn't have a tooltable property</source>
       <translation>Objekt besitzt keine Eigenschaft "Werkzeugtabelle"</translation>
+    </message>
+  </context>
+  <context>
+    <name>Use Final Depth</name>
+    <message>
+      <location filename="PathHelix.py" line="279"/>
+      <source>Set to True to manually specify a final depth</source>
+      <translation type="unfinished">Set to True to manually specify a final depth</translation>
+    </message>
+  </context>
+  <context>
+    <name>Use Start Depth</name>
+    <message>
+      <location filename="PathHelix.py" line="275"/>
+      <source>Set to True to manually specify a start depth</source>
+      <translation type="unfinished">Set to True to manually specify a start depth</translation>
+    </message>
+    <message>
+      <location filename="PathProfile.py" line="61"/>
+      <source>make True, if manually specifying a Start Start Depth</source>
+      <translation>bei manuell bestimmter Starttiefe auf Wahr stellen</translation>
+    </message>
+  </context>
+  <context>
+    <name>Clearance Height</name>
+    <message>
+      <location filename="PathProfile.py" line="59"/>
+      <source>The height needed to clear clamps and obstructions</source>
+      <translation>Die erforderliche Höhe, um Spannmittel oder Besfestigungsmittel zu entfernen</translation>
+    </message>
+  </context>
+  <context>
+    <name>Current Tool</name>
+    <message>
+      <location filename="PathToolController.py" line="137"/>
+      <source>Tool Number to Load</source>
+      <translation>Lade Werkzeugnummer</translation>
+    </message>
+  </context>
+  <context>
+    <name>Edge 1</name>
+    <message>
+      <location filename="PathProfile.py" line="49"/>
+      <source>First Selected Edge to help determine which geometry to make a toolpath around</source>
+      <translation>Erste ausgewählte Kante zum bestimmen, für welche Geometrie ein Werkzeugpfad erstellt werden soll</translation>
+    </message>
+  </context>
+  <context>
+    <name>Edge 2</name>
+    <message>
+      <location filename="PathProfile.py" line="50"/>
+      <source>Second Selected Edge to help determine which geometry to make a toolpath around</source>
+      <translation>Zweite ausgewählte Kante zum bestimmen, für welche Geometrie ein Werkzeugpfad erstellt werden soll</translation>
+    </message>
+  </context>
+  <context>
+    <name>Edge List</name>
+    <message>
+      <location filename="PathKurve.py" line="70"/>
+      <source>List of edges selected</source>
+      <translation>Liste der ausgewählten Kanten</translation>
+    </message>
+  </context>
+  <context>
+    <name>End Point</name>
+    <message>
+      <location filename="PathKurve.py" line="45"/>
+      <source>Linked End Point of Profile</source>
+      <translation>Verknüpfter Endpunkt des Profils</translation>
+    </message>
+    <message>
+      <location filename="PathKurve.py" line="81"/>
+      <source>The name of the end point of this path</source>
+      <translation>Der Name des Endpunkts dieses Pfades</translation>
+    </message>
+    <message>
+      <location filename="PathProfile.py" line="81"/>
+      <source>The end point of this path</source>
+      <translation>Der Endpunkt dieses Pfades</translation>
+    </message>
+  </context>
+  <context>
+    <name>Face1</name>
+    <message>
+      <location filename="PathProfile.py" line="46"/>
+      <source>First Selected Face to help determine where final depth of tool path is</source>
+      <translation>Erste ausgewählte Fläche zur Bestimmung der endgültigen Tiefe des Werkzeugpfades</translation>
+    </message>
+  </context>
+  <context>
+    <name>Face2</name>
+    <message>
+      <location filename="PathProfile.py" line="47"/>
+      <source>Second Selected Face to help determine where the upper level of tool path is</source>
+      <translation>Zweite ausgewählte Fläche zur Bestimmung der endgültigen Tiefe des Werkzeugpfades</translation>
+    </message>
+  </context>
+  <context>
+    <name>Fixture Offset</name>
+    <message>
+      <location filename="PathFixture.py" line="41"/>
+      <source>Fixture Offset Number</source>
+      <translation>Abstand von der Einspannung</translation>
+    </message>
+  </context>
+  <context>
+    <name>Height</name>
+    <message>
+      <location filename="PathToolLenOffset.py" line="43"/>
+      <source>The first height value in Z, to rapid to, before making a feed move in Z</source>
+      <translation>Der erste Höhenwert in Z zum Anfahren, bevor die Zustellbewegung in Z erfolgt</translation>
+    </message>
+  </context>
+  <context>
+    <name>Height Allowance</name>
+    <message>
+      <location filename="PathStock.py" line="45"/>
+      <source>extra allownace from part width</source>
+      <translation>Aufmaß der Teil-Breite</translation>
+    </message>
+  </context>
+  <context>
+    <name>Height Offset Number</name>
+    <message>
+      <location filename="PathToolLenOffset.py" line="41"/>
+      <source>The Height offset number of the active tool</source>
+      <translation>Der Höhen-Versatz des aktiven Werkzeugs</translation>
+    </message>
+  </context>
+  <context>
+    <name>Horiz Feed</name>
+    <message>
+      <location filename="PathProfile.py" line="69"/>
+      <source>Feed rate for horizontal moves</source>
+      <translation>Vorschubgeschwindigkeit für horizontale Bewegungen</translation>
+    </message>
+    <message>
+      <location filename="PathKurve.py" line="62"/>
+      <source>Feed rate (in units per minute) for horizontal moves</source>
+      <translation>Vorschubgeschwindigkeit (in Einheiten pro Minute) für horizontale Bewegungen</translation>
+    </message>
+  </context>
+  <context>
+    <name>Length Allowance</name>
+    <message>
+      <location filename="PathStock.py" line="43"/>
+      <source>extra allownace from part width</source>
+      <translation>Aufmaß der Teil-Breite</translation>
+    </message>
+  </context>
+  <context>
+    <name>OffsetExtra</name>
+    <message>
+      <location filename="PathProfile.py" line="90"/>
+      <source>Extra value to stay away from final profile- good for roughing toolpath</source>
+      <translation>Aufmaß zum Endprofil - Geeignet für die schruppende Vor-Bearbeitung</translation>
+    </message>
+  </context>
+  <context>
+    <name>OutputFile</name>
+    <message>
+      <location filename="PathProject.py" line="49"/>
+      <source>The NC output file for this project</source>
+      <translation>Die NC-Ausgabedatei für dieses Projekt</translation>
+    </message>
+  </context>
+  <context>
+    <name>Parent Object</name>
+    <message>
+      <location filename="PathProfile.py" line="45"/>
+      <source>The base geometry of this toolpath</source>
+      <translation>Die Basis-Geometrie dieses Werkzeugweges</translation>
+    </message>
+  </context>
+  <context>
+    <name>Path Closed</name>
+    <message>
+      <location filename="PathProfile.py" line="48"/>
+      <source>If the toolpath is a closed polyline this is True</source>
+      <translation>Der Wert ist "Wahr", wenn der Werkzeugweg ein geschlossener Linienzug ist</translation>
+    </message>
+  </context>
+  <context>
+    <name>PathCompoundExtended</name>
+    <message>
+      <location filename="PathCompoundExtended.py" line="44"/>
+      <source>An optional description of this compounded operation</source>
+      <translation>Eine optionale Beschreibung der Verbundoperation</translation>
+    </message>
+    <message>
+      <location filename="PathCompoundExtended.py" line="47"/>
+      <source>The safe height for this operation</source>
+      <translation>Die sichere Höhe für diese Operation</translation>
+    </message>
+    <message>
+      <location filename="PathCompoundExtended.py" line="48"/>
+      <source>The retract height, above top surface of part, between compounded operations inside clamping area</source>
+      <translation>Die Rückzug-Höhe, entweder über der obersten Fläche eines Teils oder zwischen den Verbundoperationen in einer Spannfläche</translation>
+    </message>
+  </context>
+  <context>
+    <name>PathCopy</name>
+    <message>
+      <location filename="PathCopy.py" line="44"/>
+      <source>The path to be copied</source>
+      <translation>Der zu kopierende Pfad</translation>
+    </message>
+  </context>
+  <context>
+    <name>PathDressup</name>
+    <message>
+      <location filename="PathDressup.py" line="44"/>
+      <source>The base path to modify</source>
+      <translation>Zu ändernder Basispfad</translation>
+    </message>
+    <message>
+      <location filename="PathDressup.py" line="45"/>
+      <source>The position of this dressup in the base path</source>
+      <translation>Die Position dieser Erweiterung in der Basisbewegungsbahn</translation>
+    </message>
+    <message>
+      <location filename="PathDressup.py" line="46"/>
+      <source>The modification to be added</source>
+      <translation>Die Änderung, welche hinzugefügt werden soll</translation>
+    </message>
+  </context>
+  <context>
+    <name>PathHop</name>
+    <message>
+      <location filename="PathHop.py" line="44"/>
+      <source>The object to be reached by this hop</source>
+      <translation>Das Objekt, welches durch diese Sprung erreicht werden soll</translation>
+    </message>
+    <message>
+      <location filename="PathHop.py" line="45"/>
+      <source>The Z height of the hop</source>
+      <translation>Die Z-Höhe dieses Sprungs</translation>
+    </message>
+  </context>
+  <context>
+    <name>Path_Kurve</name>
+    <message>
+      <location filename="PathKurve.py" line="176"/>
+      <source>Profile</source>
+      <translation>Profil</translation>
+    </message>
+    <message>
+      <location filename="PathKurve.py" line="178"/>
+      <source>Creates a Path Profile object from selected edges, using libarea for offset algorithm</source>
+      <translation>Erzeugt ein Bewegungsbahn Profil-Objekt aus den gewählten Kanten mittels Offset-Algorithmus von libarea</translation>
+    </message>
+    <message>
+      <location filename="PathKurve.py" line="184"/>
+      <source>Create a Profile operation using libarea</source>
+      <translation>Erzeuge eine Profiloperation mittels libarea</translation>
+    </message>
+  </context>
+  <context>
+    <name>Path_Machine</name>
+    <message>
+      <location filename="PathMachine.py" line="44"/>
+      <source>Name of the Machine that will use the CNC program</source>
+      <translation>Name der Maschine, die das CNC-Programm verwenden wird</translation>
+    </message>
+    <message>
+      <location filename="PathMachine.py" line="46"/>
+      <source>Select the Post Processor file for this machine</source>
+      <translation>Wählen Sie die Post-Prozessor-Datei für diese Maschine</translation>
+    </message>
+    <message>
+      <location filename="PathMachine.py" line="48"/>
+      <source>Units that the machine works in, ie Metric or Inch</source>
+      <translation>Einheitensystem, mit dem die Maschine arbeitet z. B. angloamerikanisches (inch) oder metrisches System</translation>
+    </message>
+    <message>
+      <location filename="PathMachine.py" line="51"/>
+      <source>The tooltable used for this CNC program</source>
+      <translation>Die Werkzeugtabelle für dieses CNC-Programm</translation>
+    </message>
+    <message>
+      <location filename="PathMachine.py" line="55"/>
+      <source>The Maximum distance in X the machine can travel</source>
+      <translation>Der maximale Fahrweg, der in X-Richtung verfahren werden kann</translation>
+    </message>
+    <message>
+      <location filename="PathMachine.py" line="59"/>
+      <source>The Minimum distance in X the machine can travel</source>
+      <translation>Der minimale Fahrweg, der in X-Richtung verfahren werden kann</translation>
+    </message>
+    <message>
+      <location filename="PathMachine.py" line="61"/>
+      <source>Home position of machine, in X (mainly for visualization)</source>
+      <translation>Ausgangsposition der Maschine in X (hauptsächlich zur Visualisierung)</translation>
+    </message>
+    <message>
+      <location filename="PathMachine.py" line="62"/>
+      <source>Home position of machine, in Y (mainly for visualization)</source>
+      <translation>Ausgangsposition der Maschine in Y (hauptsächlich zur Visualisierung)</translation>
+    </message>
+    <message>
+      <location filename="PathMachine.py" line="63"/>
+      <source>Home position of machine, in Z (mainly for visualization)</source>
+      <translation>Ausgangsposition der Maschine in Z (hauptsächlich zur Visualisierung)</translation>
+    </message>
+    <message>
+      <location filename="PathMachine.py" line="202"/>
+      <source>Machine Object</source>
+      <translation>Maschinen-Objekt</translation>
+    </message>
+    <message>
+      <location filename="PathMachine.py" line="210"/>
+      <source>Create a Machine object</source>
+      <translation>Erstelle ein Maschinen-Objekt</translation>
+    </message>
+  </context>
+  <context>
+    <name>Path_Pocket</name>
+    <message>
+      <location filename="PathPocket.py" line="265"/>
+      <source>Pocket</source>
+      <translation>Tasche</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="267"/>
+      <source>Creates a Path Pocket object from a loop of edges or a face</source>
+      <translation>Erzeugt eine Bewegungsbahn-Tasche aus einem geschlossenen Zug von Kanten oder einer Fläche</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="280"/>
+      <source>Please select an edges loop from one object, or a single face
+</source>
+      <translation>Bitte wählen sie eine geschlossene Form von Kanten oder eine Fläche aus
+</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="285"/>
+      <source>Please select only edges or a single face
+</source>
+      <translation>Bitte nur Kanten oder eine einzelne Fläche auswählen
+</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="292"/>
+      <source>The selected edges don't form a loop
+</source>
+      <translation>Die ausgewählten Kanten ergeben keine geschlossenen Form
+</translation>
+    </message>
+    <message>
+      <location filename="PathPocket.py" line="296"/>
+      <source>Create Pocket</source>
+      <translation>Erzeuge Tasche</translation>
+    </message>
+  </context>
+  <context>
+    <name>Path_Project</name>
+    <message>
+      <location filename="PathProject.py" line="122"/>
+      <source>Project</source>
+      <translation>Projekt</translation>
+    </message>
+    <message>
+      <location filename="PathProject.py" line="124"/>
+      <source>Creates a Path Project object</source>
+      <translation>Erzeugt ein Bewegungsbahn Projekt-Objekt</translation>
+    </message>
+    <message>
+      <location filename="PathProject.py" line="135"/>
+      <source>Create Project</source>
+      <translation>Projekt erstellen</translation>
+    </message>
+  </context>
+  <context>
+    <name>Path_ToolChange</name>
+    <message>
+      <location filename="PathToolChange.py" line="63"/>
+      <source>Tool Change</source>
+      <translation>Werkzeugwechsel</translation>
+    </message>
+    <message>
+      <location filename="PathToolChange.py" line="64"/>
+      <source>Changes the current tool</source>
+      <translation>Ändert das aktuelle Werkzeug</translation>
+    </message>
+  </context>
+  <context>
+    <name>PeckDepth</name>
+    <message>
+      <location filename="PathDrilling.py" line="54"/>
+      <source>Incremental Drill depth before retracting to clear chips</source>
+      <translation>Inkrementale Bohrtiefe vor dem rück ziehen aus dem Material</translation>
+    </message>
+  </context>
+  <context>
+    <name>Program Stop</name>
+    <message>
+      <location filename="PathStop.py" line="41"/>
+      <source>Add Optional or Mandatory Stop to the program</source>
+      <translation>Ein optionaler oder obligatorischer Programmstop</translation>
+    </message>
+  </context>
+  <context>
+    <name>Retract Height</name>
+    <message>
+      <location filename="PathDrilling.py" line="58"/>
+      <source>The height where feed starts and height during retract tool when path is finished</source>
+      <translation>Die Höhe, bei der die Positionierbewegung beginnt und der Rückzug am Bahnende durchgeführt wird</translation>
+    </message>
+    <message>
+      <location filename="PathProfile.py" line="64"/>
+      <source>The height desired to retract tool when path is finished</source>
+      <translation>Höhe, zu der Werkzeug zurückgezogen werden soll, nachdem  Bewegung beendet ist</translation>
+    </message>
+  </context>
+  <context>
+    <name>Roll Radius</name>
+    <message>
+      <location filename="PathProfile.py" line="89"/>
+      <source>Radius at start and end</source>
+      <translation>Radius am Anfang und Ende</translation>
+    </message>
+  </context>
+  <context>
+    <name>Seg Len</name>
+    <message>
+      <location filename="PathProfile.py" line="91"/>
+      <source>Tesselation  value for tool paths made from beziers, bsplines, and ellipses</source>
+      <translation>Approximierungswert für Bewegungsbahnen aus Bezierkurven, Bsplines und Ellipsen</translation>
+    </message>
+  </context>
+  <context>
+    <name>Selection Plane</name>
+    <message>
+      <location filename="PathPlane.py" line="41"/>
+      <source>Orientation plane of CNC path</source>
+      <translation>Orientierungsebene des CNC-Pfades</translation>
+    </message>
+  </context>
+  <context>
+    <name>Shape Object</name>
+    <message>
+      <location filename="PathFromShape.py" line="44"/>
+      <source>The base Shape of this toolpath</source>
+      <translation>Die Basisform für die Bewegungsbahn</translation>
+    </message>
+  </context>
+  <context>
+    <name>ShowMinMaxTravel</name>
+    <message>
+      <location filename="PathMachine.py" line="112"/>
+      <source>Switch the machine max and minimum travel bounding box on/off</source>
+      <translation>Schalte den minimalen und maximalen Bewegungsrahmen der Maschine ein/aus</translation>
+    </message>
+  </context>
+  <context>
+    <name>Side</name>
+    <message>
+      <location filename="PathProfile.py" line="84"/>
+      <source>Side of edge that tool should cut</source>
+      <translation>Die Seite der Kante, welche das Werkzeug schneiden soll</translation>
+    </message>
+  </context>
+  <context>
+    <name>Spindle Dir</name>
+    <message>
+      <location filename="PathToolController.py" line="45"/>
+      <source>Direction of spindle rotation</source>
+      <translation>Drehrichtung der Spindel</translation>
+    </message>
+  </context>
+  <context>
+    <name>Spindle Speed</name>
+    <message>
+      <location filename="PathToolController.py" line="44"/>
+      <source>The speed of the cutting spindle in RPM</source>
+      <translation>Die Drehgeschwindigkeit der Spindel in u/min</translation>
+    </message>
+  </context>
+  <context>
+    <name>Start Point</name>
+    <message>
+      <location filename="PathKurve.py" line="44"/>
+      <source>Linked Start Point of Profile</source>
+      <translation>Verknüpfter Startpunkt des Profils</translation>
+    </message>
+    <message>
+      <location filename="PathKurve.py" line="75"/>
+      <source>The name of the start point of this path</source>
+      <translation>Der Name des Startpunktes dieses Pfades</translation>
+    </message>
+    <message>
+      <location filename="PathProfile.py" line="72"/>
+      <source>The start point of this path</source>
+      <translation>Der Startpunkt dieses Pfades</translation>
+    </message>
+  </context>
+  <context>
+    <name>Tool Number</name>
+    <message>
+      <location filename="PathToolController.py" line="42"/>
+      <source>The active tool</source>
+      <translation>Das aktive Werkzeug</translation>
     </message>
   </context>
   <context>
@@ -1366,14 +2596,6 @@
       <location filename="PathProfile.py" line="52"/>
       <source>make True, if using the profile operation placement properties to transform toolpath in post processor</source>
       <translation>Auf Wahr setzen, wenn die Platzierungseigenschaft der Profil-Operation zum verschieben der Bewegungsbahn im Postprozessor verwendet werden soll</translation>
-    </message>
-  </context>
-  <context>
-    <name>Use Start Depth</name>
-    <message>
-      <location filename="PathProfile.py" line="61"/>
-      <source>make True, if manually specifying a Start Start Depth</source>
-      <translation>auf Wahr setzten, wenn die Starttiefe manuell gesetzt werden soll</translation>
     </message>
   </context>
   <context>
@@ -1539,7 +2761,7 @@
     <message>
       <location filename="../../DlgSettingsPathColor.ui" line="67"/>
       <source>Default pathline width</source>
-      <translation>Standardbreite der Pfadline</translation>
+      <translation>Standardbreite der Pfadlinie</translation>
     </message>
     <message>
       <location filename="../../DlgSettingsPathColor.ui" line="74"/>

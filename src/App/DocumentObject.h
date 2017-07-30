@@ -109,30 +109,56 @@ public:
     /// test if this feature is touched
     bool isTouched(void) const;
     /// reset this feature touched
-    void purgeTouched(void){StatusBits.reset(0);setPropertyStatus(0,false);}
+    void purgeTouched(void) {
+        StatusBits.reset(ObjectStatus::Touch);
+        setPropertyStatus(0,false);
+    }
     /// set this feature to error
-    bool isError(void) const {return  StatusBits.test(1);}
-    bool isValid(void) const {return !StatusBits.test(1);}
+    bool isError(void) const {return  StatusBits.test(ObjectStatus::Error);}
+    bool isValid(void) const {return !StatusBits.test(ObjectStatus::Error);}
     /// remove the error from the object
-    void purgeError(void){StatusBits.reset(1);}
+    void purgeError(void){StatusBits.reset(ObjectStatus::Error);}
     /// returns true if this objects is currently recomputing
-    bool isRecomputing() const {return StatusBits.test(3);}
+    bool isRecomputing() const {return StatusBits.test(ObjectStatus::Recompute);}
     /// returns true if this objects is currently restoring from file
-    bool isRestoring() const {return StatusBits.test(4);}
+    bool isRestoring() const {return StatusBits.test(ObjectStatus::Restore);}
     /// returns true if this objects is currently restoring from file
-    bool isDeleting() const {return StatusBits.test(5);}
+    bool isDeleting() const {return StatusBits.test(ObjectStatus::Delete);}
     /// return the status bits
     unsigned long getStatus() const {return StatusBits.to_ulong();}
     bool testStatus(ObjectStatus pos) const {return StatusBits.test((size_t)pos);}
     void setStatus(ObjectStatus pos, bool on) {StatusBits.set((size_t)pos, on);}
     //@}
 
+    /** DAG handling
+        This part of the interface deals with viewing the document as
+        an DAG (directed acyclic graph). 
+    */
+    //@{
     /// returns a list of objects this object is pointing to by Links
     std::vector<App::DocumentObject*> getOutList(void) const;
+    /// returns a list of objects this object is pointing to by Links and all further descended 
+    std::vector<App::DocumentObject*> getOutListRecursive(void) const;
     /// get all objects link to this object
     std::vector<App::DocumentObject*> getInList(void) const;
+    /// get all objects link directly or indirectly to this object 
+    std::vector<App::DocumentObject*> getInListRecursive(void) const;
     /// get group if object is part of a group, otherwise 0 is returned
     DocumentObjectGroup* getGroup() const;
+
+    /// test if this object is in the InList and recursive further down
+    bool isInInListRecursive(DocumentObject* objToTest) const;
+    /// test if this object is directly (non recursive) in the InList
+    bool isInInList(DocumentObject* objToTest) const;
+    /// test if the given object is in the OutList and recursive further down
+    bool isInOutListRecursive(DocumentObject* objToTest) const;
+    /// test if this object is directly (non recursive) in the OutList
+    bool isInOutList(DocumentObject* objToTest) const;
+    /// internal, used by ProperyLink to maintain DAG back links
+    void _removeBackLink(DocumentObject*);
+    /// internal, used by ProperyLink to maintain DAG back links
+    void _addBackLink(DocumentObject*);
+    //@}
 
     /**
      * @brief testIfLinkIsDAG tests a link that is about to be created for
@@ -148,7 +174,6 @@ public:
     bool testIfLinkDAGCompatible(const std::vector<DocumentObject *> &linksTo) const;
     bool testIfLinkDAGCompatible(App::PropertyLinkSubList &linksTo) const;
     bool testIfLinkDAGCompatible(App::PropertyLinkSub &linkTo) const;
-
 
 public:
     /** mustExecute
@@ -167,11 +192,11 @@ public:
     /// get the status Message
     const char *getStatusString(void) const;
 
-    /** Called in case of loosing a link
+    /** Called in case of losing a link
      * Get called by the document when a object got deleted a link property of this
      * object ist pointing to. The standard behaviour of the DocumentObject implementation
      * is to reset the links to nothing. You may overide this method to implement
-     *additional or different behavior.
+     * additional or different behavior.
      */
     virtual void onLostLinkToObject(DocumentObject*);
     virtual PyObject *getPyObject(void);
@@ -202,7 +227,7 @@ protected:
     /// recompute only this object
     virtual App::DocumentObjectExecReturn *recompute(void);
     /** get called by the document to recompute this feature
-      * Normaly this method get called in the processing of
+      * Normally this method get called in the processing of
       * Document::recompute().
       * In execute() the outpupt properties get recomputed
       * with the data from linked objects and objects own
@@ -226,8 +251,8 @@ protected:
      */
     std::bitset<32> StatusBits;
 
-    void setError(void){StatusBits.set(1);}
-    void resetError(void){StatusBits.reset(1);}
+    void setError(void){StatusBits.set(ObjectStatus::Error);}
+    void resetError(void){StatusBits.reset(ObjectStatus::Error);}
     void setDocument(App::Document* doc);
 
     /// get called before the value is changed
@@ -259,18 +284,28 @@ protected: // attributes
 
     // pointer to the document name string (for performance)
     const std::string *pcNameInDocument;
+    
+private:
+    // Back pointer to all the fathers in a DAG of the document
+    // this is used by the document (via friend) to have a effective DAG handling
+    std::vector<App::DocumentObject*> _inList;
+    // helper for isInInListRecursive()
+    bool _isInInListRecursive(const DocumentObject *act, const DocumentObject* test, const DocumentObject* checkObj, int depth) const;
+    // helper for isInOutListRecursive()
+    bool _isInOutListRecursive(const DocumentObject *act, const DocumentObject* test, const DocumentObject* checkObj, int depth) const;
 };
 
-class AppExport ObjectStatusLocker
+template<typename Status, class Object>
+class ObjectStatusLocker
 {
 public:
-    ObjectStatusLocker(ObjectStatus s, DocumentObject* o) : status(s), obj(o)
+    ObjectStatusLocker(Status s, Object* o) : status(s), obj(o)
     { obj->setStatus(status, true); }
     ~ObjectStatusLocker()
     { obj->setStatus(status, false); }
 private:
-    ObjectStatus status;
-    DocumentObject* obj;
+    Status status;
+    Object* obj;
 };
 
 } //namespace App

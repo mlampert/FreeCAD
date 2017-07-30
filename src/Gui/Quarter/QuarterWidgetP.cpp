@@ -64,12 +64,12 @@ using namespace SIM::Coin3D::Quarter;
 class QuarterWidgetP_cachecontext {
 public:
   uint32_t id;
-  SbList <const QGLWidget *> widgetlist;
+  SbList <const QtGLWidget *> widgetlist;
 };
 
 static SbList <QuarterWidgetP_cachecontext *> * cachecontext_list = NULL;
 
-QuarterWidgetP::QuarterWidgetP(QuarterWidget * masterptr, const QGLWidget * sharewidget)
+QuarterWidgetP::QuarterWidgetP(QuarterWidget * masterptr, const QtGLWidget * sharewidget)
 : master(masterptr),
   scene(NULL),
   eventfilter(NULL),
@@ -86,6 +86,7 @@ QuarterWidgetP::QuarterWidgetP(QuarterWidget * masterptr, const QGLWidget * shar
   clearzbuffer(true),
   clearwindow(true),
   addactions(true),
+  device_pixel_ratio(1.0),
   contextmenu(NULL)
 {
   this->cachecontext = findCacheContext(masterptr, sharewidget);
@@ -99,7 +100,7 @@ QuarterWidgetP::QuarterWidgetP(QuarterWidget * masterptr, const QGLWidget * shar
 
 QuarterWidgetP::~QuarterWidgetP()
 {
-  QGLWidget* glMaster = static_cast<QGLWidget*>(this->master->viewport());
+  QtGLWidget* glMaster = static_cast<QtGLWidget*>(this->master->viewport());
   removeFromCacheContext(this->cachecontext, glMaster);
   if (this->contextmenu) {
     delete this->contextmenu;
@@ -130,7 +131,7 @@ QuarterWidgetP::getCacheContextId(void) const
 }
 
 QuarterWidgetP_cachecontext *
-QuarterWidgetP::findCacheContext(QuarterWidget * widget, const QGLWidget * sharewidget)
+QuarterWidgetP::findCacheContext(QuarterWidget * widget, const QtGLWidget * sharewidget)
 {
   if (cachecontext_list == NULL) {
     // FIXME: static memory leak
@@ -141,23 +142,23 @@ QuarterWidgetP::findCacheContext(QuarterWidget * widget, const QGLWidget * share
 
     for (int j = 0; j < cachecontext->widgetlist.getLength(); j++) {
       if (cachecontext->widgetlist[j] == sharewidget) {
-        cachecontext->widgetlist.append(static_cast<const QGLWidget*>(widget->viewport()));
+        cachecontext->widgetlist.append(static_cast<const QtGLWidget*>(widget->viewport()));
         return cachecontext;
       }
     }
   }
   QuarterWidgetP_cachecontext * cachecontext = new QuarterWidgetP_cachecontext;
   cachecontext->id = SoGLCacheContextElement::getUniqueCacheContext();
-  cachecontext->widgetlist.append(static_cast<const QGLWidget*>(widget->viewport()));
+  cachecontext->widgetlist.append(static_cast<const QtGLWidget*>(widget->viewport()));
   cachecontext_list->append(cachecontext);
 
   return cachecontext;
 }
 
 void
-QuarterWidgetP::removeFromCacheContext(QuarterWidgetP_cachecontext * context, const QGLWidget * widget)
+QuarterWidgetP::removeFromCacheContext(QuarterWidgetP_cachecontext * context, const QtGLWidget * widget)
 {
-  context->widgetlist.removeItem((const QGLWidget*) widget);
+  context->widgetlist.removeItem((const QtGLWidget*) widget);
 
   if (context->widgetlist.getLength() == 0) { // last context in this share group?
     assert(cachecontext_list);
@@ -165,17 +166,25 @@ QuarterWidgetP::removeFromCacheContext(QuarterWidgetP_cachecontext * context, co
     for (int i = 0; i < cachecontext_list->getLength(); i++) {
       if ((*cachecontext_list)[i] == context) {
         // set the context while calling destructingContext() (might trigger OpenGL calls)
-        const_cast<QGLWidget*> (widget)->makeCurrent();
+        const_cast<QtGLWidget*> (widget)->makeCurrent();
         // fetch the cc_glglue context instance as a workaround for a bug fixed in Coin r12818
         (void) cc_glglue_instance(context->id);
         cachecontext_list->removeFast(i);
         SoContextHandler::destructingContext(context->id);
-        const_cast<QGLWidget*> (widget)->doneCurrent();
+        const_cast<QtGLWidget*> (widget)->doneCurrent();
         delete context;
         return;
       }
     }
   }
+}
+
+void
+QuarterWidgetP::replaceGLWidget(const QtGLWidget * newviewport)
+{
+  QtGLWidget* oldviewport = static_cast<QtGLWidget*>(this->master->viewport());
+  cachecontext->widgetlist.removeItem(oldviewport);
+  cachecontext->widgetlist.append(newviewport);
 }
 
 /*!
@@ -315,7 +324,7 @@ QuarterWidgetP::nativeEventFilter(void * message, long * result)
 #ifdef HAVE_SPACENAV_LIB
   XEvent * event = (XEvent *) message;
   if (event->type == ClientMessage) {
-    // FIXME: I dont really like this, but the original XEvent will
+    // FIXME: I don't really like this, but the original XEvent will
     // die before reaching the destination within the Qt system. To
     // avoid this, we'll have to make a copy. We should try to find a
     // workaround for this. (20101020 handegar)

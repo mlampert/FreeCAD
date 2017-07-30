@@ -51,7 +51,7 @@ def get_femelements_by_references(femmesh, femelement_table, references, femnode
             # blind fast binary search, works for volumes only
             references_femelements += get_femelements_by_femnodes_bin(femelement_table, femnodes_ele_table, ref_femnodes)  # femelements for all references
         else:
-            # standars search
+            # standard search
             references_femelements += get_femelements_by_femnodes_std(femelement_table, ref_femnodes)  # femelements for all references
     return references_femelements
 
@@ -362,15 +362,29 @@ def get_femnode_set_from_group_data(femmesh, fem_object):
     # we assume the mesh group data fits with the reference shapes, no check is done in this regard !!!
     # what happens if a reference shape was changed, but the mesh and the mesh groups were not created new !?!
     obj = fem_object['Object']
-    group_nodes = None
+    group_nodes = ()  # empty tuple
     if femmesh.GroupCount:
         for g in femmesh.Groups:
             grp_name = femmesh.getGroupName(g)
-            if grp_name.startswith(obj.Name):
+            if grp_name.startswith(obj.Name + "_"):
                 if femmesh.getGroupElementType(g) == "Node":
-                    print("Constraint: " + obj.Name + " --> " + "mesh group: " + grp_name)
+                    print("Constraint: " + obj.Name + " --> " + "nodes are in mesh group: " + grp_name)
                     group_nodes = femmesh.getGroupElements(g)  # == ref_shape_femelements
-    return group_nodes
+    return group_nodes  # an empty tuple is returned if no femelements where found
+
+
+def get_femelementface_sets_from_group_data(femmesh, fem_object):
+    # get femfaceelements from femmesh face groupdata for reference shapes of obj.References
+    obj = fem_object['Object']
+    group_faces = ()  # empty tuple
+    if femmesh.GroupCount:
+        for g in femmesh.Groups:
+            grp_name = femmesh.getGroupName(g)
+            if grp_name.startswith(obj.Name + "_"):
+                if femmesh.getGroupElementType(g) == "Face":
+                    print("Constraint: " + obj.Name + " --> " + "faces are in mesh group: " + grp_name)
+                    group_faces = femmesh.getGroupElements(g)  # == ref_shape_femelements
+    return group_faces  # an empty tuple is returned if no femelements where found
 
 
 def get_femelement_sets_from_group_data(femmesh, fem_objects):
@@ -385,9 +399,9 @@ def get_femelement_sets_from_group_data(femmesh, fem_objects):
         if femmesh.GroupCount:
             for g in femmesh.Groups:
                 grp_name = femmesh.getGroupName(g)
-                if grp_name.startswith(obj.Name):
+                if grp_name.startswith(obj.Name + "_"):
                     if femmesh.getGroupElementType(g) == "Volume":
-                        print("Constraint: " + obj.Name + " --> " + "mesh group: " + grp_name)
+                        print("Constraint: " + obj.Name + " --> " + "volumes are in mesh group: " + grp_name)
                         group_elements = femmesh.getGroupElements(g)  # == ref_shape_femelements
                         sum_group_elements += group_elements
                         count_femelements += len(group_elements)
@@ -402,11 +416,13 @@ def get_femelement_sets_from_group_data(femmesh, fem_objects):
 
 
 def get_elset_short_name(obj, i):
-    if hasattr(obj, "Proxy") and obj.Proxy.Type == 'MechanicalMaterial':
+    if hasattr(obj, "Proxy") and obj.Proxy.Type == 'FemMaterial':
         return 'Mat' + str(i)
-    elif hasattr(obj, "Proxy") and obj.Proxy.Type == 'FemBeamSection':
+    elif hasattr(obj, "Proxy") and obj.Proxy.Type == 'FemElementGeometry1D':
         return 'Beam' + str(i)
-    elif hasattr(obj, "Proxy") and obj.Proxy.Type == 'FemShellThickness':
+    elif hasattr(obj, "Proxy") and obj.Proxy.Type == 'FemElementFluid1D':
+        return 'Fluid' + str(i)
+    elif hasattr(obj, "Proxy") and obj.Proxy.Type == 'FemElementGeometry2D':
         return 'Shell' + str(i)
     else:
         print('Error: ', obj.Name, ' --> ', obj.Proxy.Type)
@@ -423,7 +439,6 @@ def get_force_obj_vertex_nodeload_table(femmesh, frc_obj):
             node = femmesh.getNodesByVertex(ref_node)
             elem_info_string = 'node load on shape: ' + o.Name + ':' + elem
             force_obj_node_load_table.append((elem_info_string, {node[0]: node_load / node_count}))
-
     return force_obj_node_load_table
 
 
@@ -535,12 +550,30 @@ def get_pressure_obj_faces_depreciated(femmesh, femobj):
 
 
 def get_pressure_obj_faces(femmesh, femelement_table, femnodes_ele_table, femobj):
-    # get the nodes
-    prs_face_node_set = get_femnodes_by_femobj_with_references(femmesh, femobj)  # sorted and duplicates removed
-    # print('prs_face_node_set: ', prs_face_node_set)
-    # fill the bit_pattern_dict and search for the faces
-    bit_pattern_dict = get_bit_pattern_dict(femelement_table, femnodes_ele_table, prs_face_node_set)
-    pressure_faces = get_ccxelement_faces_from_binary_search(bit_pattern_dict)
+    if is_solid_femmesh(femmesh):
+        # get the nodes
+        prs_face_node_set = get_femnodes_by_femobj_with_references(femmesh, femobj)  # sorted and duplicates removed
+        # print('prs_face_node_set: ', prs_face_node_set)
+        # fill the bit_pattern_dict and search for the faces
+        bit_pattern_dict = get_bit_pattern_dict(femelement_table, femnodes_ele_table, prs_face_node_set)
+        pressure_faces = get_ccxelement_faces_from_binary_search(bit_pattern_dict)
+    elif is_face_femmesh(femmesh):
+        pressure_faces = []
+        # normally we should call get_femelements_by_references and the group check should be integrated there
+        if femmesh.GroupCount:
+            meshfaces = get_femelementface_sets_from_group_data(femmesh, femobj)
+            # print(meshfaces)
+            if not meshfaces:
+                FreeCAD.Console.PrintError("Error: Something went wrong in getting the group element faces.\n")
+            else:
+                for mf in meshfaces:
+                    # pressure_faces.append([mf, 0])
+                    pressure_faces.append([mf, -1])
+                    # 0 if femmeshface normal == reference face normal direction
+                    # -1 if femmeshface normal opposite reference face normal direction
+                    # easy on plane faces, but on a half sphere ... ?!?
+        else:
+            FreeCAD.Console.PrintError("Pressure on shell mesh at the moment only supported for meshes with appropriate group data.\n")
     return pressure_faces
 
 
@@ -650,7 +683,7 @@ def get_ref_edgenodes_table(femmesh, femelement_table, refedge):
 
 
 def get_ref_edgenodes_lengths(femnodes_mesh, edge_table):
-    # calulate the appropriate node_length for every node of every mesh edge (me)
+    # calculate the appropriate node_length for every node of every mesh edge (me)
     # G. Lakshmi Narasaiah, Finite Element Analysis, p206ff
 
     #  [ (nodeID, length), ... , (nodeID, length) ]  some nodes will have more than one entry
@@ -846,7 +879,7 @@ def build_mesh_faces_of_volume_elements(face_table, femelement_table):
 
 
 def get_ref_facenodes_areas(femnodes_mesh, face_table):
-    # calulate the appropriate node_areas for every node of every mesh face (mf)
+    # calculate the appropriate node_areas for every node of every mesh face (mf)
     # G. Lakshmi Narasaiah, Finite Element Analysis, p206ff
     # FIXME only gives exact results in case of a real triangle. If for S6 or C3D10 elements
     # the midnodes are not on the line between the end nodes the area will not be a triangle
@@ -983,7 +1016,7 @@ def get_ref_facenodes_areas(femnodes_mesh, face_table):
 
 
 def get_ref_shape_node_sum_geom_table(node_geom_table):
-    # shape could be Edge or Face, geom could be lenght or area
+    # shape could be Edge or Face, geom could be length or area
     # summ of legth or area for each node of the ref_shape
     node_sum_geom_table = {}
     for n, A in node_geom_table:
@@ -995,67 +1028,109 @@ def get_ref_shape_node_sum_geom_table(node_geom_table):
     return node_sum_geom_table
 
 
+def get_mesh_group_elements(mesh_group_obj, aPart):
+    '''the Reference shapes of the mesh_group_object are searched in the Shape of aPart. If found in shape they are added to a dict
+    {MeshGroupIdentifier : ['ShapeType of the Elements'], [ElementID, ElementID, ...], ...}
+    '''
+    group_elements = {}  # { name : [element, element, ... , element]}
+    if mesh_group_obj.References:
+        grp_ele = get_reference_group_elements(mesh_group_obj, aPart)
+        group_elements[grp_ele[0]] = grp_ele[1]
+    else:
+        FreeCAD.Console.PrintError('  Empty reference in mesh group object: ' + mesh_group_obj.Name + ' ' + mesh_group_obj.Label)
+    return group_elements
+
+
 def get_analysis_group_elements(aAnalysis, aPart):
     ''' all Reference shapes of all Analysis member are searched in the Shape of aPart. If found in shape they are added to a dict
     {ConstraintName : ['ShapeType of the Elements'], [ElementID, ElementID, ...], ...}
     '''
-    aShape = aPart.Shape
     group_elements = {}  # { name : [element, element, ... , element]}
     empty_references = []
     for m in aAnalysis.Member:
         if hasattr(m, "References"):
-            # print(m.Name)
-            key = m.Name
-            elements = []
-            stype = None
             if m.References:
-                for r in m.References:
-                    parent = r[0]
-                    childs = r[1]
-                    # print(parent)
-                    # print(childs)
-                    for child in childs:
-                        ref_shape = get_element(parent, child)  # the method getElement(element) does not return Solid elements
-                        if not stype:
-                            stype = ref_shape.ShapeType
-                        elif stype != ref_shape.ShapeType:
-                            FreeCAD.Console.PrintError('Error, two refschapes in References with different ShapeTypes.\n')
-                        # print(ref_shape)
-                        found_element = find_element_in_shape(aShape, ref_shape)
-                        if found_element is not None:
-                            elements.append(found_element)
-                        else:
-                            FreeCAD.Console.PrintError('Problem: No element found for: ' + str(ref_shape) + '\n')
-                            print('    ' + m.Name)
-                            print('    ' + str(m.References))
-                            print('    ' + r[0].Name)
-                group_elements[key] = sorted(elements)
+                grp_ele = get_reference_group_elements(m, aPart)
+                group_elements[grp_ele[0]] = grp_ele[1]
             else:
                 print('  Empty reference: ' + m.Name)
                 empty_references.append(m)
     if empty_references:
         if len(empty_references) == 1:
-            group_elements = get_anlysis_empty_references_group_elements(group_elements, aAnalysis, aShape)
+            group_elements = get_anlysis_empty_references_group_elements(group_elements, aAnalysis, aPart.Shape)
         else:
             FreeCAD.Console.PrintError('Problem: more than one object with empty references.\n')
             print('We gone try to get the empty material references anyway.\n')
-            # ShellThickness and BeamSection could have empty references, but on solid meshes only materials should have empty references
+            # FemElementGeometry2D, ElementGeometry1D and FemElementFluid1D could have empty references, but on solid meshes only materials should have empty references
             for er in empty_references:
                 print(er.Name)
-            group_elements = get_anlysis_empty_references_group_elements(group_elements, aAnalysis, aShape)
-    # check if all groups have elements:
+            group_elements = get_anlysis_empty_references_group_elements(group_elements, aAnalysis, aPart.Shape)
+    # check if all groups have at least one element, it does not mean ALL reference shapes for a group have been found
     for g in group_elements:
         # print(group_elements[g])
         if len(group_elements[g]) == 0:
-            FreeCAD.Console.PrintError('Error: shapes for: ' + g + 'not found!\n')
+            FreeCAD.Console.PrintError('Error: The shapes for the mesh group for the reference shapes of analysis member: ' + g + ' could not be found!\n')
     return group_elements
+
+
+def get_reference_group_elements(obj, aPart):
+    ''' obj is an FEM object which has reference shapes like the group object, the material, most of the constraints
+    aPart is geometry feature normally CompSolid, the method searches all reference shapes of obj inside aPart even if
+    the reference shapes are a totally different geometry feature.
+    a tuple is returned ('Name or Label of the FEMobject', ['Element1', 'Element2', ...])
+    The names in the list are the Elements of the geometry aPart whereas 'Solid1' == aPart.Shape.Solids[0]
+    !!! It is strongly recommended to use as reference shapes the Solids of a CompSolid an not the Solids the CompSolid is made of !!!
+    see https://forum.freecadweb.org/viewtopic.php?f=18&t=12212&p=175777#p175777 and following posts
+    Occt might change the Solids a CompSolid is made of during creation of the CompSolid by adding Edges and vertices
+    Thus the Elements do not have the same geometry anymore
+    '''
+    aShape = aPart.Shape
+    if hasattr(obj, "UseLabel") and obj.UseLabel:
+        key = obj.Label  # TODO check the character of the Label, only allow underline and standard english character
+    else:
+        key = obj.Name
+    elements = []
+    stype = None
+    for r in obj.References:
+        parent = r[0]
+        childs = r[1]
+        # print(parent)
+        # print(childs)
+        for child in childs:
+            ref_shape = get_element(parent, child)  # the method getElement(element) does not return Solid elements
+            if not stype:
+                stype = ref_shape.ShapeType
+            elif stype != ref_shape.ShapeType:
+                FreeCAD.Console.PrintError('Error, two refshapes in References with different ShapeTypes.\n')
+            # print(ref_shape)
+            found_element = find_element_in_shape(aShape, ref_shape)
+            if found_element is not None:
+                elements.append(found_element)
+            else:
+                FreeCAD.Console.PrintError('Problem: For the geometry of the following shape was no Shape found: ' + str(ref_shape) + '\n')
+                print('    ' + obj.Name)
+                print('    ' + str(obj.References))
+                print('    ' + r[0].Name)
+                if parent.Name != aPart.Name:
+                    FreeCAD.Console.PrintError('The reference Shape is not a child nor it is the shape the mesh is made of. : ' + str(ref_shape) + '\n')
+                    print(aPart.Name + '--> Name of the Feature we where searching in.')
+                    print(parent.Name + '--> Name of the parent Feature of reference Shape (Use the same as in the line before and you will have less trouble :-) !!!!!!).')
+                    # import Part
+                    # Part.show(aShape)
+                    # Part.show(ref_shape)
+                else:
+                    FreeCAD.Console.PrintError('This should not happen, please debugg!\n')
+                    # in this case we would not have needed to use the is_same_geometry() inside find_element_in_shape()
+                    # AFAIK we could have used the Part methods isPartner() or even isSame()
+                    # We gone find out when we need to debugg this :-)!
+    return (key, sorted(elements))
 
 
 def get_anlysis_empty_references_group_elements(group_elements, aAnalysis, aShape):
     '''get the elementIDs if the Reference shape is empty
     see get_analysis_group_elements() for more informatations
-    on solid meshes only material objects could have an empty reference without beeing something wrong!
-    face meshes could have empty ShellThickness and edge meshes could have empty BeamSection
+    on solid meshes only material objects could have an empty reference without being something wrong!
+    face meshes could have empty ShellThickness and edge meshes could have empty BeamSection/FluidSection
     '''
     # print(group_elements)
     material_ref_shapes = []
@@ -1071,7 +1146,7 @@ def get_anlysis_empty_references_group_elements(group_elements, aAnalysis, aShap
                     FreeCAD.Console.PrintError('Problem in get_anlysis_empty_references_group_elements, we seams to have two or more materials with empty referneces')
                     return {}
             elif hasattr(m, "References") and m.References:
-                # ShapeType ot the group elements, strip the number of the first group element
+                # ShapeType of the group elements, strip the number of the first group element
                 # http://stackoverflow.com/questions/12851791/removing-numbers-from-string
                 group_shape_type = ''.join(i for i in group_elements[m.Name][0] if not i.isdigit())
                 if not material_shape_type:
@@ -1404,85 +1479,86 @@ def get_cylindrical_coords(obj):
     return coords
 
 
-def make_femmesh(mesh_data):
-    ''' makes an FreeCAD FEM Mesh object from FEM Mesh data
-    '''
-    import Fem
-    mesh = Fem.FemMesh()
-    m = mesh_data
-    if ('Nodes' in m) and (len(m['Nodes']) > 0):
-        print("Found: nodes")
-        if (('Seg2Elem' in m) or
-           ('Tria3Elem' in m) or
-           ('Tria6Elem' in m) or
-           ('Quad4Elem' in m) or
-           ('Quad8Elem' in m) or
-           ('Tetra4Elem' in m) or
-           ('Tetra10Elem' in m) or
-           ('Penta6Elem' in m) or
-           ('Penta15Elem' in m) or
-           ('Hexa8Elem' in m) or
-           ('Hexa20Elem' in m)):
-
-            nds = m['Nodes']
-            print("Found: elements")
-            for i in nds:
-                n = nds[i]
-                mesh.addNode(n[0], n[1], n[2], i)
-            elms_hexa8 = m['Hexa8Elem']
-            for i in elms_hexa8:
-                e = elms_hexa8[i]
-                mesh.addVolume([e[0], e[1], e[2], e[3], e[4], e[5], e[6], e[7]], i)
-            elms_penta6 = m['Penta6Elem']
-            for i in elms_penta6:
-                e = elms_penta6[i]
-                mesh.addVolume([e[0], e[1], e[2], e[3], e[4], e[5]], i)
-            elms_tetra4 = m['Tetra4Elem']
-            for i in elms_tetra4:
-                e = elms_tetra4[i]
-                mesh.addVolume([e[0], e[1], e[2], e[3]], i)
-            elms_tetra10 = m['Tetra10Elem']
-            for i in elms_tetra10:
-                e = elms_tetra10[i]
-                mesh.addVolume([e[0], e[1], e[2], e[3], e[4], e[5], e[6], e[7], e[8], e[9]], i)
-            elms_penta15 = m['Penta15Elem']
-            for i in elms_penta15:
-                e = elms_penta15[i]
-                mesh.addVolume([e[0], e[1], e[2], e[3], e[4], e[5], e[6], e[7], e[8], e[9],
-                                e[10], e[11], e[12], e[13], e[14]], i)
-            elms_hexa20 = m['Hexa20Elem']
-            for i in elms_hexa20:
-                e = elms_hexa20[i]
-                mesh.addVolume([e[0], e[1], e[2], e[3], e[4], e[5], e[6], e[7], e[8], e[9],
-                                e[10], e[11], e[12], e[13], e[14], e[15], e[16], e[17], e[18], e[19]], i)
-            elms_tria3 = m['Tria3Elem']
-            for i in elms_tria3:
-                e = elms_tria3[i]
-                mesh.addFace([e[0], e[1], e[2]], i)
-            elms_tria6 = m['Tria6Elem']
-            for i in elms_tria6:
-                e = elms_tria6[i]
-                mesh.addFace([e[0], e[1], e[2], e[3], e[4], e[5]], i)
-            elms_quad4 = m['Quad4Elem']
-            for i in elms_quad4:
-                e = elms_quad4[i]
-                mesh.addFace([e[0], e[1], e[2], e[3]], i)
-            elms_quad8 = m['Quad8Elem']
-            for i in elms_quad8:
-                e = elms_quad8[i]
-                mesh.addFace([e[0], e[1], e[2], e[3], e[4], e[5], e[6], e[7]], i)
-            elms_seg2 = m['Seg2Elem']
-            for i in elms_seg2:
-                e = elms_seg2[i]
-                mesh.addEdge(e[0], e[1])
-            print("imported mesh: {} nodes, {} HEXA8, {} PENTA6, {} TETRA4, {} TETRA10, {} PENTA15".format(
-                  len(nds), len(elms_hexa8), len(elms_penta6), len(elms_tetra4), len(elms_tetra10), len(elms_penta15)))
-            print("imported mesh: {} HEXA20, {} TRIA3, {} TRIA6, {} QUAD4, {} QUAD8, {} SEG2".format(
-                  len(elms_hexa20), len(elms_tria3), len(elms_tria6), len(elms_quad4), len(elms_quad8), len(elms_seg2)))
+def write_D_network_element_to_inputfile(fileName):
+    # replace B32 elements with D elements for fluid section
+    f = open(fileName, 'r+')
+    lines = f.readlines()
+    f.seek(0)
+    for line in lines:
+        if line.find("B32") == -1:
+            f.write(line)
         else:
-            FreeCAD.Console.PrintError("No Elements found!\n")
-    else:
-        FreeCAD.Console.PrintError("No Nodes found!\n")
-    return mesh
+            dummy = line.replace("B32", "D")
+            f.write(dummy)
+    f.truncate()
+    f.close()
 
-#  @}
+
+def use_correct_fluidinout_ele_def(FluidInletoutlet_ele, fileName, fluid_inout_nodes_file):
+    f = open(fileName, 'r')
+    cnt = 0
+    line = f.readline()
+
+    # start reading from *ELEMENT
+    while line.find("Element") == -1:
+        line = f.readline()
+        cnt = cnt + 1
+    line = f.readline()
+    cnt = cnt + 1
+
+    # obtain element line numbers for inlet and outlet
+    while (len(line) > 1):
+        ind = line.find(',')
+        elem = line[0:ind]
+        for i in range(len(FluidInletoutlet_ele)):
+            if (elem == FluidInletoutlet_ele[i][0]):
+                FluidInletoutlet_ele[i][2] = cnt
+        line = f.readline()
+        cnt = cnt + 1
+    f.close()
+
+    # re-define elements for INLET and OUTLET
+    f = open(fileName, 'r+')
+    lines = f.readlines()
+    f.seek(0)
+    cnt = 0
+    elem_counter = 0
+    print('1DFlow inout nodes file: ' + fluid_inout_nodes_file + '\n')
+    inout_nodes_file = open(fluid_inout_nodes_file, "w")
+    for line in lines:
+        new_line = ''
+        for i in range(len(FluidInletoutlet_ele)):
+            if (cnt == FluidInletoutlet_ele[i][2]):
+                elem_counter = elem_counter + 1
+                a = line.split(',')
+                for j in range(len(a)):
+                    if elem_counter == 1:
+                        if j == 1:
+                            new_line = new_line + ' 0,'
+                            node1 = int(a[j + 2])
+                            node2 = int(a[j + 1])
+                            node3 = int(a[j])
+                            inout_nodes_file.write(str(node1) + ',' + str(node2) + ',' + str(node3) + ',' + FluidInletoutlet_ele[i][1] + '\n')
+                        elif j == 3:
+                            new_line = new_line + a[j]
+                        else:
+                            new_line = new_line + a[j] + ','
+                    else:
+                        if j == 3:
+                            new_line = new_line + ' 0\n'
+                            node1 = int(a[j - 2])
+                            node2 = int(a[j - 1])
+                            node3 = int(a[j])
+                            inout_nodes_file.write(str(node1) + ',' + str(node2) + ',' + str(node3) + ',' + FluidInletoutlet_ele[i][1] + '\n')
+                        else:
+                            new_line = new_line + a[j] + ','
+        if new_line == '':
+            f.write(line)
+        else:
+            f.write(new_line)
+        cnt = cnt + 1
+    f.truncate()
+    f.close()
+    inout_nodes_file.close()
+
+##  @}

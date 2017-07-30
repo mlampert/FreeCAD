@@ -45,12 +45,12 @@ def replaceobj(parent,oldchild,newchild):
         else:
             if propvalue == oldchild:
                 setattr(parent,propname,newchild)
-                print propname, parent.getPropertyByName(propname)
-            #else: print propname,propvalue
+                print(propname, parent.getPropertyByName(propname))
+            #else: print(propname,propvalue)
     parent.touch()
 
 def replaceobjfromselection(objs):
-    # The Parent can be ommited as long as one object is orphaned
+    # The Parent can be omitted as long as one object is orphaned
     if len(objs)==2:
         InListLength= tuple((len(obj.InList)) for obj in objs)
         if InListLength == (0,1):
@@ -70,7 +70,7 @@ def replaceobjfromselection(objs):
         elif objs[1] in objs[2].InList: newchild, parent, oldchild = objs
         elif objs[2] in objs[1].InList: newchild, oldchild, parent = objs
         else:
-            raise ValueError("Cannot determin current parent-child relationship")
+            raise ValueError("Cannot determine current parent-child relationship")
     else:
         raise ValueError("Wrong number of selected objects")
     replaceobj(parent,oldchild,newchild)

@@ -4,7 +4,7 @@
 <context>
     <name>CmdPointsConvert</name>
     <message>
-        <location filename="../../Command.cpp" line="+190"/>
+        <location filename="../../Command.cpp" line="+191"/>
         <source>Points</source>
         <translation>Točke</translation>
     </message>
@@ -31,7 +31,7 @@
     <message>
         <location line="+1"/>
         <source>Export points...</source>
-        <translation>Izvažanje točk...</translation>
+        <translation>Izvozi točke …</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -51,7 +51,7 @@
     <message>
         <location line="+1"/>
         <source>Import points...</source>
-        <translation>Uvažanje točk...</translation>
+        <translation>Uvozi točke …</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -62,9 +62,29 @@
     </message>
 </context>
 <context>
+    <name>CmdPointsMerge</name>
+    <message>
+        <location line="+256"/>
+        <source>Points</source>
+        <translation type="unfinished">Točke</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Merge point clouds</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+1"/>
+        <location line="+1"/>
+        <source>Merge several point clouds into one</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>CmdPointsPolyCut</name>
     <message>
-        <location line="+211"/>
+        <location line="-49"/>
         <source>Points</source>
         <translation>Točke</translation>
     </message>
@@ -98,7 +118,7 @@
         <location line="+1"/>
         <location line="+1"/>
         <source>Test to transform a point cloud</source>
-        <translation>Preizkusi transformacijo točkovnega oblaka</translation>
+        <translation>Preizkusite za preoblikovanje točkovnega oblaka</translation>
     </message>
 </context>
 <context>
@@ -106,7 +126,7 @@
     <message>
         <location filename="../../DlgPointsRead.ui" line="+14"/>
         <source>ASCII points import</source>
-        <translation>Uvoz ASCII točk</translation>
+        <translation>Uvoz točk ASCII</translation>
     </message>
     <message>
         <location line="+20"/>

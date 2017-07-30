@@ -158,6 +158,7 @@ public:
 protected:
     PropertyItem();
 
+    virtual QVariant displayName() const;
     virtual QVariant decoration(const QVariant&) const;
     virtual QVariant toolTip(const App::Property*) const;
     virtual QVariant toString(const QVariant&) const;
@@ -168,6 +169,7 @@ protected:
 
 private:
     QString propName;
+    QString displayText;
     QVariant propData;
     std::vector<App::Property*> propertyItems;
     PropertyItem *parentItem;
@@ -313,7 +315,7 @@ protected:
 };
 
 /**
- * Change a Unit based floating point number withing constraints.
+ * Change a Unit based floating point number within constraints.
  * \author Stefan Troeger
  */
 class GuiExport PropertyUnitConstraintItem: public PropertyUnitItem
@@ -345,6 +347,16 @@ protected:
 
 protected:
     PropertyFloatConstraintItem();
+};
+
+/**
+ * Change a floating point number with many decimal points (hard coded as 16)
+ */
+class GuiExport PropertyPrecisionItem: public PropertyFloatConstraintItem
+{
+    PROPERTYITEM_HEADER
+protected:
+    PropertyPrecisionItem();
 };
 
 /**
@@ -459,6 +471,19 @@ private:
     PropertyUnitItem* m_x;
     PropertyUnitItem* m_y;
     PropertyUnitItem* m_z;
+};
+
+class GuiExport PropertyPositionItem: public PropertyVectorDistanceItem
+{
+    Q_OBJECT
+    PROPERTYITEM_HEADER
+
+};
+
+class GuiExport PropertyDirectionItem: public PropertyVectorDistanceItem
+{
+    Q_OBJECT
+    PROPERTYITEM_HEADER
 };
 
 class GuiExport PropertyMatrixItem: public PropertyItem
@@ -896,7 +921,7 @@ private:
     QStringList link;
 };
 
-class LinkLabel : public QLabel
+class LinkLabel : public QWidget
 {
     Q_OBJECT
 
@@ -906,13 +931,19 @@ public:
     void setPropertyLink(const QStringList& o);
     QStringList propertyLink() const;
 
+protected:
+    void resizeEvent(QResizeEvent*);
+
 protected Q_SLOTS:
     void onLinkActivated(const QString&);
+    void onEditClicked();
 
 Q_SIGNALS:
     void linkChanged(const QStringList&);
 
 private:
+    QLabel* label;
+    QPushButton* editButton;
     QStringList link;
 };
 
@@ -943,8 +974,13 @@ public:
     PropertyItemEditorFactory();
     virtual ~PropertyItemEditorFactory();
 
-    virtual QWidget * createEditor ( QVariant::Type type, QWidget * parent ) const;
-    virtual QByteArray valuePropertyName ( QVariant::Type type ) const;
+#if (QT_VERSION >= 0x050300)
+    virtual QWidget *createEditor(int userType, QWidget *parent) const;
+    virtual QByteArray valuePropertyName(int userType) const;
+#else
+    virtual QWidget * createEditor(QVariant::Type type, QWidget * parent) const;
+    virtual QByteArray valuePropertyName (QVariant::Type type) const;
+#endif
 };
 
 } // namespace PropertyEditor

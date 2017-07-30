@@ -70,6 +70,10 @@ if(BUILD_WEB)
   add_subdirectory(Web)
 endif(BUILD_WEB)
 
+if(BUILD_SURFACE)
+  add_subdirectory(Surface)
+endif(BUILD_SURFACE)
+
 if(BUILD_START)
   add_subdirectory(Start)
 endif(BUILD_START)
@@ -134,3 +138,11 @@ if(BUILD_TECHDRAW)
     add_subdirectory(Measure)
     add_subdirectory(TechDraw)
 endif(BUILD_TECHDRAW)
+
+if(BUILD_ADDONMGR)
+  add_subdirectory(AddonManager)
+endif(BUILD_ADDONMGR)
+
+if(BUILD_TUX)
+    add_subdirectory(Tux)
+endif(BUILD_TUX)

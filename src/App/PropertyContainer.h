@@ -58,9 +58,9 @@ struct AppExport PropertyData
     short Offset,Type;
   };
   
-  //purpose of this struct is to be constructible from all accepptable container types and to 
+  //purpose of this struct is to be constructible from all acceptable container types and to 
   //be able to return the offset to a property from the accepted containers. This allows to use 
-  //one function implementation for multiple container types without loosing all type safety by 
+  //one function implementation for multiple container types without losing all type safety by 
   //accepting void*
   struct OffsetBase
   {
@@ -196,6 +196,9 @@ protected:
   static const  PropertyData * getPropertyDataPtr(void); 
   virtual const PropertyData& getPropertyData(void) const; 
 
+  virtual void handleChangedPropertyName(Base::XMLReader &reader, const char * TypeName, const char *PropName);
+  virtual void handleChangedPropertyType(Base::XMLReader &reader, const char * TypeName, Property * prop);
+
 private:
   // forbidden
   PropertyContainer(const PropertyContainer&);
@@ -230,6 +233,14 @@ protected: \
 private: \
   static App::PropertyData propertyData 
 
+/// Like PROPERTY_HEADER, but with overridden methods declared as such
+#define PROPERTY_HEADER_WITH_OVERRIDE(_class_) \
+  TYPESYSTEM_HEADER_WITH_OVERRIDE(); \
+protected: \
+  static const App::PropertyData * getPropertyDataPtr(void); \
+  virtual const App::PropertyData &getPropertyData(void) const override; \
+private: \
+  static App::PropertyData propertyData 
 /// 
 #define PROPERTY_SOURCE(_class_, _parentclass_) \
 TYPESYSTEM_SOURCE_P(_class_);\

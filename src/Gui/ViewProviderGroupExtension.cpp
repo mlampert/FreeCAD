@@ -45,7 +45,7 @@ EXTENSION_PROPERTY_SOURCE(Gui::ViewProviderGroupExtension, Gui::ViewProviderExte
 
 ViewProviderGroupExtension::ViewProviderGroupExtension()  : visible(false)
 {
-    initExtension(ViewProviderGroupExtension::getExtensionClassTypeId());
+    initExtensionType(ViewProviderGroupExtension::getExtensionClassTypeId());
 }
 
 ViewProviderGroupExtension::~ViewProviderGroupExtension()
@@ -86,13 +86,6 @@ bool ViewProviderGroupExtension::extensionCanDropObject(App::DocumentObject* obj
     if (group->hasObject(obj))
         return false;  
 
-    //group into group?
-    if (obj->hasExtension(App::GroupExtension::getExtensionClassTypeId())) {
-        if (group->isChildOf(obj->getExtensionByType<App::GroupExtension>()))
-            return false;
-    }
-
-    //We need to find the correct App extension to ask if this is a supported type, there should only be one
     if (group->allowObject(obj))
         return true;
 
@@ -101,23 +94,8 @@ bool ViewProviderGroupExtension::extensionCanDropObject(App::DocumentObject* obj
 
 void ViewProviderGroupExtension::extensionDropObject(App::DocumentObject* obj) {
 
-    // Open command
     App::DocumentObject* grp = static_cast<App::DocumentObject*>(getExtendedViewProvider()->getObject());
     App::Document* doc = grp->getDocument();
-    Gui::Document* gui = Gui::Application::Instance->getDocument(doc);
-    gui->openCommand("Move object");
-
-    const App::DocumentObject* par = App::GroupExtension::getGroupOfObject(obj);
-    if (par) {
-        // allow an object to be in one group only
-        QString cmd;
-        cmd = QString::fromLatin1("App.getDocument(\"%1\").getObject(\"%2\").removeObject("
-                            "App.getDocument(\"%1\").getObject(\"%3\"))")
-                            .arg(QString::fromLatin1(doc->getName()))
-                            .arg(QString::fromLatin1(par->getNameInDocument()))
-                            .arg(QString::fromLatin1(obj->getNameInDocument()));
-        Gui::Command::doCommand(Gui::Command::App, cmd.toUtf8());
-    }
 
     // build Python command for execution
     QString cmd;
@@ -128,8 +106,6 @@ void ViewProviderGroupExtension::extensionDropObject(App::DocumentObject* obj) {
                         .arg(QString::fromLatin1(obj->getNameInDocument()));
 
     Gui::Command::doCommand(Gui::Command::App, cmd.toUtf8());
-
-    gui->commitCommand();
 }
 
 std::vector< App::DocumentObject* > ViewProviderGroupExtension::extensionClaimChildren(void) const {
@@ -183,11 +159,11 @@ void ViewProviderGroupExtension::extensionHide(void) {
 bool ViewProviderGroupExtension::extensionOnDelete(const std::vector< std::string >& ) {
 
     auto* group = getExtendedViewProvider()->getObject()->getExtensionByType<App::GroupExtension>();
-    // If the group is nonempty ask the user if he wants to delete it's content
+    // If the group is nonempty ask the user if he wants to delete its content
     if ( group->Group.getSize () ) {
         QMessageBox::StandardButton choice = 
             QMessageBox::question ( 0, QObject::tr ( "Delete group content?" ), 
-                QObject::tr ( "The %1 is not empty, delete it's content as well?")
+                QObject::tr ( "The %1 is not empty, delete its content as well?")
                     .arg ( QString::fromUtf8 ( getExtendedViewProvider()->getObject()->Label.getValue () ) ), 
                 QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes );
 

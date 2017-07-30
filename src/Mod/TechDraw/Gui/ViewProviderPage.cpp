@@ -116,22 +116,24 @@ void ViewProviderPage::show(void)
 
 void ViewProviderPage::hide(void)
 {
-    // hiding the drawing page should not affect its children but closes the MDI m_mdiView
-    // therefore do not call the method of its direct base class
-    ViewProviderDocumentObject::hide();
-    if (m_mdiView) {
-        m_mdiView->parentWidget()->deleteLater();
+    if (!m_mdiView.isNull()) {                                //m_mdiView is a QPointer
+        // https://forum.freecadweb.org/viewtopic.php?f=3&t=22797&p=182614#p182614
+        //Gui::getMainWindow()->activatePreviousWindow();
+        Gui::getMainWindow()->removeWindow(m_mdiView);
     }
+    ViewProviderDocumentObject::hide();
 }
 
 void ViewProviderPage::updateData(const App::Property* prop)
 {
     if (prop == &(getDrawPage()->Views)) {
-        if(m_mdiView) {
+        if(!m_mdiView.isNull() &&
+           !getDrawPage()->isDeleting()) {
             m_mdiView->updateDrawing();
         }
     } else if (prop == &(getDrawPage()->Template)) {
-       if(m_mdiView) {
+       if(m_mdiView && 
+          !getDrawPage()->isDeleting()) {
             m_mdiView->updateTemplate();
         }
     }
@@ -274,7 +276,7 @@ void ViewProviderPage::onSelectionChanged(const Gui::SelectionChanges& msg)
                     continue;
 
                 std::string str = msg.pSubName;
-                // If it's a subfeature, dont select feature
+                // If it's a subfeature, don't select feature
                 if (!str.empty()) {
                     if (TechDraw::DrawUtil::getGeomTypeFromName(str) == "Face" ||
                         TechDraw::DrawUtil::getGeomTypeFromName(str) == "Edge" ||
@@ -291,7 +293,7 @@ void ViewProviderPage::onSelectionChanged(const Gui::SelectionChanges& msg)
             App::DocumentObject *obj = doc->getDocument()->getObject(msg.pObjectName);
             if(obj) {
                 std::string str = msg.pSubName;
-                // If it's a subfeature, dont select feature
+                // If it's a subfeature, don't select feature
                 if (!str.empty()) {
                     if (TechDraw::DrawUtil::getGeomTypeFromName(str) == "Face" ||
                         TechDraw::DrawUtil::getGeomTypeFromName(str) == "Edge" ||

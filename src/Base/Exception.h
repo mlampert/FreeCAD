@@ -30,8 +30,31 @@
 #include <stdexcept>
 #include <string>
 #include <signal.h>
+#include <Python.h>
 #include "FileInfo.h"
 #include "BaseClass.h"
+
+/* MACROS FOR THROWING EXCEPTIONS */
+
+#ifdef _MSC_VER
+
+# define THROW(exception) {exception myexcp; myexcp.setDebugInformation(__FILE__,__LINE__,__FUNCSIG__); throw myexcp;}
+# define THROWM(exception, message) {exception myexcp(message); myexcp.setDebugInformation(__FILE__,__LINE__,__FUNCSIG__); throw myexcp;}
+# define THROWMF_FILEEXCEPTION(message,filenameorfileinfo) {FileException myexcp(message, filenameorfileinfo); myexcp.setDebugInformation(__FILE__,__LINE__,__FUNCSIG__); throw myexcp;}
+
+#elif defined(__GNUC__)
+
+# define THROW(exception) {exception myexcp; myexcp.setDebugInformation(__FILE__,__LINE__,__PRETTY_FUNCTION__); throw myexcp;}
+# define THROWM(exception, message) {exception myexcp(message); myexcp.setDebugInformation(__FILE__,__LINE__,__PRETTY_FUNCTION__); throw myexcp;}
+# define THROWMF_FILEEXCEPTION(message,filenameorfileinfo) {FileException myexcp(message, filenameorfileinfo); myexcp.setDebugInformation(__FILE__,__LINE__,__PRETTY_FUNCTION__); throw myexcp;}
+
+#else
+
+# define THROW(exception) {exception myexcp; myexcp.setDebugInformation(__FILE__,__LINE__,__func__); throw myexcp;}
+# define THROWM(exception, message) {exception myexcp(message); myexcp.setDebugInformation(__FILE__,__LINE__,__func__); throw myexcp;}
+# define THROWMF_FILEEXCEPTION(message,filenameorfileinfo) {FileException myexcp(message, filenameorfileinfo); myexcp.setDebugInformation(__FILE__,__LINE__,__func__); throw myexcp;}
+
+#endif
 
 namespace Base
 {
@@ -39,22 +62,50 @@ namespace Base
 class BaseExport Exception : public BaseClass
 {
   TYPESYSTEM_HEADER();
-
 public:
+
+  virtual ~Exception() throw() {}
+
+  Exception &operator=(const Exception &inst);
+
+  virtual const char* what(void) const throw();
+
+  virtual void ReportException (void) const;
+
+  inline void setMessage(const char * sMessage);
+  inline void setMessage(const std::string& sMessage);
+  // what may differ from the message given by the user in
+  // derived classes
+  inline std::string getMessage() const;
+  inline std::string getFile() const;
+  inline int getLine() const;
+  inline std::string getFunction() const;
+  
+  /// setter methods for including debug information
+  /// intended to use via macro for autofilling of debugging information
+  inline void setDebugInformation(const std::string & file, const int line, const std::string & function);
+  /// returns a Python dictionary containing the exception data
+  virtual PyObject * getPyObject(void);
+  /// returns sets the exception data from a Python dictionary
+  virtual void setPyObject( PyObject * pydict);
+
+protected:
+public: // FIXME: Remove the public keyword
+ /* sMessage may be:
+  * - an UI compliant string subsceptible of being translated and shown to the user in the UI
+  * - a very technical message not intended to be traslated or shown to the user in the UI
+  * The preferred way of throwing an exception is using the macros above. This way, the file, 
+  * line and function are automatically inserted. */
   Exception(const char * sMessage);
   Exception(const std::string& sMessage);
   Exception(void);
   Exception(const Exception &inst);
-  virtual ~Exception() throw() {}
 
-  Exception &operator=(const Exception &inst);
-  virtual const char* what(void) const throw();
-  virtual void ReportException (void) const;
-  inline void setMessage(const char * sMessage);
-  inline void setMessage(const std::string& sMessage);
-  
 protected:
   std::string _sErrMsg;
+  std::string _file;
+  int _line;
+  std::string _function;
 };
 
 
@@ -71,10 +122,29 @@ public:
   AbortException();
   /// Construction
   AbortException(const AbortException &inst);
+
   /// Destruction
   virtual ~AbortException() throw() {}
   /// Description of the exception
   virtual const char* what() const throw();
+};
+
+/**
+ * The XMLBaseException can be used to indicate any kind of XML related errors.
+ * @author Werner Mayer
+ */
+class BaseExport XMLBaseException : public Exception
+{
+public:
+  /// Construction
+  XMLBaseException();
+  XMLBaseException(const char * sMessage);
+  XMLBaseException(const std::string& sMessage);
+  /// Construction
+  XMLBaseException(const XMLBaseException &inst);
+
+  /// Destruction
+  virtual ~XMLBaseException() throw() {}
 };
 
 /**
@@ -92,6 +162,7 @@ public:
   XMLParseException();
   /// Construction
   XMLParseException(const XMLParseException &inst);
+
   /// Destruction
   virtual ~XMLParseException() throw() {}
   /// Description of the exception
@@ -115,10 +186,57 @@ public:
   FileException(const FileException &inst);
   /// Destruction
   virtual ~FileException() throw() {}
+  /// Assignment operator
+  FileException &operator=(const FileException &inst);
   /// Description of the exception
   virtual const char* what() const throw();
+  /// Report generation
+  virtual void ReportException (void) const;
+  /// Get file name for use with tranlatable message
+  std::string getFileName() const;
+  /// returns a Python dictionary containing the exception data
+  virtual PyObject * getPyObject(void);
+  /// returns sets the exception data from a Python dictionary
+  virtual void setPyObject( PyObject * pydict);
 protected:
   FileInfo file;
+  // necessary   for what() legacy behaviour as it returns a buffer that can not be of a temporary object to be destroyed at end of what()
+  std::string _sErrMsgAndFileName; 
+};
+
+/**
+ * The FileSystemError can be used to indicate errors on file system
+ * e.g. if renaming of a file failed.
+ * @author Werner Mayer
+ */
+class BaseExport FileSystemError : public Exception
+{
+public:
+  /// Construction
+  FileSystemError();
+  FileSystemError(const char * sMessage);
+  FileSystemError(const std::string& sMessage);
+  /// Construction
+  FileSystemError(const FileSystemError &inst);
+  /// Destruction
+  virtual ~FileSystemError() throw() {}
+};
+
+/**
+ * The BadFormatError can be used to indicate errors in a data structure.
+ * @author Werner Mayer
+ */
+class BaseExport BadFormatError : public Exception
+{
+public:
+  /// Construction
+  BadFormatError();
+  BadFormatError(const char * sMessage);
+  BadFormatError(const std::string& sMessage);
+  /// Construction
+  BadFormatError(const BadFormatError &inst);
+  /// Destruction
+  virtual ~BadFormatError() throw() {}
 };
 
 /**
@@ -154,6 +272,8 @@ class BaseExport AccessViolation : public Exception
 public:
   /// Construction
   AccessViolation();
+  AccessViolation(const char * sMessage);
+  AccessViolation(const std::string& sMessage);
   /// Construction
   AccessViolation(const AccessViolation &inst);
   /// Destruction
@@ -170,6 +290,8 @@ public:
   /// Construction
   AbnormalProgramTermination();
   /// Construction
+  AbnormalProgramTermination(const char * sMessage);
+  AbnormalProgramTermination(const std::string& sMessage);
   AbnormalProgramTermination(const AbnormalProgramTermination &inst);
   /// Destruction
   virtual ~AbnormalProgramTermination() throw() {}
@@ -183,6 +305,7 @@ class BaseExport UnknownProgramOption : public Exception
 {
 public:
   /// Construction
+  UnknownProgramOption();
   UnknownProgramOption(const char * sMessage);
   UnknownProgramOption(const std::string& sMessage);
   /// Construction
@@ -199,10 +322,12 @@ class BaseExport ProgramInformation : public Exception
 {
 public:
   /// Construction
+  ProgramInformation();
   ProgramInformation(const char * sMessage);
   ProgramInformation(const std::string& sMessage);
   /// Construction
   ProgramInformation(const ProgramInformation &inst);
+
   /// Destruction
   virtual ~ProgramInformation() throw() {}
 };
@@ -215,6 +340,7 @@ class BaseExport TypeError : public Exception
 {
 public:
   /// Construction
+  TypeError();
   TypeError(const char * sMessage);
   TypeError(const std::string& sMessage);
   /// Construction
@@ -231,12 +357,30 @@ class BaseExport ValueError : public Exception
 {
 public:
   /// Construction
+  ValueError();
   ValueError(const char * sMessage);
   ValueError(const std::string& sMessage);
   /// Construction
   ValueError(const ValueError &inst);
   /// Destruction
   virtual ~ValueError() throw() {}
+};
+
+/**
+ * The IndexError can be used when a sequence subscript is out of range.
+ * @author Werner Mayer
+ */
+class BaseExport IndexError : public Exception
+{
+public:
+  /// Construction
+  IndexError();
+  IndexError(const char * sMessage);
+  IndexError(const std::string& sMessage);
+  /// Construction
+  IndexError(const IndexError &inst);
+  /// Destruction
+  virtual ~IndexError() throw() {}
 };
 
 /**
@@ -247,6 +391,7 @@ class BaseExport AttributeError : public Exception
 {
 public:
   /// Construction
+  AttributeError();
   AttributeError(const char * sMessage);
   AttributeError(const std::string& sMessage);
   /// Construction
@@ -263,6 +408,7 @@ class BaseExport RuntimeError : public Exception
 {
 public:
   /// Construction
+  RuntimeError();
   RuntimeError(const char * sMessage);
   RuntimeError(const std::string& sMessage);
   /// Construction
@@ -279,6 +425,7 @@ class BaseExport NotImplementedError : public Exception
 {
 public:
   /// Construction
+  NotImplementedError();
   NotImplementedError(const char * sMessage);
   NotImplementedError(const std::string& sMessage);
   /// Construction
@@ -295,12 +442,30 @@ class BaseExport DivisionByZeroError : public Exception
 {
 public:
   /// Construction
+  DivisionByZeroError();
   DivisionByZeroError(const char * sMessage);
   DivisionByZeroError(const std::string& sMessage);
   /// Construction
   DivisionByZeroError(const DivisionByZeroError &inst);
   /// Destruction
   virtual ~DivisionByZeroError() throw() {}
+};
+
+/**
+ * The ReferencesError can be used to indicate a reference counter has the wrong value.
+ * @author Werner Mayer
+ */
+class BaseExport ReferencesError : public Exception
+{
+public:
+  /// Construction
+  ReferencesError();
+  ReferencesError(const char * sMessage);
+  ReferencesError(const std::string& sMessage);
+  /// Construction
+  ReferencesError(const ReferencesError &inst);
+  /// Destruction
+  virtual ~ReferencesError() throw() {}
 };
 
 /**
@@ -312,6 +477,7 @@ class BaseExport ExpressionError : public Exception
 {
 public:
   /// Construction
+  ExpressionError();
   ExpressionError(const char * sMessage);
   ExpressionError(const std::string& sMessage);
   /// Construction
@@ -328,12 +494,99 @@ class BaseExport ParserError : public Exception
 {
 public:
   /// Construction
+  ParserError();
   ParserError(const char * sMessage);
   ParserError(const std::string& sMessage);
   /// Construction
   ParserError(const ParserError &inst);
   /// Destruction
   virtual ~ParserError() throw() {}
+};
+
+/**
+ * The UnicodeError can be used to indicate unicode encoding/decoding error.
+ * @author Werner Mayer
+ */
+class BaseExport UnicodeError : public Exception
+{
+public:
+  /// Construction
+  UnicodeError();
+  UnicodeError(const char * sMessage);
+  UnicodeError(const std::string& sMessage);
+  /// Construction
+  UnicodeError(const UnicodeError &inst);
+  /// Destruction
+  virtual ~UnicodeError() throw() {}
+};
+
+/**
+ * The OverflowError can be used to indicate overflows of numbers.
+ * @author Werner Mayer
+ */
+class BaseExport OverflowError : public Exception
+{
+public:
+  /// Construction
+  OverflowError();
+  OverflowError(const char * sMessage);
+  OverflowError(const std::string& sMessage);
+  /// Construction
+  OverflowError(const OverflowError &inst);
+  /// Destruction
+  virtual ~OverflowError() throw() {}
+};
+
+/**
+ * The UnderflowError can be used to indicate underflows of numbers.
+ * @author Werner Mayer
+ */
+class BaseExport UnderflowError : public Exception
+{
+public:
+  /// Construction
+  UnderflowError();
+  UnderflowError(const char * sMessage);
+  UnderflowError(const std::string& sMessage);
+  /// Construction
+  UnderflowError(const UnderflowError &inst);
+  /// Destruction
+  virtual ~UnderflowError() throw() {}
+};
+
+/**
+ * The UnitsMismatchError can be used to indicate that quantities with different units are used.
+ * @author Werner Mayer
+ */
+class BaseExport UnitsMismatchError : public Exception
+{
+public:
+  /// Construction
+  UnitsMismatchError();
+  UnitsMismatchError(const char * sMessage);
+  UnitsMismatchError(const std::string& sMessage);
+  /// Construction
+  UnitsMismatchError(const UnitsMismatchError &inst);
+  /// Destruction
+  virtual ~UnitsMismatchError() throw() {}
+};
+
+ /* The CADKernelError can be used to indicate an exception originating in the CAD Kernel
+ * allowing to propagate the error messages of, for example, OCC Standard_Failure exception to
+ * the FreeCAD application without making the FreeCAD application depend on OCC.
+ * @author Abdullah Tahiri
+ */
+class BaseExport CADKernelError : public Exception
+{
+public:
+    /// Construction
+    CADKernelError();
+    CADKernelError(const char * sMessage);
+    CADKernelError(const std::string& sMessage);
+    /// Construction
+    CADKernelError(const CADKernelError &inst);
+    /// Destruction
+    virtual ~CADKernelError() throw() {}
 };
 
 
@@ -345,6 +598,33 @@ inline void Exception::setMessage(const char * sMessage)
 inline void Exception::setMessage(const std::string& sMessage)
 {
   _sErrMsg = sMessage;
+}
+
+inline std::string Exception::getMessage() const
+{
+    return _sErrMsg;
+}
+
+inline std::string Exception::getFile() const
+{
+    return _file;
+}
+
+inline int Exception::getLine() const
+{
+    return _line;
+}
+
+inline std::string Exception::getFunction() const
+{
+    return _function;
+}
+
+inline void Exception::setDebugInformation(const std::string & file, const int line, const std::string & function)
+{
+    _file = file;
+    _line = line;
+    _function = function;
 }
 
 #if defined(__GNUC__) && defined (FC_OS_LINUX)

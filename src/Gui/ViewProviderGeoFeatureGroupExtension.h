@@ -34,7 +34,7 @@ namespace Gui
 
 class GuiExport ViewProviderGeoFeatureGroupExtension : public ViewProviderGroupExtension
 {
-    EXTENSION_PROPERTY_HEADER(Gui::ViewProviderGeoFeatureGroupExtension);
+    EXTENSION_PROPERTY_HEADER_WITH_OVERRIDE(Gui::ViewProviderGeoFeatureGroupExtension);
 
 public:
     /// Constructor
@@ -42,6 +42,7 @@ public:
     virtual ~ViewProviderGeoFeatureGroupExtension();
 
     virtual std::vector<App::DocumentObject*> extensionClaimChildren3D(void)const override;
+    virtual std::vector< App::DocumentObject* > extensionClaimChildren(void) const override;
     virtual SoGroup* extensionGetChildRoot(void) const override {return pcGroupChildren;};
     virtual void extensionAttach(App::DocumentObject* pcObject) override;
     virtual void extensionSetDisplayMode(const char* ModeName) override;
@@ -57,7 +58,7 @@ public:
     }
 
     virtual void extensionUpdateData(const App::Property*) override;
-    
+
 protected:
     SoGroup *pcGroupChildren;
 };

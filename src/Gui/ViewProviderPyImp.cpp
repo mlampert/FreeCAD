@@ -44,6 +44,7 @@
 #include <Base/MatrixPy.h>
 #include <Base/Placement.h>
 #include <Base/PlacementPy.h>
+#include <App/DocumentObject.h>
 
 using namespace Gui;
 
@@ -180,7 +181,11 @@ PyObject*  ViewProviderPy::listDisplayModes(PyObject *args)
         int i=0;
 
         for ( std::vector<std::string>::iterator it = modes.begin(); it != modes.end(); ++it ) {
+#if PY_MAJOR_VERSION >= 3
+            PyObject* str = PyUnicode_FromString(it->c_str());
+#else
             PyObject* str = PyString_FromString(it->c_str());
+#endif
             PyList_SetItem(pyList, i++, str);
         }
 
@@ -243,6 +248,22 @@ PyObject*  ViewProviderPy::setTransformation(PyObject *args)
 
     PyErr_SetString(Base::BaseExceptionFreeCADError, "Either set matrix or placement to set transformation");
     return 0;
+}
+
+PyObject* ViewProviderPy::claimChildren(PyObject* args)
+{
+    if (!PyArg_ParseTuple(args, ""))
+        return NULL;                     // NULL triggers exception
+
+    std::vector<App::DocumentObject*> children = this->getViewProviderPtr()->claimChildren();
+    Py::List ret;
+    for(App::DocumentObject* child: children){
+        if (child)
+            ret.append(Py::asObject(child->getPyObject()));
+        else
+            ret.append(Py::None());
+    }
+    return Py::new_reference_to(ret);
 }
 
 PyObject *ViewProviderPy::getCustomAttributes(const char* attr) const

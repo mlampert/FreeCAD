@@ -18,6 +18,9 @@ include_directories(
 )
 link_directories(${OCC_LIBRARY_DIR})
 
+generate_from_xml(ViewProviderPy)
+
+
 set(PartDesignGui_LIBS
     PartDesign
     SketcherGui
@@ -37,7 +40,7 @@ set(PartDesignGui_MOC_HDRS
     TaskDraftParameters.h
     TaskThicknessParameters.h
     TaskDressUpParameters.h
-    #TaskHoleParameters.h
+    TaskHoleParameters.h
     TaskRevolutionParameters.h
     TaskTransformedMessages.h
     TaskTransformedParameters.h
@@ -71,7 +74,7 @@ set(PartDesignGui_UIC_SRCS
     TaskDraftParameters.ui
     TaskThicknessParameters.ui
     TaskBooleanParameters.ui
-    #TaskHoleParameters.ui
+    TaskHoleParameters.ui
     TaskRevolutionParameters.ui
     TaskTransformedMessages.ui
     TaskMirroredParameters.ui
@@ -103,8 +106,8 @@ SET(PartDesignGuiViewProvider_SRCS
     ViewProviderSketchBased.h
     ViewProviderPad.cpp
     ViewProviderPad.h
-    #ViewProviderHole.cpp
-    #ViewProviderHole.h
+    ViewProviderHole.cpp
+    ViewProviderHole.h
     ViewProviderPocket.cpp
     ViewProviderPocket.h
     ViewProviderChamfer.cpp
@@ -211,9 +214,9 @@ SET(PartDesignGuiTaskDlgs_SRCS
     TaskMultiTransformParameters.ui
     TaskMultiTransformParameters.cpp
     TaskMultiTransformParameters.h
-    #TaskHoleParameters.ui
-    #TaskHoleParameters.cpp
-    #TaskHoleParameters.h
+    TaskHoleParameters.ui
+    TaskHoleParameters.cpp
+    TaskHoleParameters.h
     TaskDatumParameters.cpp
     TaskDatumParameters.h
     TaskShapeBinder.ui
@@ -252,6 +255,14 @@ SET(PartDesignGuiModule_SRCS
 )
 SOURCE_GROUP("Module" FILES ${PartDesignGuiModule_SRCS})
 
+
+SET(Python_SRCS
+    ViewProviderPy.xml
+    ViewProviderPyImp.cpp
+)
+SOURCE_GROUP("Python" FILES ${Python_SRCS})
+
+
 SET(PartDesignGui_Scripts
     InitGui.py
     TestPartDesignGui.py
@@ -263,6 +274,7 @@ SET(PartDesignGui_SRCS
     ${PartDesignGuiModule_SRCS}
     ${PartDesignGuiTaskDlgs_SRCS}
     ${PartDesignGuiViewProvider_SRCS}
+	${Python_SRCS}
 )
 
 add_library(PartDesignGui SHARED ${PartDesignGui_SRCS})

@@ -27,42 +27,325 @@
 import Fem
 import FemToolsCcx
 import FreeCAD
-import FemAnalysis
-import FemSolverCalculix
-import MechanicalMaterial
-import csv
+import ObjectsFem
 import tempfile
 import unittest
+import os
 
 mesh_name = 'Mesh'
+stat_types = ["U1", "U2", "U3", "Uabs", "Sabs", "MaxPrin", "MidPrin", "MinPrin", "MaxShear", "Peeq", "Temp", "MFlow", "NPress"]
 
 home_path = FreeCAD.getHomePath()
-temp_dir = tempfile.gettempdir()
-test_file_dir = home_path + 'Mod/Fem/test_files/ccx'
+temp_dir = tempfile.gettempdir() + '/FEM_unittests/'
+if not os.path.exists(temp_dir):
+    os.makedirs(temp_dir)
+test_file_dir = home_path + 'Mod/Fem/test_files/ccx/'
 
+# define some locations fot the analysis tests
+# since they are also used in the helper def which create results they should stay global for the module
 static_base_name = 'cube_static'
+static_analysis_dir = temp_dir + 'FEM_static/'
+static_save_fc_file = static_analysis_dir + static_base_name + '.fcstd'
+static_analysis_inp_file = test_file_dir + static_base_name + '.inp'
+static_expected_values = test_file_dir + "cube_static_expected_values"
+
 frequency_base_name = 'cube_frequency'
+frequency_analysis_dir = temp_dir + 'FEM_frequency/'
+frequency_save_fc_file = frequency_analysis_dir + frequency_base_name + '.fcstd'
+frequency_analysis_inp_file = test_file_dir + frequency_base_name + '.inp'
+frequency_expected_values = test_file_dir + "cube_frequency_expected_values"
+
 thermomech_base_name = 'spine_thermomech'
-static_analysis_dir = temp_dir + '/FEM_static'
-frequency_analysis_dir = temp_dir + '/FEM_frequency'
-thermomech_analysis_dir = temp_dir + '/FEM_thermomech'
-static_analysis_inp_file = test_file_dir + '/' + static_base_name + '.inp'
-static_expected_values = test_file_dir + "/cube_static_expected_values"
-frequency_analysis_inp_file = test_file_dir + '/' + frequency_base_name + '.inp'
-frequency_expected_values = test_file_dir + "/cube_frequency_expected_values"
-thermomech_analysis_inp_file = test_file_dir + '/' + thermomech_base_name + '.inp'
-thermomech_expected_values = test_file_dir + "/spine_thermomech_expected_values"
-mesh_points_file = test_file_dir + '/mesh_points.csv'
-mesh_volumes_file = test_file_dir + '/mesh_volumes.csv'
-spine_points_file = test_file_dir + '/spine_points.csv'
-spine_volumes_file = test_file_dir + '/spine_volumes.csv'
+thermomech_analysis_dir = temp_dir + 'FEM_thermomech/'
+thermomech_save_fc_file = thermomech_analysis_dir + thermomech_base_name + '.fcstd'
+thermomech_analysis_inp_file = test_file_dir + thermomech_base_name + '.inp'
+thermomech_expected_values = test_file_dir + "spine_thermomech_expected_values"
 
-
-def fcc_print(message):
-    FreeCAD.Console.PrintMessage('{} \n'.format(message))
+Flow1D_thermomech_base_name = 'Flow1D_thermomech'
+Flow1D_thermomech_analysis_dir = temp_dir + 'FEM_Flow1D_thermomech/'
+Flow1D_thermomech_save_fc_file = Flow1D_thermomech_analysis_dir + Flow1D_thermomech_base_name + '.fcstd'
+Flow1D_thermomech_analysis_inp_file = test_file_dir + Flow1D_thermomech_base_name + '.inp'
+Flow1D_thermomech_expected_values = test_file_dir + "Flow1D_thermomech_expected_values"
 
 
 class FemTest(unittest.TestCase):
+    def setUp(self):
+        try:
+            FreeCAD.setActiveDocument("FemTest")
+        except:
+            FreeCAD.newDocument("FemTest")
+        finally:
+            FreeCAD.setActiveDocument("FemTest")
+        self.active_doc = FreeCAD.ActiveDocument
+
+    def test_mesh_seg2_python(self):
+        seg2 = Fem.FemMesh()
+        seg2.addNode(0, 0, 0, 1)
+        seg2.addNode(2, 0, 0, 2)
+        seg2.addNode(4, 0, 0, 3)
+        seg2.addEdge([1, 2])
+        seg2.addEdge([2, 3], 2)
+
+        node_data = [seg2.NodeCount, seg2.Nodes]
+        edge_data = [seg2.EdgeCount, seg2.Edges[0], seg2.getElementNodes(seg2.Edges[0]), seg2.Edges[1], seg2.getElementNodes(seg2.Edges[1])]
+        expected_nodes = [3, {1: FreeCAD.Vector(0.0, 0.0, 0.0), 2: FreeCAD.Vector(2.0, 0.0, 0.0), 3: FreeCAD.Vector(4.0, 0.0, 0.0)}]
+        expected_edges = [2, 1, (1, 2), 2, (2, 3)]
+        self.assertEqual(node_data, expected_nodes, "Nodes of Python created seg2 element are unexpected")
+        self.assertEqual(edge_data, expected_edges, "Edges of Python created seg2 element are unexpected")
+
+    def test_mesh_seg3_python(self):
+        seg3 = Fem.FemMesh()
+        seg3.addNode(0, 0, 0, 1)
+        seg3.addNode(1, 0, 0, 2)
+        seg3.addNode(2, 0, 0, 3)
+        seg3.addNode(3, 0, 0, 4)
+        seg3.addNode(4, 0, 0, 5)
+        seg3.addEdge([1, 3, 2])
+        seg3.addEdge([3, 5, 4], 2)
+
+        node_data = [seg3.NodeCount, seg3.Nodes]
+        edge_data = [seg3.EdgeCount, seg3.Edges[0], seg3.getElementNodes(seg3.Edges[0]), seg3.Edges[1], seg3.getElementNodes(seg3.Edges[1])]
+        expected_nodes = [5, {1: FreeCAD.Vector(0.0, 0.0, 0.0), 2: FreeCAD.Vector(1.0, 0.0, 0.0), 3: FreeCAD.Vector(2.0, 0.0, 0.0), 4: FreeCAD.Vector(3.0, 0.0, 0.0), 5: FreeCAD.Vector(4.0, 0.0, 0.0)}]
+        expected_edges = [2, 1, (1, 3, 2), 2, (3, 5, 4)]
+        self.assertEqual(node_data, expected_nodes, "Nodes of Python created seg3 element are unexpected")
+        self.assertEqual(edge_data, expected_edges, "Edges of Python created seg3 element are unexpected")
+
+    def test_unv_save_load(self):
+        tetra10 = Fem.FemMesh()
+        tetra10.addNode(6, 12, 18, 1)
+        tetra10.addNode(0, 0, 18, 2)
+        tetra10.addNode(12, 0, 18, 3)
+        tetra10.addNode(6, 6, 0, 4)
+
+        tetra10.addNode(3, 6, 18, 5)
+        tetra10.addNode(6, 0, 18, 6)
+        tetra10.addNode(9, 6, 18, 7)
+
+        tetra10.addNode(6, 9, 9, 8)
+        tetra10.addNode(3, 3, 9, 9)
+        tetra10.addNode(9, 3, 9, 10)
+        tetra10.addVolume([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+
+        unv_file = temp_dir + '/tetra10_mesh.unv'
+        tetra10.write(unv_file)
+        newmesh = Fem.read(unv_file)
+        expected = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+        self.assertEqual(newmesh.getElementNodes(1), expected, "Nodes order of quadratic volume element is unexpected")
+
+    def test_writeAbaqus_precision(self):
+        # https://forum.freecadweb.org/viewtopic.php?f=18&t=22759#p176669
+        # ccx reads only F20.0 (i. e. Fortran floating point field 20 chars wide)
+        # thus precision is set to 13 in writeAbaqus
+        seg2 = Fem.FemMesh()
+        seg2.addNode(0, 0, 0, 1)
+        #            1234567890123456789012  1234567890123456789012  123456789012345678901234567
+        seg2.addNode(-5000000000000000000.1, -1.123456789123456e-14, -0.1234567890123456789e-101, 2)
+        seg2.addEdge([1, 2])
+
+        inp_file = temp_dir + '/seg2_mesh.inp'
+        seg2.writeABAQUS(inp_file)
+
+        read_file = open(inp_file, 'r')
+        read_node_line = 'line was not found'
+        for l in read_file:
+            l = l.strip()
+            if l.startswith('2, -5'):
+                read_node_line = l
+        read_file.close()
+
+        #                  1234567  12345678901234567890  12345678901234567890
+        expected_win = '2, -5e+018, -1.123456789123e-014, -1.234567890123e-102'
+        expected_lin = '2, -5e+18, -1.123456789123e-14, -1.234567890123e-102'
+        expected = [expected_lin, expected_win]
+        self.assertTrue(True if read_node_line in expected else False,
+                        "Problem in test_writeAbaqus_precision, \n{0}\n{1}".format(read_node_line, expected))
+
+    def test_read_frd_massflow_networkpressure(self):
+        # read data from frd file
+        frd_file = test_file_dir + 'Flow1D_thermomech.frd'
+        import importCcxFrdResults
+        frd_content = importCcxFrdResults.readResult(frd_file)
+
+        # do something with the read data
+        frd_content_len = []
+        for key in sorted(frd_content.keys()):
+            frd_content_len.append(len(frd_content[key]))
+        print('read data')
+        print(frd_content_len)
+        print(sorted(frd_content.keys()))
+        # print(frd_content)
+        read_mflow = frd_content['Results'][12]['mflow']
+        read_npressure = frd_content['Results'][12]['npressure']
+        res_len = [
+            len(read_mflow),
+            len(read_npressure)
+        ]
+        print(res_len)
+        print(read_mflow)
+        print(read_npressure)
+
+        # create the expected data
+        print('\nexpected data')
+        efc = {}  # expected frd content
+        efc['Nodes'] = {
+            2: FreeCAD.Vector(0.0, 0.0, -50.0),
+            3: FreeCAD.Vector(0.0, 0.0, -4300.0),
+            4: FreeCAD.Vector(4950.0, 0.0, -4300.0),
+            5: FreeCAD.Vector(5000.0, 0.0, -4300.0),
+            6: FreeCAD.Vector(8535.53, 0.0, -7835.53),
+            7: FreeCAD.Vector(8569.88, 0.0, -7870.88),
+            8: FreeCAD.Vector(12105.4, 0.0, -11406.4),
+            9: FreeCAD.Vector(12140.8, 0.0, -11441.8),
+            10: FreeCAD.Vector(13908.5, 0.0, -13209.5),
+            11: FreeCAD.Vector(13943.9, 0.0, -13244.9),
+            12: FreeCAD.Vector(15047.0, 0.0, -14348.0),
+            13: FreeCAD.Vector(15047.0, 0.0, -7947.97),
+            15: FreeCAD.Vector(0.0, 0.0, 0.0),
+            16: FreeCAD.Vector(0.0, 0.0, -2175.0),
+            17: FreeCAD.Vector(2475.0, 0.0, -4300.0),
+            18: FreeCAD.Vector(4975.0, 0.0, -4300.0),
+            19: FreeCAD.Vector(6767.77, 0.0, -6067.77),
+            20: FreeCAD.Vector(8552.71, 0.0, -7853.21),
+            21: FreeCAD.Vector(10337.6, 0.0, -9638.64),
+            22: FreeCAD.Vector(12123.1, 0.0, -11424.1),
+            23: FreeCAD.Vector(13024.6, 0.0, -12325.6),
+            24: FreeCAD.Vector(13926.2, 0.0, -13227.2),
+            25: FreeCAD.Vector(14495.4, 0.0, -13796.4),
+            26: FreeCAD.Vector(15047.0, 0.0, -11148.0),
+            27: FreeCAD.Vector(15047.0, 0.0, -7897.97)
+        }
+        efc['Seg2Elem'] = {
+            1: (15, 2),
+            13: (13, 27)
+        }
+        efc['Seg3Elem'] = {}
+        '''   deleted during reading because of the inout file
+        efc['Seg3Elem'] = {
+            2: (2, 16, 3),
+            3: (3, 17, 4),
+            4: (4, 18, 5),
+            5: (5, 19, 6),
+            6: (6, 20, 7),
+            7: (7, 21, 8),
+            8: (8, 22, 9),
+            9: (9, 23, 10),
+            10: (10, 24, 11),
+            11: (11, 25, 12),
+            12: (12, 26, 13)
+        }
+        '''
+        efc['Tria3Elem'] = efc['Tria6Elem'] = efc['Quad4Elem'] = efc['Quad8Elem'] = {}  # faces
+        efc['Tetra4Elem'] = efc['Tetra10Elem'] = efc['Hexa8Elem'] = efc['Hexa20Elem'] = efc['Penta6Elem'] = efc['Penta15Elem'] = {}  # volumes
+        efc['Results'] = [
+            {'time': 0.00390625},
+            {'time': 0.0078125},
+            {'time': 0.0136719},
+            {'time': 0.0224609},
+            {'time': 0.0356445},
+            {'time': 0.0554199},
+            {'time': 0.085083},
+            {'time': 0.129578},
+            {'time': 0.19632},
+            {'time': 0.296432},
+            {'time': 0.446602},
+            {'time': 0.671856},
+            {
+                'number': 0,
+                'time': 1.0,
+                'mflow': {
+                    1: 78.3918,  # added during reading because of the inout file
+                    2: 78.3918,
+                    3: 78.3918,
+                    4: 78.3918,
+                    5: 78.3918,
+                    6: 78.3918,
+                    7: 78.3918,
+                    8: 78.3918,
+                    9: 78.3918,
+                    10: 78.3918,
+                    11: 78.3918,
+                    12: 78.3918,
+                    13: 78.3918,
+                    15: 78.3918,
+                    16: 78.3918,
+                    17: 78.3918,
+                    18: 78.3918,
+                    19: 78.3918,
+                    20: 78.3918,
+                    21: 78.3918,
+                    22: 78.3918,
+                    23: 78.3918,
+                    24: 78.3918,
+                    25: 78.3918,
+                    26: 78.3918,
+                    27: 78.3918,
+                    28: 78.3918  # added during reading because of the inout file
+                },
+                'npressure': {
+                    1: 0.1,  # added during reading because of the inout file
+                    2: 0.1,
+                    3: 0.134840,
+                    4: 0.128261,
+                    5: 0.127949,
+                    6: 0.155918,
+                    7: 0.157797,
+                    8: 0.191647,
+                    9: 0.178953,
+                    10: 0.180849,
+                    11: 0.161476,
+                    12: 0.162658,
+                    13: 0.1,
+                    15: 0.1,
+                    16: 0.117420,
+                    17: 0.131551,
+                    18: 0.128105,
+                    19: 0.141934,
+                    20: 0.156857,
+                    21: 0.174722,
+                    22: 0.185300,
+                    23: 0.179901,
+                    24: 0.171162,
+                    25: 0.162067,
+                    26: 0.131329,
+                    27: 0.1,
+                    28: 0.1  # added during reading because of the inout file
+                }
+            }
+        ]
+        expected_frd_content = efc
+
+        # do something with the expected data
+        expected_frd_content_len = []
+        for key in sorted(expected_frd_content.keys()):
+            expected_frd_content_len.append(len(expected_frd_content[key]))
+        print(expected_frd_content_len)
+        print(sorted(expected_frd_content.keys()))
+        # expected results
+        expected_mflow = expected_frd_content['Results'][12]['mflow']
+        expected_npressure = expected_frd_content['Results'][12]['npressure']
+        expected_res_len = [
+            len(expected_mflow),
+            len(expected_npressure)
+        ]
+        print(expected_res_len)
+        print(expected_mflow)
+        print(expected_npressure)
+
+        # tests
+        self.assertEqual(frd_content_len, expected_frd_content_len, "Length's of read frd data values are unexpected")
+        self.assertEqual(frd_content['Nodes'], expected_frd_content['Nodes'], "Values of read node data are unexpected")
+        self.assertEqual(frd_content['Seg2Elem'], expected_frd_content['Seg2Elem'], "Values of read Seg2 data are unexpected")
+        self.assertEqual(frd_content['Seg3Elem'], expected_frd_content['Seg3Elem'], "Values of read Seg3 data are unexpected")
+        self.assertEqual(res_len, expected_res_len, "Length's of read result data values are unexpected")
+        self.assertEqual(read_mflow, expected_mflow, "Values of read mflow result data are unexpected")
+        self.assertEqual(read_npressure, expected_npressure, "Values of read npressure result data are unexpected")
+
+    def tearDown(self):
+        FreeCAD.closeDocument("FemTest")
+        pass
+
+
+class FemCcxAnalysisTest(unittest.TestCase):
 
     def setUp(self):
         try:
@@ -72,151 +355,78 @@ class FemTest(unittest.TestCase):
         finally:
             FreeCAD.setActiveDocument("FemTest")
         self.active_doc = FreeCAD.ActiveDocument
-        self.box = self.active_doc.addObject("Part::Box", "Box")
-        self.active_doc.recompute()
 
-    def create_new_analysis(self):
-        self.analysis = FemAnalysis.makeFemAnalysis('MechanicalAnalysis')
-        self.active_doc.recompute()
+    def test_static_freq_analysis(self):
+        # static
+        fcc_print('--------------- Start of FEM tests ---------------')
+        box = self.active_doc.addObject("Part::Box", "Box")
+        fcc_print('Checking FEM new analysis...')
+        analysis = ObjectsFem.makeAnalysis('Analysis')
+        self.assertTrue(analysis, "FemTest of new analysis failed")
 
-    def create_new_solver(self):
-        self.solver_object = FemSolverCalculix.makeFemSolverCalculix('CalculiX')
-        self.solver_object.GeometricalNonlinearity = 'linear'
-        self.solver_object.ThermoMechSteadyState = False
-        self.solver_object.MatrixSolverType = 'default'
-        self.solver_object.IterationsControlParameterTimeUse = False
-        self.solver_object.EigenmodesCount = 10
-        self.solver_object.EigenmodeHighLimit = 1000000.0
-        self.solver_object.EigenmodeLowLimit = 0.0
-        self.active_doc.recompute()
+        fcc_print('Checking FEM new solver...')
+        solver_object = ObjectsFem.makeSolverCalculix('CalculiX')
+        solver_object.GeometricalNonlinearity = 'linear'
+        solver_object.ThermoMechSteadyState = False
+        solver_object.MatrixSolverType = 'default'
+        solver_object.IterationsControlParameterTimeUse = False
+        solver_object.EigenmodesCount = 10
+        solver_object.EigenmodeHighLimit = 1000000.0
+        solver_object.EigenmodeLowLimit = 0.0
+        self.assertTrue(solver_object, "FemTest of new solver failed")
+        analysis.Member = analysis.Member + [solver_object]
 
-    def create_new_mesh(self):
-        self.mesh_object = self.active_doc.addObject('Fem::FemMeshObject', mesh_name)
-        self.mesh = Fem.FemMesh()
-        with open(mesh_points_file, 'r') as points_file:
-            reader = csv.reader(points_file)
-            for p in reader:
-                self.mesh.addNode(float(p[1]), float(p[2]), float(p[3]), int(p[0]))
-
-        with open(mesh_volumes_file, 'r') as volumes_file:
-            reader = csv.reader(volumes_file)
-            for v in reader:
-                self.mesh.addVolume([int(v[2]), int(v[1]), int(v[3]), int(v[4]), int(v[5]),
-                                    int(v[7]), int(v[6]), int(v[9]), int(v[8]), int(v[10])],
-                                    int(v[0]))
-
-        self.mesh_object.FemMesh = self.mesh
-        self.active_doc.recompute()
-
-    def create_new_material(self):
-        self.new_material_object = MechanicalMaterial.makeMechanicalMaterial('MechanicalMaterial')
-        mat = self.new_material_object.Material
+        fcc_print('Checking FEM new material...')
+        new_material_object = ObjectsFem.makeMaterialSolid('MechanicalMaterial')
+        mat = new_material_object.Material
         mat['Name'] = "Steel-Generic"
         mat['YoungsModulus'] = "200000 MPa"
         mat['PoissonRatio'] = "0.30"
         mat['Density'] = "7900 kg/m^3"
-        self.new_material_object.Material = mat
-
-    def create_fixed_constraint(self):
-        self.fixed_constraint = self.active_doc.addObject("Fem::ConstraintFixed", "FemConstraintFixed")
-        self.fixed_constraint.References = [(self.box, "Face1")]
-
-    def create_force_constraint(self):
-        self.force_constraint = self.active_doc.addObject("Fem::ConstraintForce", "FemConstraintForce")
-        self.force_constraint.References = [(self.box, "Face6")]
-        self.force_constraint.Force = 40000.0
-        self.force_constraint.Direction = (self.box, ["Edge5"])
-        self.force_constraint.Reversed = True
-
-    def create_pressure_constraint(self):
-        self.pressure_constraint = self.active_doc.addObject("Fem::ConstraintPressure", "FemConstraintPressure")
-        self.pressure_constraint.References = [(self.box, "Face2")]
-        self.pressure_constraint.Pressure = 1000.0
-        self.pressure_constraint.Reversed = False
-
-    def force_unix_line_ends(self, line_list):
-        new_line_list = []
-        for l in line_list:
-            if l.endswith("\r\n"):
-                l = l[:-2] + '\n'
-            new_line_list.append(l)
-        return new_line_list
-
-    def compare_inp_files(self, file_name1, file_name2):
-        file1 = open(file_name1, 'r')
-        f1 = file1.readlines()
-        file1.close()
-        lf1 = [l for l in f1 if not l.startswith('**   written ')]
-        lf1 = self.force_unix_line_ends(lf1)
-        file2 = open(file_name2, 'r')
-        f2 = file2.readlines()
-        file2.close()
-        lf2 = [l for l in f2 if not l.startswith('**   written ')]
-        lf2 = self.force_unix_line_ends(lf2)
-        import difflib
-        diff = difflib.unified_diff(lf1, lf2, n=0)
-        result = ''
-        for l in diff:
-            result += l
-        if result:
-            result = "Comparing {} to {} failed!\n".format(file_name1, file_name2) + result
-        return result
-
-    def compare_stats(self, fea, stat_file=None):
-        if stat_file:
-            sf = open(stat_file, 'r')
-            sf_content = sf.readlines()
-            sf.close()
-            sf_content = self.force_unix_line_ends(sf_content)
-        stat_types = ["U1", "U2", "U3", "Uabs", "Sabs"]
-        stats = []
-        for s in stat_types:
-            stats.append("{}: {}\n".format(s, fea.get_stats(s)))
-        if sf_content != stats:
-            fcc_print("Expected stats from {}".format(stat_file))
-            fcc_print(sf_content)
-            fcc_print("Stats read from {}.frd file".format(fea.base_name))
-            fcc_print(stats)
-            return True
-        return False
-
-    def test_new_analysis(self):
-        fcc_print('--------------- Start of FEM tests ---------------')
-        fcc_print('Checking FEM new analysis...')
-        self.create_new_analysis()
-        self.assertTrue(self.analysis, "FemTest of new analysis failed")
-
-        fcc_print('Checking FEM new solver...')
-        self.create_new_solver()
-        self.assertTrue(self.solver_object, "FemTest of new solver failed")
-        self.analysis.Member = self.analysis.Member + [self.solver_object]
-
-        fcc_print('Checking FEM new mesh...')
-        self.create_new_mesh()
-        self.assertTrue(self.mesh, "FemTest of new mesh failed")
-        self.analysis.Member = self.analysis.Member + [self.mesh_object]
-
-        fcc_print('Checking FEM new material...')
-        self.create_new_material()
-        self.assertTrue(self.new_material_object, "FemTest of new material failed")
-        self.analysis.Member = self.analysis.Member + [self.new_material_object]
+        new_material_object.Material = mat
+        self.assertTrue(new_material_object, "FemTest of new material failed")
+        analysis.Member = analysis.Member + [new_material_object]
 
         fcc_print('Checking FEM new fixed constraint...')
-        self.create_fixed_constraint()
-        self.assertTrue(self.fixed_constraint, "FemTest of new fixed constraint failed")
-        self.analysis.Member = self.analysis.Member + [self.fixed_constraint]
+        fixed_constraint = self.active_doc.addObject("Fem::ConstraintFixed", "FemConstraintFixed")
+        fixed_constraint.References = [(box, "Face1")]
+        self.assertTrue(fixed_constraint, "FemTest of new fixed constraint failed")
+        analysis.Member = analysis.Member + [fixed_constraint]
 
         fcc_print('Checking FEM new force constraint...')
-        self.create_force_constraint()
-        self.assertTrue(self.force_constraint, "FemTest of new force constraint failed")
-        self.analysis.Member = self.analysis.Member + [self.force_constraint]
+        force_constraint = self.active_doc.addObject("Fem::ConstraintForce", "FemConstraintForce")
+        force_constraint.References = [(box, "Face6")]
+        force_constraint.Force = 40000.0
+        force_constraint.Direction = (box, ["Edge5"])
+        self.active_doc.recompute()
+        force_constraint.Reversed = True
+        self.active_doc.recompute()
+        self.assertTrue(force_constraint, "FemTest of new force constraint failed")
+        analysis.Member = analysis.Member + [force_constraint]
 
         fcc_print('Checking FEM new pressure constraint...')
-        self.create_pressure_constraint()
-        self.assertTrue(self.pressure_constraint, "FemTest of new pressure constraint failed")
-        self.analysis.Member = self.analysis.Member + [self.pressure_constraint]
+        pressure_constraint = self.active_doc.addObject("Fem::ConstraintPressure", "FemConstraintPressure")
+        pressure_constraint.References = [(box, "Face2")]
+        pressure_constraint.Pressure = 1000.0
+        pressure_constraint.Reversed = False
+        self.assertTrue(pressure_constraint, "FemTest of new pressure constraint failed")
+        analysis.Member = analysis.Member + [pressure_constraint]
 
-        fea = FemToolsCcx.FemToolsCcx(self.analysis, self.solver_object, test_mode=True)
+        fcc_print('Checking FEM new mesh...')
+        from test_files.ccx.cube_mesh import create_nodes_cube, create_elements_cube
+        mesh = Fem.FemMesh()
+        ret = create_nodes_cube(mesh)
+        self.assertTrue(ret, "Import of mesh nodes failed")
+        ret = create_elements_cube(mesh)
+        self.assertTrue(ret, "Import of mesh volumes failed")
+        mesh_object = self.active_doc.addObject('Fem::FemMeshObject', mesh_name)
+        mesh_object.FemMesh = mesh
+        self.assertTrue(mesh, "FemTest of new mesh failed")
+        analysis.Member = analysis.Member + [mesh_object]
+
+        self.active_doc.recompute()
+
+        fea = FemToolsCcx.FemToolsCcx(analysis, solver_object, test_mode=True)
         fcc_print('Setting up working directory {}'.format(static_analysis_dir))
         fea.setup_working_dir(static_analysis_dir)
         self.assertTrue(True if fea.working_dir == static_analysis_dir else False,
@@ -237,7 +447,7 @@ class FemTest(unittest.TestCase):
         self.assertFalse(error, "Writing failed")
 
         fcc_print('Comparing {} to {}/{}.inp'.format(static_analysis_inp_file, static_analysis_dir, mesh_name))
-        ret = self.compare_inp_files(static_analysis_inp_file, static_analysis_dir + "/" + mesh_name + '.inp')
+        ret = compare_inp_files(static_analysis_inp_file, static_analysis_dir + "/" + mesh_name + '.inp')
         self.assertFalse(ret, "FemToolsCcx write_inp_file test failed.\n{}".format(ret))
 
         fcc_print('Setting up working directory to {} in order to read simulated calculations'.format(test_file_dir))
@@ -260,9 +470,15 @@ class FemTest(unittest.TestCase):
         self.assertTrue(fea.results_present, "Cannot read results from {}.frd frd file".format(fea.base_name))
 
         fcc_print('Reading stats from result object for static analysis...')
-        ret = self.compare_stats(fea, static_expected_values)
+        ret = compare_stats(fea, static_expected_values)
         self.assertFalse(ret, "Invalid results read from .frd file")
 
+        fcc_print('Save FreeCAD file for static analysis to {}...'.format(static_save_fc_file))
+        self.active_doc.saveAs(static_save_fc_file)
+
+        # frequency
+        fcc_print('Reset Statik analysis')
+        fea.reset_all()
         fcc_print('Setting analysis type to \'frequency\"')
         fea.set_analysis_type("frequency")
         self.assertTrue(True if fea.analysis_type == 'frequency' else False, "Setting anlysis type to \'frequency\' failed")
@@ -281,7 +497,7 @@ class FemTest(unittest.TestCase):
         self.assertFalse(error, "Writing failed")
 
         fcc_print('Comparing {} to {}/{}.inp'.format(frequency_analysis_inp_file, frequency_analysis_dir, mesh_name))
-        ret = self.compare_inp_files(frequency_analysis_inp_file, frequency_analysis_dir + "/" + mesh_name + '.inp')
+        ret = compare_inp_files(frequency_analysis_inp_file, frequency_analysis_dir + "/" + mesh_name + '.inp')
         self.assertFalse(ret, "FemToolsCcx write_inp_file test failed.\n{}".format(ret))
 
         fcc_print('Setting up working directory to {} in order to read simulated calculations'.format(test_file_dir))
@@ -304,66 +520,38 @@ class FemTest(unittest.TestCase):
         self.assertTrue(fea.results_present, "Cannot read results from {}.frd frd file".format(fea.base_name))
 
         fcc_print('Reading stats from result object for frequency analysis...')
-        ret = self.compare_stats(fea, frequency_expected_values)
+        ret = compare_stats(fea, frequency_expected_values)
         self.assertFalse(ret, "Invalid results read from .frd file")
 
-        fcc_print('--------------- End of FEM tests ---------------')
+        fcc_print('Save FreeCAD file for frequency analysis to {}...'.format(frequency_save_fc_file))
+        self.active_doc.saveAs(frequency_save_fc_file)
 
-    def tearDown(self):
-        FreeCAD.closeDocument("FemTest")
-        pass
+        fcc_print('--------------- End of FEM tests static and frequency analysis ---------------')
 
+    def test_thermomech_analysis(self):
+        fcc_print('--------------- Start of FEM tests ---------------')
+        box = self.active_doc.addObject("Part::Box", "Box")
+        box.Height = 25.4
+        box.Width = 25.4
+        box.Length = 203.2
+        fcc_print('Checking FEM new analysis...')
+        analysis = ObjectsFem.makeAnalysis('Analysis')
+        self.assertTrue(analysis, "FemTest of new analysis failed")
 
-class TherMechFemTest(unittest.TestCase):
+        fcc_print('Checking FEM new solver...')
+        solver_object = ObjectsFem.makeSolverCalculix('CalculiX')
+        solver_object.AnalysisType = 'thermomech'
+        solver_object.GeometricalNonlinearity = 'linear'
+        solver_object.ThermoMechSteadyState = True
+        solver_object.MatrixSolverType = 'default'
+        solver_object.IterationsThermoMechMaximum = 2000
+        solver_object.IterationsControlParameterTimeUse = True
+        self.assertTrue(solver_object, "FemTest of new solver failed")
+        analysis.Member = analysis.Member + [solver_object]
 
-    def setUp(self):
-        try:
-            FreeCAD.setActiveDocument("TherMechFemTest")
-        except:
-            FreeCAD.newDocument("TherMechFemTest")
-        finally:
-            FreeCAD.setActiveDocument("TherMechFemTest")
-        self.active_doc = FreeCAD.ActiveDocument
-        self.box = self.active_doc.addObject("Part::Box", "Box")
-        self.box.Height = 25.4
-        self.box.Width = 25.4
-        self.box.Length = 203.2
-        self.active_doc.recompute()
-
-    def create_new_analysis(self):
-        self.analysis = FemAnalysis.makeFemAnalysis('Analysis')
-        self.active_doc.recompute()
-
-    def create_new_solver(self):
-        self.solver_object = FemSolverCalculix.makeFemSolverCalculix('CalculiX')
-        self.solver_object.GeometricalNonlinearity = 'linear'
-        self.solver_object.ThermoMechSteadyState = True
-        self.solver_object.MatrixSolverType = 'default'
-        self.solver_object.IterationsThermoMechMaximum = 2000
-        self.solver_object.IterationsControlParameterTimeUse = True
-        self.active_doc.recompute()
-
-    def create_new_mesh(self):
-        self.mesh_object = self.active_doc.addObject('Fem::FemMeshObject', mesh_name)
-        self.mesh = Fem.FemMesh()
-        with open(spine_points_file, 'r') as points_file:
-            reader = csv.reader(points_file)
-            for p in reader:
-                self.mesh.addNode(float(p[1]), float(p[2]), float(p[3]), int(p[0]))
-
-        with open(spine_volumes_file, 'r') as volumes_file:
-            reader = csv.reader(volumes_file)
-            for v in reader:
-                self.mesh.addVolume([int(v[2]), int(v[1]), int(v[3]), int(v[4]), int(v[5]),
-                                    int(v[7]), int(v[6]), int(v[9]), int(v[8]), int(v[10])],
-                                    int(v[0]))
-
-        self.mesh_object.FemMesh = self.mesh
-        self.active_doc.recompute()
-
-    def create_new_material(self):
-        self.new_material_object = MechanicalMaterial.makeMechanicalMaterial('MechanicalMaterial')
-        mat = self.new_material_object.Material
+        fcc_print('Checking FEM new material...')
+        new_material_object = ObjectsFem.makeMaterialSolid('MechanicalMaterial')
+        mat = new_material_object.Material
         mat['Name'] = "Steel-Generic"
         mat['YoungsModulus'] = "200000 MPa"
         mat['PoissonRatio'] = "0.30"
@@ -371,115 +559,52 @@ class TherMechFemTest(unittest.TestCase):
         mat['ThermalConductivity'] = "43.27 W/m/K"  # SvdW: Change to Ansys model values
         mat['ThermalExpansionCoefficient'] = "12 um/m/K"
         mat['SpecificHeat'] = "500 J/kg/K"  # SvdW: Change to Ansys model values
-        self.new_material_object.Material = mat
-
-    def create_fixed_constraint(self):
-        self.fixed_constraint = self.active_doc.addObject("Fem::ConstraintFixed", "FemConstraintFixed")
-        self.fixed_constraint.References = [(self.box, "Face1")]
-
-    def create_initialtemperature_constraint(self):
-        self.initialtemperature_constraint = self.active_doc.addObject("Fem::ConstraintInitialTemperature", "FemConstraintInitialTemperature")
-        self.initialtemperature_constraint.initialTemperature = 300.0
-
-    def create_temperature_constraint(self):
-        self.temperature_constraint = self.active_doc.addObject("Fem::ConstraintTemperature", "FemConstraintTemperature")
-        self.temperature_constraint.References = [(self.box, "Face1")]
-        self.temperature_constraint.Temperature = 310.93
-
-    def create_heatflux_constraint(self):
-        self.heatflux_constraint = self.active_doc.addObject("Fem::ConstraintHeatflux", "FemConstraintHeatflux")
-        self.heatflux_constraint.References = [(self.box, "Face3"), (self.box, "Face4"), (self.box, "Face5"), (self.box, "Face6")]
-        self.heatflux_constraint.AmbientTemp = 255.3722
-        self.heatflux_constraint.FilmCoef = 5.678
-
-    def force_unix_line_ends(self, line_list):
-        new_line_list = []
-        for l in line_list:
-            if l.endswith("\r\n"):
-                l = l[:-2] + '\n'
-            new_line_list.append(l)
-        return new_line_list
-
-    def compare_inp_files(self, file_name1, file_name2):
-        file1 = open(file_name1, 'r')
-        f1 = file1.readlines()
-        file1.close()
-        lf1 = [l for l in f1 if not l.startswith('**   written ') if not l.startswith('**   file ')]
-        lf1 = self.force_unix_line_ends(lf1)
-        file2 = open(file_name2, 'r')
-        f2 = file2.readlines()
-        file2.close()
-        lf2 = [l for l in f2 if not l.startswith('**   written ') if not l.startswith('**   file ')]
-        lf2 = self.force_unix_line_ends(lf2)
-        import difflib
-        diff = difflib.unified_diff(lf1, lf2, n=0)
-        result = ''
-        for l in diff:
-            result += l
-        if result:
-            result = "Comparing {} to {} failed!\n".format(file_name1, file_name2) + result
-        return result
-
-    def compare_stats(self, fea, stat_file=None):
-        if stat_file:
-            sf = open(stat_file, 'r')
-            sf_content = sf.readlines()
-            sf.close()
-            sf_content = self.force_unix_line_ends(sf_content)
-        stat_types = ["U1", "U2", "U3", "Uabs", "Sabs"]
-        stats = []
-        for s in stat_types:
-            stats.append("{}: {}\n".format(s, fea.get_stats(s)))
-        if sf_content != stats:
-            fcc_print("Expected stats from {}".format(stat_file))
-            fcc_print(sf_content)
-            fcc_print("Stats read from {}.frd file".format(fea.base_name))
-            fcc_print(stats)
-            return True
-        return False
-
-    def test_new_analysis(self):
-        fcc_print('--------------- Start of FEM tests ---------------')
-        fcc_print('Checking FEM new analysis...')
-        self.create_new_analysis()
-        self.assertTrue(self.analysis, "FemTest of new analysis failed")
-
-        fcc_print('Checking FEM new solver...')
-        self.create_new_solver()
-        self.assertTrue(self.solver_object, "FemTest of new solver failed")
-        self.analysis.Member = self.analysis.Member + [self.solver_object]
-
-        fcc_print('Checking FEM new mesh...')
-        self.create_new_mesh()
-        self.assertTrue(self.mesh, "FemTest of new mesh failed")
-        self.analysis.Member = self.analysis.Member + [self.mesh_object]
-
-        fcc_print('Checking FEM new material...')
-        self.create_new_material()
-        self.assertTrue(self.new_material_object, "FemTest of new material failed")
-        self.analysis.Member = self.analysis.Member + [self.new_material_object]
+        new_material_object.Material = mat
+        self.assertTrue(new_material_object, "FemTest of new material failed")
+        analysis.Member = analysis.Member + [new_material_object]
 
         fcc_print('Checking FEM new fixed constraint...')
-        self.create_fixed_constraint()
-        self.assertTrue(self.fixed_constraint, "FemTest of new fixed constraint failed")
-        self.analysis.Member = self.analysis.Member + [self.fixed_constraint]
+        fixed_constraint = self.active_doc.addObject("Fem::ConstraintFixed", "FemConstraintFixed")
+        fixed_constraint.References = [(box, "Face1")]
+        self.assertTrue(fixed_constraint, "FemTest of new fixed constraint failed")
+        analysis.Member = analysis.Member + [fixed_constraint]
 
         fcc_print('Checking FEM new initial temperature constraint...')
-        self.create_initialtemperature_constraint()
-        self.assertTrue(self.initialtemperature_constraint, "FemTest of new initial temperature constraint failed")
-        self.analysis.Member = self.analysis.Member + [self.initialtemperature_constraint]
+        initialtemperature_constraint = self.active_doc.addObject("Fem::ConstraintInitialTemperature", "FemConstraintInitialTemperature")
+        initialtemperature_constraint.initialTemperature = 300.0
+        self.assertTrue(initialtemperature_constraint, "FemTest of new initial temperature constraint failed")
+        analysis.Member = analysis.Member + [initialtemperature_constraint]
 
         fcc_print('Checking FEM new temperature constraint...')
-        self.create_temperature_constraint()
-        self.assertTrue(self.temperature_constraint, "FemTest of new temperature constraint failed")
-        self.analysis.Member = self.analysis.Member + [self.temperature_constraint]
+        temperature_constraint = self.active_doc.addObject("Fem::ConstraintTemperature", "FemConstraintTemperature")
+        temperature_constraint.References = [(box, "Face1")]
+        temperature_constraint.Temperature = 310.93
+        self.assertTrue(temperature_constraint, "FemTest of new temperature constraint failed")
+        analysis.Member = analysis.Member + [temperature_constraint]
 
         fcc_print('Checking FEM new heatflux constraint...')
-        self.create_heatflux_constraint()
-        self.assertTrue(self.heatflux_constraint, "FemTest of new heatflux constraint failed")
-        self.analysis.Member = self.analysis.Member + [self.heatflux_constraint]
+        heatflux_constraint = self.active_doc.addObject("Fem::ConstraintHeatflux", "FemConstraintHeatflux")
+        heatflux_constraint.References = [(box, "Face3"), (box, "Face4"), (box, "Face5"), (box, "Face6")]
+        heatflux_constraint.AmbientTemp = 255.3722
+        heatflux_constraint.FilmCoef = 5.678
+        self.assertTrue(heatflux_constraint, "FemTest of new heatflux constraint failed")
+        analysis.Member = analysis.Member + [heatflux_constraint]
 
-        fea = FemToolsCcx.FemToolsCcx(self.analysis, test_mode=True)
+        fcc_print('Checking FEM new mesh...')
+        from test_files.ccx.spine_mesh import create_nodes_spine, create_elements_spine
+        mesh = Fem.FemMesh()
+        ret = create_nodes_spine(mesh)
+        self.assertTrue(ret, "Import of mesh nodes failed")
+        ret = create_elements_spine(mesh)
+        self.assertTrue(ret, "Import of mesh volumes failed")
+        mesh_object = self.active_doc.addObject('Fem::FemMeshObject', mesh_name)
+        mesh_object.FemMesh = mesh
+        self.assertTrue(mesh, "FemTest of new mesh failed")
+        analysis.Member = analysis.Member + [mesh_object]
+
+        self.active_doc.recompute()
+
+        fea = FemToolsCcx.FemToolsCcx(analysis, test_mode=True)
         fcc_print('Setting up working directory {}'.format(thermomech_analysis_dir))
         fea.setup_working_dir(thermomech_analysis_dir)
         self.assertTrue(True if fea.working_dir == thermomech_analysis_dir else False,
@@ -500,7 +625,7 @@ class TherMechFemTest(unittest.TestCase):
         self.assertFalse(error, "Writing failed")
 
         fcc_print('Comparing {} to {}/{}.inp'.format(thermomech_analysis_inp_file, thermomech_analysis_dir, mesh_name))
-        ret = self.compare_inp_files(thermomech_analysis_inp_file, thermomech_analysis_dir + "/" + mesh_name + '.inp')
+        ret = compare_inp_files(thermomech_analysis_inp_file, thermomech_analysis_dir + "/" + mesh_name + '.inp')
         self.assertFalse(ret, "FemToolsCcx write_inp_file test failed.\n{}".format(ret))
 
         fcc_print('Setting up working directory to {} in order to read simulated calculations'.format(test_file_dir))
@@ -518,49 +643,403 @@ class TherMechFemTest(unittest.TestCase):
         self.assertTrue(True if fea.inp_file_name == thermomech_analysis_inp_file else False,
                         "Setting inp file name to {} failed".format(thermomech_analysis_inp_file))
 
+        fcc_print('Checking FEM frd file read from thermomech analysis...')
+        fea.load_results()
+        self.assertTrue(fea.results_present, "Cannot read results from {}.frd frd file".format(fea.base_name))
+
+        fcc_print('Reading stats from result object for thermomech analysis...')
+        ret = compare_stats(fea, thermomech_expected_values)
+        self.assertFalse(ret, "Invalid results read from .frd file")
+
+        fcc_print('Save FreeCAD file for thermomech analysis to {}...'.format(thermomech_save_fc_file))
+        self.active_doc.saveAs(thermomech_save_fc_file)
+
+        fcc_print('--------------- End of FEM tests thermomech analysis ---------------')
+
+    def test_Flow1D_thermomech_analysis(self):
+        fcc_print('--------------- Start of 1D Flow FEM tests ---------------')
+        import Draft
+        p1 = FreeCAD.Vector(0, 0, 50)
+        p2 = FreeCAD.Vector(0, 0, -50)
+        p3 = FreeCAD.Vector(0, 0, -4300)
+        p4 = FreeCAD.Vector(4950, 0, -4300)
+        p5 = FreeCAD.Vector(5000, 0, -4300)
+        p6 = FreeCAD.Vector(8535.53, 0, -7835.53)
+        p7 = FreeCAD.Vector(8569.88, 0, -7870.88)
+        p8 = FreeCAD.Vector(12105.41, 0, -11406.41)
+        p9 = FreeCAD.Vector(12140.76, 0, -11441.76)
+        p10 = FreeCAD.Vector(13908.53, 0, -13209.53)
+        p11 = FreeCAD.Vector(13943.88, 0, -13244.88)
+        p12 = FreeCAD.Vector(15046.97, 0, -14347.97)
+        p13 = FreeCAD.Vector(15046.97, 0, -7947.97)
+        p14 = FreeCAD.Vector(15046.97, 0, -7847.97)
+        p15 = FreeCAD.Vector(0, 0, 0)
+        p16 = FreeCAD.Vector(0, 0, -2175)
+        p17 = FreeCAD.Vector(2475, 0, -4300)
+        p18 = FreeCAD.Vector(4975, 0, -4300)
+        p19 = FreeCAD.Vector(6767.765, 0, -6067.765)
+        p20 = FreeCAD.Vector(8552.705, 0, -7853.205)
+        p21 = FreeCAD.Vector(10337.645, 0, -9638.645)
+        p22 = FreeCAD.Vector(12123.085, 0, -11424.085)
+        p23 = FreeCAD.Vector(13024.645, 0, -12325.645)
+        p24 = FreeCAD.Vector(13926.205, 0, -13227.205)
+        p25 = FreeCAD.Vector(14495.425, 0, -13796.425)
+        p26 = FreeCAD.Vector(15046.97, 0, -11147.97)
+        p27 = FreeCAD.Vector(15046.97, 0, -7897.97)
+        points = [p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, p27]
+        line = Draft.makeWire(points, closed=False, face=False, support=None)
+        fcc_print('Checking FEM new analysis...')
+        analysis = ObjectsFem.makeAnalysis('Analysis')
+        self.assertTrue(analysis, "FemTest of new analysis failed")
+
+        fcc_print('Checking FEM new solver...')
+        solver_object = ObjectsFem.makeSolverCalculix('CalculiX')
+        solver_object.AnalysisType = 'thermomech'
+        solver_object.GeometricalNonlinearity = 'linear'
+        solver_object.ThermoMechSteadyState = True
+        solver_object.MatrixSolverType = 'default'
+        solver_object.IterationsThermoMechMaximum = 2000
+        solver_object.IterationsControlParameterTimeUse = False
+        self.assertTrue(solver_object, "FemTest of new solver failed")
+        analysis.Member = analysis.Member + [solver_object]
+
+        fcc_print('Checking FEM new material...')
+        new_material_object = ObjectsFem.makeMaterialFluid('FluidMaterial')
+        mat = new_material_object.Material
+        mat['Name'] = "Water"
+        mat['Density'] = "998 kg/m^3"
+        mat['SpecificHeat'] = "4.182 J/kg/K"
+        mat['DynamicViscosity'] = "1.003e-3 kg/m/s"
+        mat['VolumetricThermalExpansionCoefficient'] = "2.07e-4 m/m/K"
+        mat['ThermalConductivity'] = "0.591 W/m/K"
+        new_material_object.Material = mat
+        self.assertTrue(new_material_object, "FemTest of new material failed")
+        analysis.Member = analysis.Member + [new_material_object]
+
+        fcc_print('Checking FEM Flow1D inlet constraint...')
+        Flow1d_inlet = self.active_doc.addObject("Fem::FeaturePython", "ElementFluid1D")
+        import PyObjects._FemElementFluid1D
+        PyObjects._FemElementFluid1D._FemElementFluid1D(Flow1d_inlet)
+        Flow1d_inlet.SectionType = 'Liquid'
+        Flow1d_inlet.LiquidSectionType = 'PIPE INLET'
+        Flow1d_inlet.InletPressure = 0.1
+        Flow1d_inlet.References = [(line, "Edge1")]
+        self.assertTrue(Flow1d_inlet, "FemTest of new Flow1D inlet constraint failed")
+        analysis.Member = analysis.Member + [Flow1d_inlet]
+
+        fcc_print('Checking FEM new Flow1D entrance constraint...')
+        Flow1d_entrance = self.active_doc.addObject("Fem::FeaturePython", "ElementFluid1D")
+        import PyObjects._FemElementFluid1D
+        PyObjects._FemElementFluid1D._FemElementFluid1D(Flow1d_entrance)
+        Flow1d_entrance.SectionType = 'Liquid'
+        Flow1d_entrance.LiquidSectionType = 'PIPE ENTRANCE'
+        Flow1d_entrance.EntrancePipeArea = 31416.00
+        Flow1d_entrance.EntranceArea = 25133.00
+        Flow1d_entrance.References = [(line, "Edge2")]
+        self.assertTrue(Flow1d_entrance, "FemTest of new Flow1D entrance constraint failed")
+        analysis.Member = analysis.Member + [Flow1d_entrance]
+
+        fcc_print('Checking FEM new Flow1D manning constraint...')
+        Flow1d_manning = self.active_doc.addObject("Fem::FeaturePython", "ElementFluid1D")
+        import PyObjects._FemElementFluid1D
+        PyObjects._FemElementFluid1D._FemElementFluid1D(Flow1d_manning)
+        Flow1d_manning.SectionType = 'Liquid'
+        Flow1d_manning.LiquidSectionType = 'PIPE MANNING'
+        Flow1d_manning.ManningArea = 31416
+        Flow1d_manning.ManningRadius = 50
+        Flow1d_manning.ManningCoefficient = 0.002
+        Flow1d_manning.References = [(line, "Edge3"), (line, "Edge5")]
+        self.assertTrue(Flow1d_manning, "FemTest of new Flow1D manning constraint failed")
+        analysis.Member = analysis.Member + [Flow1d_manning]
+
+        fcc_print('Checking FEM new Flow1D bend constraint...')
+        Flow1d_bend = self.active_doc.addObject("Fem::FeaturePython", "ElementFluid1D")
+        import PyObjects._FemElementFluid1D
+        PyObjects._FemElementFluid1D._FemElementFluid1D(Flow1d_bend)
+        Flow1d_bend.SectionType = 'Liquid'
+        Flow1d_bend.LiquidSectionType = 'PIPE BEND'
+        Flow1d_bend.BendPipeArea = 31416
+        Flow1d_bend.BendRadiusDiameter = 1.5
+        Flow1d_bend.BendAngle = 45
+        Flow1d_bend.BendLossCoefficient = 0.4
+        Flow1d_bend.References = [(line, "Edge4")]
+        self.assertTrue(Flow1d_bend, "FemTest of new Flow1D bend constraint failed")
+        analysis.Member = analysis.Member + [Flow1d_bend]
+
+        fcc_print('Checking FEM new Flow1D enlargement constraint...')
+        Flow1d_enlargement = self.active_doc.addObject("Fem::FeaturePython", "ElementFluid1D")
+        import PyObjects._FemElementFluid1D
+        PyObjects._FemElementFluid1D._FemElementFluid1D(Flow1d_enlargement)
+        Flow1d_enlargement.SectionType = 'Liquid'
+        Flow1d_enlargement.LiquidSectionType = 'PIPE ENLARGEMENT'
+        Flow1d_enlargement.EnlargeArea1 = 31416.00
+        Flow1d_enlargement.EnlargeArea2 = 70686.00
+        Flow1d_enlargement.References = [(line, "Edge6")]
+        self.assertTrue(Flow1d_enlargement, "FemTest of new Flow1D enlargement constraint failed")
+        analysis.Member = analysis.Member + [Flow1d_enlargement]
+
+        fcc_print('Checking FEM new Flow1D manning constraint...')
+        Flow1d_manning1 = self.active_doc.addObject("Fem::FeaturePython", "ElementFluid1D")
+        import PyObjects._FemElementFluid1D
+        PyObjects._FemElementFluid1D._FemElementFluid1D(Flow1d_manning1)
+        Flow1d_manning1.SectionType = 'Liquid'
+        Flow1d_manning1.LiquidSectionType = 'PIPE MANNING'
+        Flow1d_manning1.ManningArea = 70686.00
+        Flow1d_manning1.ManningRadius = 75
+        Flow1d_manning1.ManningCoefficient = 0.002
+        Flow1d_manning1.References = [(line, "Edge7")]
+        self.assertTrue(Flow1d_manning1, "FemTest of new Flow1D manning constraint failed")
+        analysis.Member = analysis.Member + [Flow1d_manning1]
+
+        fcc_print('Checking FEM new Flow1D contraction constraint...')
+        Flow1d_contraction = self.active_doc.addObject("Fem::FeaturePython", "ElementFluid1D")
+        import PyObjects._FemElementFluid1D
+        PyObjects._FemElementFluid1D._FemElementFluid1D(Flow1d_contraction)
+        Flow1d_contraction.SectionType = 'Liquid'
+        Flow1d_contraction.LiquidSectionType = 'PIPE CONTRACTION'
+        Flow1d_contraction.ContractArea1 = 70686
+        Flow1d_contraction.ContractArea2 = 17671
+        Flow1d_contraction.References = [(line, "Edge8")]
+        self.assertTrue(Flow1d_contraction, "FemTest of new Flow1D contraction constraint failed")
+        analysis.Member = analysis.Member + [Flow1d_contraction]
+
+        fcc_print('Checking FEM new Flow1D manning constraint...')
+        Flow1d_manning2 = self.active_doc.addObject("Fem::FeaturePython", "ElementFluid1D")
+        import PyObjects._FemElementFluid1D
+        PyObjects._FemElementFluid1D._FemElementFluid1D(Flow1d_manning2)
+        Flow1d_manning2.SectionType = 'Liquid'
+        Flow1d_manning2.LiquidSectionType = 'PIPE MANNING'
+        Flow1d_manning2.ManningArea = 17671.00
+        Flow1d_manning2.ManningRadius = 37.5
+        Flow1d_manning2.ManningCoefficient = 0.002
+        Flow1d_manning2.References = [(line, "Edge11"), (line, "Edge9")]
+        self.assertTrue(Flow1d_manning2, "FemTest of new Flow1D manning constraint failed")
+        analysis.Member = analysis.Member + [Flow1d_manning2]
+
+        fcc_print('Checking FEM new Flow1D gate valve constraint...')
+        Flow1d_gate_valve = self.active_doc.addObject("Fem::FeaturePython", "ElementFluid1D")
+        import PyObjects._FemElementFluid1D
+        PyObjects._FemElementFluid1D._FemElementFluid1D(Flow1d_gate_valve)
+        Flow1d_gate_valve.SectionType = 'Liquid'
+        Flow1d_gate_valve.LiquidSectionType = 'PIPE GATE VALVE'
+        Flow1d_gate_valve.GateValvePipeArea = 17671
+        Flow1d_gate_valve.GateValveClosingCoeff = 0.5
+        Flow1d_gate_valve.References = [(line, "Edge10")]
+        self.assertTrue(Flow1d_gate_valve, "FemTest of new Flow1D gate valve constraint failed")
+        analysis.Member = analysis.Member + [Flow1d_gate_valve]
+
+        fcc_print('Checking FEM new Flow1D enlargement constraint...')
+        Flow1d_enlargement1 = self.active_doc.addObject("Fem::FeaturePython", "ElementFluid1D")
+        import PyObjects._FemElementFluid1D
+        PyObjects._FemElementFluid1D._FemElementFluid1D(Flow1d_enlargement1)
+        Flow1d_enlargement1.SectionType = 'Liquid'
+        Flow1d_enlargement1.LiquidSectionType = 'PIPE ENLARGEMENT'
+        Flow1d_enlargement1.EnlargeArea1 = 17671
+        Flow1d_enlargement1.EnlargeArea2 = 1e12
+        Flow1d_enlargement1.References = [(line, "Edge12")]
+        self.assertTrue(Flow1d_enlargement1, "FemTest of new Flow1D enlargement constraint failed")
+        analysis.Member = analysis.Member + [Flow1d_enlargement1]
+
+        fcc_print('Checking FEM Flow1D outlet constraint...')
+        Flow1d_outlet = self.active_doc.addObject("Fem::FeaturePython", "ElementFluid1D")
+        import PyObjects._FemElementFluid1D
+        PyObjects._FemElementFluid1D._FemElementFluid1D(Flow1d_outlet)
+        Flow1d_outlet.SectionType = 'Liquid'
+        Flow1d_outlet.LiquidSectionType = 'PIPE OUTLET'
+        Flow1d_outlet.OutletPressure = 0.1
+        Flow1d_outlet.References = [(line, "Edge13")]
+        self.assertTrue(Flow1d_outlet, "FemTest of new Flow1D inlet constraint failed")
+        analysis.Member = analysis.Member + [Flow1d_outlet]
+
+        fcc_print('Checking FEM self weight constraint...')
+        Flow1d_self_weight = self.active_doc.addObject("Fem::FeaturePython", "ConstraintSelfWeight")
+        import PyObjects._FemConstraintSelfWeight
+        PyObjects._FemConstraintSelfWeight._FemConstraintSelfWeight(Flow1d_self_weight)
+        Flow1d_self_weight.Gravity_x = 0.0
+        Flow1d_self_weight.Gravity_y = 0.0
+        Flow1d_self_weight.Gravity_z = -1.0
+        self.assertTrue(Flow1d_outlet, "FemTest of new Flow1D self weight constraint failed")
+        analysis.Member = analysis.Member + [Flow1d_self_weight]
+
+        fcc_print('Checking FEM new mesh...')
+        from test_files.ccx.Flow1D_mesh import create_nodes_Flow1D, create_elements_Flow1D
+        mesh = Fem.FemMesh()
+        ret = create_nodes_Flow1D(mesh)
+        self.assertTrue(ret, "Import of mesh nodes failed")
+        ret = create_elements_Flow1D(mesh)
+        self.assertTrue(ret, "Import of mesh volumes failed")
+        mesh_object = self.active_doc.addObject('Fem::FemMeshObject', mesh_name)
+        mesh_object.FemMesh = mesh
+        self.assertTrue(mesh, "FemTest of new mesh failed")
+        analysis.Member = analysis.Member + [mesh_object]
+
+        self.active_doc.recompute()
+
+        fea = FemToolsCcx.FemToolsCcx(analysis, test_mode=True)
+        fcc_print('Setting up working directory {}'.format(Flow1D_thermomech_analysis_dir))
+        fea.setup_working_dir(Flow1D_thermomech_analysis_dir)
+        self.assertTrue(True if fea.working_dir == Flow1D_thermomech_analysis_dir else False,
+                        "Setting working directory {} failed".format(Flow1D_thermomech_analysis_dir))
+
+        fcc_print('Setting analysis type to \'thermomech\"')
+        fea.set_analysis_type("thermomech")
+        self.assertTrue(True if fea.analysis_type == 'thermomech' else False, "Setting anlysis type to \'thermomech\' failed")
+
+        fcc_print('Checking FEM inp file prerequisites for thermo-mechanical analysis...')
+        error = fea.check_prerequisites()
+        self.assertFalse(error, "FemToolsCcx check_prerequisites returned error message: {}".format(error))
+
+        fcc_print('Checking FEM inp file write...')
+
+        fcc_print('Writing {}/{}.inp for thermomech analysis'.format(Flow1D_thermomech_analysis_dir, mesh_name))
+        error = fea.write_inp_file()
+        self.assertFalse(error, "Writing failed")
+
+        fcc_print('Comparing {} to {}/{}.inp'.format(Flow1D_thermomech_analysis_inp_file, Flow1D_thermomech_analysis_dir, mesh_name))
+        ret = compare_inp_files(Flow1D_thermomech_analysis_inp_file, Flow1D_thermomech_analysis_dir + "/" + mesh_name + '.inp')
+        self.assertFalse(ret, "FemToolsCcx write_inp_file test failed.\n{}".format(ret))
+
+        fcc_print('Setting up working directory to {} in order to read simulated calculations'.format(test_file_dir))
+        fea.setup_working_dir(test_file_dir)
+        self.assertTrue(True if fea.working_dir == test_file_dir else False,
+                        "Setting working directory {} failed".format(test_file_dir))
+
+        fcc_print('Setting base name to read test {}.frd file...'.format('Flow1D_thermomech'))
+        fea.set_base_name(Flow1D_thermomech_base_name)
+        self.assertTrue(True if fea.base_name == Flow1D_thermomech_base_name else False,
+                        "Setting base name to {} failed".format(Flow1D_thermomech_base_name))
+
+        fcc_print('Setting inp file name to read test {}.frd file...'.format('Flow1D_thermomech'))
+        fea.set_inp_file_name()
+        self.assertTrue(True if fea.inp_file_name == Flow1D_thermomech_analysis_inp_file else False,
+                        "Setting inp file name to {} failed".format(Flow1D_thermomech_analysis_inp_file))
+
+        fcc_print('Checking FEM frd file read from Flow1D thermomech analysis...')
+        fea.load_results()
+        self.assertTrue(fea.results_present, "Cannot read results from {}.frd frd file".format(fea.base_name))
+
+        fcc_print('Reading stats from result object for Flow1D thermomech analysis...')
+        ret = compare_stats(fea, Flow1D_thermomech_expected_values, stat_types, 'CalculiX_thermomech_time_1_0_results')
+        self.assertFalse(ret, "Invalid results read from .frd file")
+
+        fcc_print('Save FreeCAD file for thermomech analysis to {}...'.format(Flow1D_thermomech_save_fc_file))
+        self.active_doc.saveAs(Flow1D_thermomech_save_fc_file)
+
+        fcc_print('--------------- End of FEM tests FLow 1D thermomech analysis ---------------')
+
     def tearDown(self):
-        FreeCAD.closeDocument("TherMechFemTest")
+        FreeCAD.closeDocument("FemTest")
         pass
 
 
 # helpers
-def open_cube_test():
-    cube_file = test_file_dir + '/cube.fcstd'
-    FreeCAD.open(cube_file)
+def fcc_print(message):
+    FreeCAD.Console.PrintMessage('{} \n'.format(message))
 
 
-def create_cube_test_results():
-    import os
+def compare_inp_files(file_name1, file_name2):
+    file1 = open(file_name1, 'r')
+    f1 = file1.readlines()
+    file1.close()
+    # l.startswith('17671.0,1') is a temporary workaround for python3 problem with 1DFlow input
+    # TODO as soon as the 1DFlow result reading is fixed, this should be triggered in the 1DFlow unit test
+    lf1 = [l for l in f1 if not (l.startswith('**   written ') or l.startswith('**   file ') or l.startswith('17671.0,1'))]
+    lf1 = force_unix_line_ends(lf1)
+    file2 = open(file_name2, 'r')
+    f2 = file2.readlines()
+    file2.close()
+    # TODO see comment on file1
+    lf2 = [l for l in f2 if not (l.startswith('**   written ') or l.startswith('**   file ') or l.startswith('17671.0,1'))]
+    lf2 = force_unix_line_ends(lf2)
+    import difflib
+    diff = difflib.unified_diff(lf1, lf2, n=0)
+    result = ''
+    for l in diff:
+        result += l
+    if result:
+        result = "Comparing {} to {} failed!\n".format(file_name1, file_name2) + result
+    return result
+
+
+def compare_stats(fea, stat_file=None, loc_stat_types=None, res_obj_name=None):
+    if not loc_stat_types:
+        loc_stat_types = stat_types
+    if stat_file:
+        sf = open(stat_file, 'r')
+        sf_content = []
+        for l in sf.readlines():
+            for st in loc_stat_types:
+                if l.startswith(st):
+                    sf_content.append(l)
+        sf.close()
+        sf_content = force_unix_line_ends(sf_content)
+    stats = []
+    for s in loc_stat_types:
+        if res_obj_name:
+            statval = fea.get_stats(s, res_obj_name)
+        else:
+            statval = fea.get_stats(s)
+        stats.append("{0}: ({1:.14g}, {2:.14g}, {3:.14g})\n".format(s, statval[0], statval[1], statval[2]))
+    if sf_content != stats:
+        fcc_print("Expected stats from {}".format(stat_file))
+        fcc_print(sf_content)
+        fcc_print("Stats read from {}.frd file".format(fea.base_name))
+        fcc_print(stats)
+        return True
+    return False
+
+
+def force_unix_line_ends(line_list):
+    new_line_list = []
+    for l in line_list:
+        if l.endswith("\r\n"):
+            l = l[:-2] + '\n'
+        new_line_list.append(l)
+    return new_line_list
+
+
+def runTestFem():
+    '''run FEM unit test
+    for more information on how to run a specific test class or a test def see
+    file src/Mod/Test/__init__
+    https://forum.freecadweb.org/viewtopic.php?f=10&t=22190#p175546
+    '''
+    import Test
+    import sys
+    current_module = sys.modules[__name__]
+    Test.runTestsFromModule(current_module)
+
+
+def create_test_results():
+    # run FEM unit tests
+    runTestFem()
+
     import shutil
-    cube_file = test_file_dir + '/cube.fcstd'
-
-    FreeCAD.open(cube_file)
     import FemGui
-    FemGui.setActiveAnalysis(FreeCAD.ActiveDocument.MechanicalAnalysis)
-    import FemToolsCcx
+
+    # static and frequency cube
+    FreeCAD.open(static_save_fc_file)
+    FemGui.setActiveAnalysis(FreeCAD.ActiveDocument.Analysis)
     fea = FemToolsCcx.FemToolsCcx()
 
     # static
     fea.reset_all()
     fea.run()
-
     fea.load_results()
-    stat_types = ["U1", "U2", "U3", "Uabs", "Sabs"]
     stats_static = []  # we only have one result object so we are fine
     for s in stat_types:
-        stats_static.append("{}: {}\n".format(s, fea.get_stats(s)))
-    static_expected_values_file = temp_dir + '/cube_static_expected_values'
+        statval = fea.get_stats(s)
+        stats_static.append("{0}: ({1:.14g}, {2:.14g}, {3:.14g})\n".format(s, statval[0], statval[1], statval[2]))
+    static_expected_values_file = static_analysis_dir + 'cube_static_expected_values'
     f = open(static_expected_values_file, 'w')
     for s in stats_static:
         f.write(s)
     f.close()
-
     # could be added in FemToolsCcx to the self object as an Attribut
     frd_result_file = os.path.splitext(fea.inp_file_name)[0] + '.frd'
     dat_result_file = os.path.splitext(fea.inp_file_name)[0] + '.dat'
-
-    frd_static_test_result_file = temp_dir + '/cube_static.frd'
-    dat_static_test_result_file = temp_dir + '/cube_static.dat'
+    frd_static_test_result_file = static_analysis_dir + 'cube_static.frd'
+    dat_static_test_result_file = static_analysis_dir + 'cube_static.dat'
     shutil.copyfile(frd_result_file, frd_static_test_result_file)
     shutil.copyfile(dat_result_file, dat_static_test_result_file)
 
@@ -569,36 +1048,83 @@ def create_cube_test_results():
     fea.set_analysis_type('frequency')
     fea.solver.EigenmodesCount = 1  # we should only have one result object
     fea.run()
-
     fea.load_results()
     stats_frequency = []  # since we set eigenmodeno. we only have one result object so we are fine
     for s in stat_types:
-        stats_frequency.append("{}: {}\n".format(s, fea.get_stats(s)))
-    frequency_expected_values_file = temp_dir + '/cube_frequency_expected_values'
+        statval = fea.get_stats(s)
+        stats_frequency.append("{0}: ({1:.14g}, {2:.14g}, {3:.14g})\n".format(s, statval[0], statval[1], statval[2]))
+    frequency_expected_values_file = frequency_analysis_dir + 'cube_frequency_expected_values'
     f = open(frequency_expected_values_file, 'w')
     for s in stats_frequency:
         f.write(s)
     f.close()
-
-    frd_frequency_test_result_file = temp_dir + '/cube_frequency.frd'
-    dat_frequency_test_result_file = temp_dir + '/cube_frequency.dat'
+    frd_frequency_test_result_file = frequency_analysis_dir + 'cube_frequency.frd'
+    dat_frequency_test_result_file = frequency_analysis_dir + 'cube_frequency.dat'
     shutil.copyfile(frd_result_file, frd_frequency_test_result_file)
     shutil.copyfile(dat_result_file, dat_frequency_test_result_file)
 
-    print('Results copied to: ' + temp_dir)
+    # thermomech
+    FreeCAD.open(thermomech_save_fc_file)
+    FemGui.setActiveAnalysis(FreeCAD.ActiveDocument.Analysis)
+    fea = FemToolsCcx.FemToolsCcx()
+    fea.reset_all()
+    fea.run()
+    fea.load_results()
+    stats_thermomech = []  # we only have one result object so we are fine
+    for s in stat_types:
+        statval = fea.get_stats(s)
+        stats_thermomech.append("{0}: ({1:.14g}, {2:.14g}, {3:.14g})\n".format(s, statval[0], statval[1], statval[2]))
+    thermomech_expected_values_file = thermomech_analysis_dir + 'spine_thermomech_expected_values'
+    f = open(thermomech_expected_values_file, 'w')
+    for s in stats_thermomech:
+        f.write(s)
+    f.close()
+    # could be added in FemToolsCcx to the self object as an Attribut
+    frd_result_file = os.path.splitext(fea.inp_file_name)[0] + '.frd'
+    dat_result_file = os.path.splitext(fea.inp_file_name)[0] + '.dat'
+    frd_thermomech_test_result_file = thermomech_analysis_dir + 'spine_thermomech.frd'
+    dat_thermomech_test_result_file = thermomech_analysis_dir + 'spine_thermomech.dat'
+    shutil.copyfile(frd_result_file, frd_thermomech_test_result_file)
+    shutil.copyfile(dat_result_file, dat_thermomech_test_result_file)
+    print('Results copied to the appropriate FEM test dirs in: ' + temp_dir)
 
+    # Flow1D
+    FreeCAD.open(Flow1D_thermomech_save_fc_file)
+    FemGui.setActiveAnalysis(FreeCAD.ActiveDocument.Analysis)
+    fea = FemToolsCcx.FemToolsCcx()
+    fea.reset_all()
+    fea.run()
+    fea.load_results()
+    stats_flow1D = []  # be carefule if we have more than one result object !
+    for s in stat_types:
+        statval = fea.get_stats(s, 'CalculiX_thermomech_time_1_0_results')
+        stats_flow1D.append("{0}: ({1:.14g}, {2:.14g}, {3:.14g})\n".format(s, statval[0], statval[1], statval[2]))
+    Flow1D_thermomech_expected_values_file = Flow1D_thermomech_analysis_dir + 'Flow1D_thermomech_expected_values'
+    f = open(Flow1D_thermomech_expected_values_file, 'w')
+    for s in stats_flow1D:
+        f.write(s)
+    f.close()
+    # could be added in FemToolsCcx to the self object as an Attribut
+    frd_result_file = os.path.splitext(fea.inp_file_name)[0] + '.frd'
+    dat_result_file = os.path.splitext(fea.inp_file_name)[0] + '.dat'
+    frd_Flow1D_thermomech_test_result_file = Flow1D_thermomech_analysis_dir + 'Flow1D_thermomech.frd'
+    dat_Flow1D_thermomech_test_result_file = Flow1D_thermomech_analysis_dir + 'Flow1D_thermomech.dat'
+    shutil.copyfile(frd_result_file, frd_Flow1D_thermomech_test_result_file)
+    shutil.copyfile(dat_result_file, dat_Flow1D_thermomech_test_result_file)
+    print('Flow1D thermomech results copied to the appropriate FEM test dirs in: ' + temp_dir)
 
 '''
-update the results in FEM untit tests:
-start FreeCAD
+update the results of FEM unit tests:
 
 import TestFem
-TestFem.create_cube_test_results()
+TestFem.create_test_results()
 
-copy result files from /tmp into the src dirctory
+copy result files from your_temp_directory/FEM_unittests/   test directories into the src dirctory
+compare the results with git difftool
 run make
 start FreeCAD and run FEM unit test
 if FEM unit test is fine --> commit new FEM unit test results
 
 TODO compare the inp file of the helper with the inp file of FEM unit tests
+TODO the better way: move the result creation inside the TestFem and add some preference to deactivate this because it needs ccx
 '''

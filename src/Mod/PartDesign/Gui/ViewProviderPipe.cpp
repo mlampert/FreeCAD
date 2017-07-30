@@ -56,9 +56,20 @@ ViewProviderPipe::~ViewProviderPipe()
 std::vector<App::DocumentObject*> ViewProviderPipe::claimChildren(void)const
 {
     std::vector<App::DocumentObject*> temp;
-    App::DocumentObject* sketch = static_cast<PartDesign::Pipe*>(getObject())->getVerifiedSketch(true);
+
+    PartDesign::Pipe* pcPipe = static_cast<PartDesign::Pipe*>(getObject());
+
+    App::DocumentObject* sketch = pcPipe->getVerifiedSketch(true);
     if (sketch != NULL)
         temp.push_back(sketch);
+
+    App::DocumentObject* spine = pcPipe->Spine.getValue();
+    if (spine != NULL)
+        temp.push_back(spine);
+
+    App::DocumentObject* auxspine = pcPipe->AuxillerySpine.getValue();
+    if (auxspine != NULL)
+        temp.push_back(auxspine);
 
     return temp;
 }
@@ -141,7 +152,7 @@ void ViewProviderPipe::highlightReferences(const bool on, bool auxillery)
 
             for (std::string e : edges) {
                 int idx = std::stoi(e.substr(4)) - 1;
-                assert ( idx > 0 );
+                assert ( idx >= 0 );
                 if ( idx < (ssize_t) colors.size() )
                     colors[idx] = App::Color(1.0,0.0,1.0); // magenta
             }

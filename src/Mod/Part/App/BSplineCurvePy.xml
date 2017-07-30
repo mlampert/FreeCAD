@@ -15,25 +15,32 @@
 			<Author Licence="LGPL" Name="Werner Mayer" EMail="wmayer@users.sourceforge.net" />
 			<UserDocu>Describes a B-Spline curve in 3D space</UserDocu>
 		</Documentation>
-		<Attribute Name="Degree" ReadOnly="true">
+        <Methode Name="__reduce__" Const="true">
+            <Documentation>
+                <UserDocu>__reduce__()
+Serialization of Part.BSplineCurve objects
+                </UserDocu>
+            </Documentation>
+        </Methode>
+        <Attribute Name="Degree" ReadOnly="true">
 			<Documentation>
 				<UserDocu>Returns the polynomial degree of this B-Spline curve.</UserDocu>
 			</Documentation>
-			<Parameter Name="Degree" Type="Int"/>
+			<Parameter Name="Degree" Type="Long"/>
 		</Attribute>
 		<Attribute Name="MaxDegree" ReadOnly="true">
 			<Documentation>
 				<UserDocu>Returns the value of the maximum polynomial degree of any
 B-Spline curve curve. This value is 25.</UserDocu>
 			</Documentation>
-			<Parameter Name="MaxDegree" Type="Int"/>
+			<Parameter Name="MaxDegree" Type="Long"/>
 		</Attribute>
 		<Attribute Name="NbPoles" ReadOnly="true">
 			<Documentation>
 				<UserDocu>Returns the number of poles of this B-Spline curve.
 				</UserDocu>
 			</Documentation>
-			<Parameter Name="NbPoles" Type="Int"/>
+			<Parameter Name="NbPoles" Type="Long"/>
 		</Attribute>
 		<Attribute Name="NbKnots" ReadOnly="true">
 			<Documentation>
@@ -41,7 +48,7 @@ B-Spline curve curve. This value is 25.</UserDocu>
 					Returns the number of knots of this B-Spline curve.
 				</UserDocu>
 			</Documentation>
-			<Parameter Name="NbPoles" Type="Int"/>
+			<Parameter Name="NbPoles" Type="Long"/>
 		</Attribute>
 		<Attribute Name="StartPoint" ReadOnly="true">
 			<Documentation>
@@ -300,7 +307,7 @@ from the knots table of this B-Spline curve.</UserDocu>
 					Replaces this B-Spline curve by approximating a set of points.
 					The function accepts keywords as arguments.
 
-					approximate2(Points = list_of_points) 
+					approximate(Points = list_of_points) 
 
 					Optional arguments :
 
@@ -315,7 +322,7 @@ from the knots table of this B-Spline curve.</UserDocu>
 					points using variational smoothing algorithm, which tries to minimize 
 					additional criterium: 
 					LengthWeight*CurveLength + CurvatureWeight*Curvature + TorsionWeight*Torsion
-					Continuity must be C0, C1 or C2, else defaults to C2.
+                                        Continuity must be C0, C1(with DegMax >= 3) or C2(with DegMax >= 5).
 
 					Parameters = list of floats : knot sequence of the approximated points.
 					This argument is only used if the weights above are all null.

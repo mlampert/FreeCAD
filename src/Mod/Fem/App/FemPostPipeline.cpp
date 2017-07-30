@@ -35,6 +35,7 @@
 #include <App/Document.h>
 #include <SMESH_Mesh.hxx>
 #include <App/DocumentObjectPy.h>
+#include <Mod/Fem/App/FemPostPipelinePy.h>
 
 #include <vtkDataSetReader.h>
 #include <vtkGeometryFilter.h>
@@ -60,7 +61,7 @@ FemPostPipeline::FemPostPipeline()
     ADD_PROPERTY_TYPE(Filter, (0), "Pipeline", App::Prop_None, "The filter used in in this pipeline");
     ADD_PROPERTY_TYPE(Functions, (0), "Pipeline", App::Prop_Hidden, "The function provider which groups all pipeline functions");
     ADD_PROPERTY_TYPE(Mode,(long(0)), "Pipeline", App::Prop_None, "Selects the pipeline data transition mode. In serial every filter"
-                                                              "gets the output of the previous one as input, in parrallel every"
+                                                              "gets the output of the previous one as input, in parallel every"
                                                               "filter gets the pipelien source as input.");
     Mode.setEnums(ModeEnums);
 }
@@ -116,11 +117,12 @@ DocumentObjectExecReturn* FemPostPipeline::execute(void) {
 bool FemPostPipeline::canRead(Base::FileInfo File) {
 
     if (File.hasExtension("vtk") ||
+        // from FemResult only unstructural mesh is supported in femvtktoools.cpp
         File.hasExtension("vtp") ||
         File.hasExtension("vts") ||
         File.hasExtension("vtr") ||
-        File.hasExtension("vtu") ||
-        File.hasExtension("vti"))
+        File.hasExtension("vti") ||
+        File.hasExtension("vtu"))
         return true;
 
     return false;
@@ -244,9 +246,10 @@ bool FemPostPipeline::holdsPostObject(FemPostObject* obj) {
 }
 
 void FemPostPipeline::load(FemResultObject* res) {
-
-    if(!res->Mesh.getValue() || !res->Mesh.getValue()->isDerivedFrom(Fem::FemMeshObject::getClassTypeId()))
+    if(!res->Mesh.getValue() || !res->Mesh.getValue()->isDerivedFrom(Fem::FemMeshObject::getClassTypeId())) {
+        Base::Console().Warning("Mesh of result object is empty or not derived from Fem::FemMeshObject\n");
         return;
+    }
 
     //first copy the mesh over
     //########################
@@ -256,7 +259,7 @@ void FemPostPipeline::load(FemResultObject* res) {
 
     //Now copy the point data over
     //############################
-    if(res->getPropertyByName("Velocity")){
+    if(res->getPropertyByName("Velocity")){  // TODO: consider better way to detect result type, res->Type == "CfdResult"
         FemVTKTools::exportFluidicResult(res, grid);
     }
     else{
@@ -264,4 +267,13 @@ void FemPostPipeline::load(FemResultObject* res) {
     }
 
     Data.setValue(grid);
+}
+
+PyObject* FemPostPipeline::getPyObject(void)
+{
+    if (PythonObject.is(Py::_None())) {
+        // ref counter is set to 1
+        PythonObject = Py::Object(new FemPostPipelinePy(this),true);
+    }
+    return Py::new_reference_to(PythonObject);
 }

@@ -49,20 +49,26 @@ public:
     /** Adds an object of \a sType with \a pObjectName to the document this group belongs to and
      * append it to this group as well.
      */
-    DocumentObject *addObject(const char* sType, const char* pObjectName);
-    /* Adds the object \a obj to this group.
+    virtual DocumentObject *addObject(const char* sType, const char* pObjectName);
+    /* Adds the object \a obj to this group. Returns all objects that have been added.
      */
-    void addObject(DocumentObject* obj);
+    virtual std::vector<DocumentObject*> addObject(DocumentObject* obj);
+    /* Adds the objects \a objs to this group. Returns all objects that have been added.
+     */
+    virtual std::vector<DocumentObject*> addObjects(std::vector<DocumentObject*> obj);
     /*override this function if you want only special objects
      */
-    virtual bool allowObject(DocumentObject* ) {return true;};
+    virtual bool allowObject(DocumentObject* ) {return true;}
     
-    /** Removes an object from this group.
+    /** Removes an object from this group. Returns all objects that have been removed.
      */
-    void removeObject(DocumentObject* obj);
+    virtual std::vector<DocumentObject*> removeObject(DocumentObject* obj);
+    /** Removes objects from this group. Returns all objects that have been removed.
+     */
+    virtual std::vector<DocumentObject*> removeObjects(std::vector<DocumentObject*> obj);
     /** Removes all children objects from this group and the document.
      */
-    void removeObjectsFromDocument();
+    virtual void removeObjectsFromDocument();
     /** Returns the object of this group with \a Name. If the group doesn't have such an object 0 is returned.
      * @note This method might return 0 even if the document this group belongs to contains an object with this name.
      */
@@ -88,13 +94,17 @@ public:
      */
     int countObjectsOfType(const Base::Type& typeId) const;
     /** Returns the object group of the document which the given object \a obj is part of.
-     * In case this object is not part of a group 0 is returned.
+     * In case this object is not part of a group 0 is returned. 
+     * @note This only returns objects that are normal groups, not any special derived type 
+     * like GeoFeatureGroups or OriginGroups. To retrieve those please use their appropriate functions
      */
     static DocumentObject* getGroupOfObject(const DocumentObject* obj);
     //@}
     
     virtual PyObject* getExtensionPyObject(void);
 
+    virtual void extensionOnChanged(const Property* p) override;
+    
     /// Properties
     PropertyLinkList Group;
 

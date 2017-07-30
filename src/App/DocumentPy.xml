@@ -102,7 +102,7 @@
     </Methode>
     <Methode Name="recompute">
       <Documentation>
-        <UserDocu>Recompute the document</UserDocu>
+        <UserDocu>Recompute the document and returns the amount of recomputed features</UserDocu>
       </Documentation>
     </Methode>
 	<Methode Name="getObject">
@@ -151,6 +151,18 @@ Both parameters are optional.</UserDocu>
       </Documentation>
       <Parameter Name="Objects" Type="List" />
     </Attribute>
+    <Attribute Name="ToplogicalSortedObjects" ReadOnly="true">
+      <Documentation>
+        <UserDocu>The list of object of this document in topological sorted order</UserDocu>
+      </Documentation>
+      <Parameter Name="ToplogicalSortedObjects" Type="List" />
+    </Attribute>
+    <Attribute Name="RootObjects" ReadOnly="true">
+      <Documentation>
+        <UserDocu>The list of root object of this document</UserDocu>
+      </Documentation>
+      <Parameter Name="RootObjects" Type="List" />
+    </Attribute>
     <Attribute Name="UndoMode" ReadOnly="false">
       <Documentation>
         <UserDocu>The Undo mode of the Document (0 = no Undo, 1 = Undo/Redo)</UserDocu>
@@ -192,6 +204,12 @@ Both parameters are optional.</UserDocu>
         <UserDocu>The internal name of the document</UserDocu>
       </Documentation>
       <Parameter Name="Name" Type="String"/>
+    </Attribute>
+    <Attribute Name="RecomputesFrozen">
+      <Documentation>
+        <UserDocu>Returns or sets if automatic recomputes for this document are disabled.</UserDocu>
+      </Documentation>
+      <Parameter Name="RecomputesFrozen" Type="Boolean"/>
     </Attribute>
     <CustomAttributes />
   </PythonExport>

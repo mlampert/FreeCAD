@@ -36,7 +36,11 @@
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Shape.hxx>
 
+#include <Base/Tools2D.h>
 #include <Base/Vector3D.h>
+#include <Base/Matrix.h>
+
+#define VERTEXTOLERANCE (2.0 * Precision::Confusion())
 
 namespace TechDraw
 {
@@ -47,20 +51,28 @@ class TechDrawExport DrawUtil {
         static int getIndexFromName(std::string geomName);
         static std::string getGeomTypeFromName(std::string geomName);
         static std::string makeGeomName(std::string geomType, int index);
-        static bool isSamePoint(TopoDS_Vertex v1, TopoDS_Vertex v2);
-        static bool isZeroEdge(TopoDS_Edge e);
+        static bool isSamePoint(TopoDS_Vertex v1, TopoDS_Vertex v2, double tolerance = VERTEXTOLERANCE);
+        static bool isZeroEdge(TopoDS_Edge e, double tolerance = VERTEXTOLERANCE);
         static double simpleMinDist(TopoDS_Shape s1, TopoDS_Shape s2);
         static double sensibleScale(double working_scale);
         static double angleWithX(TopoDS_Edge e, bool reverse);
-        static double angleWithX(TopoDS_Edge e, TopoDS_Vertex v);
-        static bool isFirstVert(TopoDS_Edge e, TopoDS_Vertex v);
-        static bool isLastVert(TopoDS_Edge e, TopoDS_Vertex v);
-        static bool fpCompare(const double& d1, const double& d2);
+        static double angleWithX(TopoDS_Edge e, TopoDS_Vertex v, double tolerance = VERTEXTOLERANCE);
+        static bool isFirstVert(TopoDS_Edge e, TopoDS_Vertex v, double tolerance = VERTEXTOLERANCE);
+        static bool isLastVert(TopoDS_Edge e, TopoDS_Vertex v, double tolerance = VERTEXTOLERANCE);
+        static bool fpCompare(const double& d1, const double& d2, double tolerance = FLT_EPSILON);
         static Base::Vector3d vertex2Vector(const TopoDS_Vertex& v);
         static std::string formatVector(const Base::Vector3d& v);
-        static int vectorCompare(const Base::Vector3d& v1, const Base::Vector3d& v2);
+        static std::string formatVector(const Base::Vector2d& v);
+        static bool vectorLess(const Base::Vector3d& v1, const Base::Vector3d& v2);
         static Base::Vector3d toR3(const gp_Ax2 fromSystem, const Base::Vector3d fromPoint);
-        static bool checkZParallel(const Base::Vector3d direction);
+        static bool checkParallel(const Base::Vector3d v1, const Base::Vector3d v2, double tolerance = FLT_EPSILON);
+        //! rotate vector by angle radians around axis through org
+        static Base::Vector3d vecRotate(Base::Vector3d vec,
+                                        double angle,
+                                        Base::Vector3d axis,
+                                        Base::Vector3d org = Base::Vector3d(0.0,0.0,0.0));
+        static Base::Vector3d closestBasis(Base::Vector3d v);
+
 
 
         //debugging routines

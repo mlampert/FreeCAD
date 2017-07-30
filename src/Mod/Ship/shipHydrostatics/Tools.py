@@ -124,8 +124,7 @@ def getUnderwaterSide(shape, force=True):
             "Boolean operation failed when trying to get the underwater side."
             " The tool is retrying such operation slightly moving the free"
             " surface position",
-            None,
-            QtGui.QApplication.UnicodeUTF8)
+            None)
         App.Console.PrintWarning(msg + '\n')
         random_bounds = 0.01 * H
         i = 0
@@ -198,8 +197,7 @@ def areas(ship, n, draft=None,
             msg = QtGui.QApplication.translate(
                 "ship_console",
                 "Part.OCCError: Transversal area computation failed",
-                None,
-                QtGui.QApplication.UnicodeUTF8)
+                None)
             App.Console.PrintError(msg + '\n')
             areas.append((Units.Quantity(x, Units.Length),
                           Units.Quantity(0.0, Units.Area)))
@@ -233,7 +231,7 @@ def displacement(ship, draft=None,
     B -- Bouyance application point, i.e. Center of mass of the underwater side
     Cb -- Block coefficient
 
-    The Bouyance center is refered to the original ship position.
+    The Bouyance center is referred to the original ship position.
     """
     if draft is None:
         draft = ship.Draft
@@ -276,8 +274,7 @@ def displacement(ship, draft=None,
             "ship_console",
             "ZeroDivisionError: Null volume found during the displacement"
             " computation!",
-            None,
-            QtGui.QApplication.UnicodeUTF8)
+            None)
         App.Console.PrintError(msg + '\n')
         cb = 0.0
 
@@ -366,7 +363,7 @@ def floatingArea(ship, draft=None,
     if draft is None:
         draft = ship.Draft
 
-    # We wanna intersect the whole ship with the free surface, so in this case
+    # We want to intersect the whole ship with the free surface, so in this case
     # we must not use the underwater side (or the tool will fail)
     shape, _ = placeShipShape(ship.Shape.copy(), draft, roll, trim)
 
@@ -377,8 +374,7 @@ def floatingArea(ship, draft=None,
         msg = QtGui.QApplication.translate(
             "ship_console",
             "Part.OCCError: Floating area cannot be computed",
-            None,
-            QtGui.QApplication.UnicodeUTF8)
+            None)
         App.Console.PrintError(msg + '\n')
         area = Units.Quantity(0.0, Units.Area)
 
@@ -391,8 +387,7 @@ def floatingArea(ship, draft=None,
             "ship_console",
             "ZeroDivisionError: Null area found during the floating area"
             " computation!",
-            None,
-            QtGui.QApplication.UnicodeUTF8)
+            None)
         App.Console.PrintError(msg + '\n')
         cf = 0.0
 
@@ -466,8 +461,7 @@ def mainFrameCoeff(ship, draft=None):
         msg = QtGui.QApplication.translate(
             "ship_console",
             "Part.OCCError: Main frame area cannot be computed",
-            None,
-            QtGui.QApplication.UnicodeUTF8)
+            None)
         App.Console.PrintError(msg + '\n')
         area = 0.0
 
@@ -481,8 +475,7 @@ def mainFrameCoeff(ship, draft=None):
             "ship_console",
             "ZeroDivisionError: Null area found during the main frame area"
             " coefficient computation!",
-            None,
-            QtGui.QApplication.UnicodeUTF8)
+            None)
         App.Console.PrintError(msg + '\n')
         cm = 0.0
 

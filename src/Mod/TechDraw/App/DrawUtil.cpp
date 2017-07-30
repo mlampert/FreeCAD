@@ -113,29 +113,29 @@ std::string DrawUtil::makeGeomName(std::string geomType, int index)
     return newName.str();
 }
 
-
-bool DrawUtil::isSamePoint(TopoDS_Vertex v1, TopoDS_Vertex v2)
+//! true if v1 and v2 are the same geometric point within tolerance
+bool DrawUtil::isSamePoint(TopoDS_Vertex v1, TopoDS_Vertex v2, double tolerance)
 {
     bool result = false;
     gp_Pnt p1 = BRep_Tool::Pnt(v1);
     gp_Pnt p2 = BRep_Tool::Pnt(v2);
-    if (p1.IsEqual(p2,Precision::Confusion())) {
+    if (p1.IsEqual(p2,tolerance)) {
         result = true;
     }
     return result;
 }
 
-bool DrawUtil::isZeroEdge(TopoDS_Edge e)
+bool DrawUtil::isZeroEdge(TopoDS_Edge e, double tolerance)
 {
     TopoDS_Vertex vStart = TopExp::FirstVertex(e);
     TopoDS_Vertex vEnd = TopExp::LastVertex(e);
-    bool result = isSamePoint(vStart,vEnd);
+    bool result = isSamePoint(vStart,vEnd, tolerance);
     if (result) {
         //closed edge will have same V's but non-zero length
         GProp_GProps props;
         BRepGProp::LinearProperties(e, props);
         double len = props.Mass();
-        if (len > Precision::Confusion()) {
+        if (len > tolerance) {
             result = false;
         }
     }
@@ -182,7 +182,8 @@ double DrawUtil::angleWithX(TopoDS_Edge e, bool reverse)
     return result;
 }
 
-double DrawUtil::angleWithX(TopoDS_Edge e, TopoDS_Vertex v)
+//! find angle of edge with x-Axis at First/LastVertex 
+double DrawUtil::angleWithX(TopoDS_Edge e, TopoDS_Vertex v, double tolerance)
 {
     double result = 0;
     double param = 0;
@@ -190,9 +191,9 @@ double DrawUtil::angleWithX(TopoDS_Edge e, TopoDS_Vertex v)
     //find tangent @ v
     double adjust = 1.0;            //occ tangent points in direction of curve. at lastVert we need to reverse it.
     BRepAdaptor_Curve adapt(e);
-    if (isFirstVert(e,v)) {
+    if (isFirstVert(e,v,tolerance)) {
         param = adapt.FirstParameter();
-    } else if (isLastVert(e,v)) {
+    } else if (isLastVert(e,v,tolerance)) {
         param = adapt.LastParameter();
         adjust = -1;
     } else {
@@ -203,7 +204,7 @@ double DrawUtil::angleWithX(TopoDS_Edge e, TopoDS_Vertex v)
 
     Base::Vector3d uVec(0.0,0.0,0.0);
     gp_Dir uDir;
-    BRepLProp_CLProps prop(adapt,param,2,Precision::Confusion());
+    BRepLProp_CLProps prop(adapt,param,2,tolerance);
     if (prop.IsTangentDefined()) {
         prop.Tangent(uDir);
         uVec = Base::Vector3d(uDir.X(),uDir.Y(),uDir.Z()) * adjust;
@@ -213,9 +214,9 @@ double DrawUtil::angleWithX(TopoDS_Edge e, TopoDS_Vertex v)
         Base::Vector3d start(gstart.X(),gstart.Y(),gstart.Z());
         gp_Pnt gend    = BRep_Tool::Pnt(TopExp::LastVertex(e));
         Base::Vector3d end(gend.X(),gend.Y(),gend.Z());
-        if (isFirstVert(e,v)) {
+        if (isFirstVert(e,v,tolerance)) {
             uVec = end - start;
-        } else if (isLastVert(e,v)) {
+        } else if (isLastVert(e,v,tolerance)) {
             uVec = end - start;
         } else {
           gp_Pnt errPnt = BRep_Tool::Pnt(v);
@@ -230,30 +231,30 @@ double DrawUtil::angleWithX(TopoDS_Edge e, TopoDS_Vertex v)
     return result;
 }
 
-bool DrawUtil::isFirstVert(TopoDS_Edge e, TopoDS_Vertex v)
+bool DrawUtil::isFirstVert(TopoDS_Edge e, TopoDS_Vertex v, double tolerance)
 {
     bool result = false;
     TopoDS_Vertex first = TopExp::FirstVertex(e);
-    if (isSamePoint(first,v)) {
+    if (isSamePoint(first,v, tolerance)) {
         result = true;
     }
     return result;
 }
 
-bool DrawUtil::isLastVert(TopoDS_Edge e, TopoDS_Vertex v)
+bool DrawUtil::isLastVert(TopoDS_Edge e, TopoDS_Vertex v, double tolerance)
 {
     bool result = false;
     TopoDS_Vertex last = TopExp::LastVertex(e);
-    if (isSamePoint(last,v)) {
+    if (isSamePoint(last,v, tolerance)) {
         result = true;
     }
     return result;
 }
 
-bool DrawUtil::fpCompare(const double& d1, const double& d2)
+bool DrawUtil::fpCompare(const double& d1, const double& d2, double tolerance)
 {
     bool result = false;
-    if (std::fabs(d1 - d2) < FLT_EPSILON) {
+    if (std::fabs(d1 - d2) < tolerance) {
         result = true;
     }
     return result;
@@ -270,38 +271,38 @@ std::string DrawUtil::formatVector(const Base::Vector3d& v)
 {
     std::string result;
     std::stringstream builder;
+    builder << std::fixed << std::setprecision(3) ;
     builder << " (" << v.x  << "," << v.y << "," << v.z << ") ";
+//    builder << " (" << setw(6) << v.x  << "," << setw(6) << v.y << "," << setw(6) << v.z << ") ";
     result = builder.str();
     return result;
 }
 
-//! compare 2 vectors for sorting purposes ( -1 -> v1<v2, 0 -> v1 == v2, 1 -> v1 > v2)
-int DrawUtil::vectorCompare(const Base::Vector3d& v1, const Base::Vector3d& v2)
+std::string DrawUtil::formatVector(const Base::Vector2d& v)
 {
-    int result = 0;
-    if (v1 == v2) {
-        return result;
-    }
-
-    if (v1.x < v2.x) {
-        result = -1;
-    } else if (DrawUtil::fpCompare(v1.x, v2.x)) {
-        if (v1.y < v2.y) {
-            result = -1;
-        } else if (DrawUtil::fpCompare(v1.y, v2.y)) {
-            if (v1.z < v2.z) {
-                result = -1;
-            } else {
-                result = 1;
-            }
-        } else {
-            result = 1;  //v2y > v1y
-        }
-    } else {
-        result = 1; //v1x > v2x
-    }
+    std::string result;
+    std::stringstream builder;
+    builder << std::fixed << std::setprecision(3) ;
+    builder << " (" << v.x  << "," << v.y << ") ";
+    result = builder.str();
     return result;
 }
+
+//! compare 2 vectors for sorting - true if v1 < v2
+bool DrawUtil::vectorLess(const Base::Vector3d& v1, const Base::Vector3d& v2)  
+{
+    bool result = false;
+    if ((v1 - v2).Length() > Precision::Confusion()) {      //ie v1 != v2
+        if (!DrawUtil::fpCompare(v1.x,v2.x)) {
+            result = v1.x < v2.x;
+        } else if (!DrawUtil::fpCompare(v1.y,v2.y)) {
+            result = v1.y < v2.y;
+        } else {
+            result = v1.z < v2.z;
+        }
+    }
+    return result;
+}  
 
 //!convert fromPoint in coordinate system fromSystem to reference coordinate system
 Base::Vector3d DrawUtil::toR3(const gp_Ax2 fromSystem, const Base::Vector3d fromPoint)
@@ -317,15 +318,80 @@ Base::Vector3d DrawUtil::toR3(const gp_Ax2 fromSystem, const Base::Vector3d from
     return toPoint;
 }
 
-//! check if direction is parallel to stdZ
-bool DrawUtil::checkZParallel(const Base::Vector3d direction)
+//! check if two vectors are parallel
+bool DrawUtil::checkParallel(const Base::Vector3d v1, Base::Vector3d v2, double tolerance)
 {
     bool result = false;
-    Base::Vector3d stdZ(0.0,0.0,1.0);
-    double dot = fabs(direction.Dot(stdZ));
-    double mag = direction.Length() * 1;   //stdZ.Length() == 1
-    if (DrawUtil::fpCompare(dot,mag)) {
+    double dot = fabs(v1.Dot(v2));
+    double mag = v1.Length() * v2.Length();
+    if (DrawUtil::fpCompare(dot,mag,tolerance)) {
         result = true;
+    }
+    return result;
+}
+
+//! rotate vector by angle radians around axis through org
+Base::Vector3d DrawUtil::vecRotate(Base::Vector3d vec,
+                                   double angle,
+                                   Base::Vector3d axis,
+                                   Base::Vector3d org)
+{
+    Base::Vector3d result;
+    Base::Matrix4D xForm;
+    xForm.rotLine(org,axis,angle);
+    result = xForm * (vec);
+    return result;
+}
+
+Base::Vector3d  DrawUtil::closestBasis(Base::Vector3d v)
+{
+    Base::Vector3d result(0.0,-1,0);
+    Base::Vector3d  stdX(1.0,0.0,0.0);
+    Base::Vector3d  stdY(0.0,1.0,0.0);
+    Base::Vector3d  stdZ(0.0,0.0,1.0);
+    Base::Vector3d  stdXr(-1.0,0.0,0.0);
+    Base::Vector3d  stdYr(0.0,-1.0,0.0);
+    Base::Vector3d  stdZr(0.0,0.0,-1.0);
+    double angleX,angleY,angleZ,angleXr,angleYr,angleZr, angleMin;
+    
+    //first check if already a basis
+    if (checkParallel(v,stdZ)) {
+        return v;
+    } else if (checkParallel(v,stdY)) {
+        return v;
+    } else if (checkParallel(v,stdX)) {
+        return v;
+    }
+    
+    //not a basis. find smallest angle with a basis.
+    angleX = stdX.GetAngle(v);
+    angleY = stdY.GetAngle(v);
+    angleZ = stdZ.GetAngle(v);
+    angleXr = stdXr.GetAngle(v);
+    angleYr = stdYr.GetAngle(v);
+    angleZr = stdZr.GetAngle(v);
+
+    angleMin = angleX;
+    result = stdX;
+    if (angleY < angleMin) {
+        angleMin = angleY;
+        result = stdY;
+    }
+    if (angleZ < angleMin) {
+        angleMin = angleZ;
+        result = stdZ;
+    }
+    if (angleXr < angleMin) {
+        angleMin = angleXr;
+        result = stdXr;
+    }
+    if (angleYr < angleMin) {
+        angleMin = angleYr;
+        result = stdYr;
+    }
+    if (angleZr < angleMin) {
+        angleMin = angleZr;
+        result = stdZr;
     }
     return result;
 }

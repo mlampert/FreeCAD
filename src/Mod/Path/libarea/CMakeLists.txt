@@ -11,19 +11,33 @@ endif(MSVC)
 include_directories(${PYTHON_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-if(NOT FREECAD_LIBPACK_USE OR FREECAD_LIBPACK_CHECKFILE_CLBUNDLER)
-    find_package( Boost COMPONENTS python REQUIRED)  # find BOOST and boost-python
-    if(Boost_FOUND)
+
+OPTION(USE_BOOST_PYTHON "use BOOST_PYTHON, otherwise use PYBIND11" ON)
+
+if(USE_BOOST_PYTHON)
+    if(NOT FREECAD_LIBPACK_USE OR FREECAD_LIBPACK_CHECKFILE_CLBUNDLER)
+        if(NOT PYTHON_VERSION_MAJOR LESS 3)
+            find_package( Boost COMPONENTS python3)
+            if (NOT Boost_PYTHON3_FOUND)
+                find_package( Boost COMPONENTS python REQUIRED)
+            endif()
+        else()
+            find_package( Boost COMPONENTS python REQUIRED)  # find BOOST and boost-python
+        endif()
+
+        if(Boost_FOUND)
+            include_directories(${Boost_INCLUDE_DIRS})
+            MESSAGE(STATUS "found Boost: " ${Boost_LIB_VERSION})
+            MESSAGE(STATUS "boost-incude dirs are: " ${Boost_INCLUDE_DIRS})
+            MESSAGE(STATUS "boost-python lib is: " ${Boost_PYTHON_LIBRARY})
+            MESSAGE(STATUS "boost_LIBRARY_DIRS is: " ${Boost_LIBRARY_DIRS})
+            MESSAGE(STATUS "Boost_LIBRARIES is: " ${Boost_LIBRARIES})
+        endif()
+    else()
         include_directories(${Boost_INCLUDE_DIRS})
-        MESSAGE(STATUS "found Boost: " ${Boost_LIB_VERSION})
-        MESSAGE(STATUS "boost-incude dirs are: " ${Boost_INCLUDE_DIRS})
-        MESSAGE(STATUS "boost-python lib is: " ${Boost_PYTHON_LIBRARY})
-        MESSAGE(STATUS "boost_LIBRARY_DIRS is: " ${Boost_LIBRARY_DIRS})
-        MESSAGE(STATUS "Boost_LIBRARIES is: " ${Boost_LIBRARIES})
     endif()
-else()
-    include_directories(${Boost_INCLUDE_DIRS})
-endif()
+endif(USE_BOOST_PYTHON)
+
 
 # this defines the source-files for library
 set(AREA_SRC_COMMON
@@ -48,9 +62,15 @@ set(AREA_SRC_CLIPPER
 )
 
 # this defines the additional source-files for python module (wrapper to libarea)
-set(PYAREA_SRC
-    PythonStuff.cpp
-)
+if (USE_BOOST_PYTHON)
+    set(PYAREA_SRC
+        PythonStuff.cpp
+    )
+else(USE_BOOST_PYTHON)
+    set(PYAREA_SRC
+        pyarea.cpp
+    )
+endif(USE_BOOST_PYTHON)
 
 # this defines the headers
 if(DEFINED INCLUDE_INSTALL_DIR)
@@ -65,37 +85,63 @@ file(GLOB headers "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 
 # this makes the Python module
 add_library(
-  area
-  MODULE
+  area-native
+  SHARED
   ${AREA_SRC_COMMON}
   ${AREA_SRC_CLIPPER}
-  ${PYAREA_SRC}
+)
+
+add_library(
+    area
+    MODULE
+    ${PYAREA_SRC}
 )
 
 if(MSVC)
-    set(area_LIBS
-        ${Boost_LIBRARIES}
-        ${PYTHON_LIBRARIES}
+    set(area_native_LIBS
         debug MSVCRTD.LIB
         debug MSVCPRTD.LIB
         optimized MSVCRT.LIB
         optimized MSVCPRT.LIB
     )
-elseif(MINGW)
+
+    #Universal C runtime introduced in VS 2015 (cl version 19)
+    if (NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "19"))
+        list(APPEND area_native_LIBS
+            debug vcruntimed.lib
+            debug ucrtd.lib
+            optimized vcruntime.lib
+            optimized ucrt.lib
+        )
+    endif()
+
     set(area_LIBS
         ${Boost_LIBRARIES}
         ${PYTHON_LIBRARIES}
+        ${area_native_LIBS}
+    )
+elseif(MINGW)
+    set(area_native_LIBS
         Rpcrt4.lib
     )
+    set(area_LIBS
+        ${Boost_LIBRARIES}
+        ${PYTHON_LIBRARIES}
+        ${area_native_LIBS}
+    )
 else(MSVC)
+    set(area_native_LIBS
+        )
     set(area_LIBS
         ${Boost_LIBRARIES}
         ${PYTHON_LIBRARIES}
     )
 endif(MSVC)
 
-target_link_libraries(area ${area_LIBS})
+target_link_libraries(area-native ${area_native_LIBS})
+SET_BIN_DIR(area-native area-native)
 
+target_link_libraries(area area-native ${area_LIBS} ${area_native_LIBS})
 SET_BIN_DIR(area area)
 SET_PYTHON_PREFIX_SUFFIX(area)
 
@@ -108,8 +154,20 @@ execute_process(
 
 message(STATUS "area module (for Path Workbench) will be installed to: " ${CMAKE_INSTALL_LIBDIR})
 
+if(WIN32)
+    set_target_properties(area-native PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+    INSTALL(TARGETS area-native
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+else(WIN32)
+    INSTALL(TARGETS area-native
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+endif(WIN32)
+
 # this installs the python library
 install(
     TARGETS area
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
