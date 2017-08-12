@@ -212,7 +212,7 @@ class Joint:
             self.shape  = self.featherSolid(self.solid, self.face, self.edge, self.dim, self.startWithCut, self.offset, self.slack, obj.ExtraWidth.Value)
             obj.Shape   = self.shape
         else:
-            FreeCAD.Console.PrintWarning("Joint %s invalid\n" % (self.name))
+            FreeCAD.Console.PrintWarning("Invalid joint %s (%s) joiner=%s\n" % (obj.Label, obj.Name, obj.Joiner.Label))
             obj.Shape = self.getBaseShape(obj)
 
     def featherSolid(self, solid, face, edge, dim, startWithCut, offset=0, slack = FreeCAD.Vector(0,0,0), extend=0):
@@ -499,26 +499,56 @@ def setAllExtra(length = None, width = None, depth = None):
         if depth is not None:
             o.ExtraDepth = depth
 
-def assignFace(force = False):
+def assignFaces(force = False):
     '''
-    assignFace(force=False) ... assigns the currently selected face to the parent Joint.
+    assignFace(force=False) ... assigns the currently selected faces to their parent Joints.
     '''
     sel = FreeCADGui.Selection.getSelectionEx()
-    if len(sel) != 1 or len(sel[0].SubElementNames) != 1:
-        FreeCAD.Console.PrintError("Please select exactly one Face.\n")
+    if len(sel) == 1:
+        FreeCAD.Console.PrintError("Please at least one Face.\n")
         return
-    obj  = sel[0].Object
-    face = sel[0].SubElementNames[0]
 
-    joint = None
-    for o in obj.InList:
-        if hasattr(o, 'Joiner'):
-            if o.Face[0] == obj or force:
-                o.Face = (obj, face)
-                o.Joiner.touch()
-                return True
-            else:
-                FreeCAD.Console.PrintWarning("Base object mismatch, selected %s, stored object %s" % (obj.Label, o.Face[0].Label))
-                return False
-    FreeCAD.Console.PrintWarning("No Joint found that uses %s as it's base object" % (obj.Label))
-    return None
+    for s in sel:
+        if len(s.SubElementNames) != 1:
+            FreeCAD.Console.PrintError("Please at exactly one Face from each object.\n")
+            continue
+
+        obj  = s.Object
+        face = s.SubElementNames[0]
+
+        joint = None
+        for o in obj.InList:
+            if hasattr(o, 'Joiner'):
+                if o.Face[0] == obj or force:
+                    o.Face = (obj, face)
+                    o.Joiner.touch()
+                    joint = o
+                    break
+                else:
+                    FreeCAD.Console.PrintWarning("Base object mismatch, selected %s, stored object %s" % (obj.Label, o.Face[0].Label))
+                    break
+        if not joint:
+            FreeCAD.Console.PrintWarning("No Joint found that uses %s as it's base object" % (obj.Label))
+
+def showJoinerBaseObjects(joinerLabel):
+    def baseObjects(name):
+        obj = FreeCAD.ActiveDocument.getObject(name).Face[0]
+        body = obj.getParentGeoFeatureGroup()
+        return [body, obj] if body else [obj]
+
+    for j in FreeCAD.ActiveDocument.Objects:
+        j.ViewObject.Visibility = False
+
+    for joiner in FreeCAD.ActiveDocument.getObjectsByLabel(joinerLabel):
+        for base in baseObjects(joiner.BaseJoint):
+            base.ViewObject.Visibility = True
+        for base in baseObjects(joiner.ToolJoint):
+            base.ViewObject.Visibility = True
+
+def recomputeAllAndFindBroken():
+    QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+    [j.touch() for j in getAllJoiners()]
+    FreeCAD.ActiveDocument.recompute()
+    result = sorted(set([j.Joiner.Label for j in getAllJoints() if not j.Proxy.values.jointIsValidFor(j)]))
+    QtGui.QApplication.restoreOverrideCursor()
+    return result
