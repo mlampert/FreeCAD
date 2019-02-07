@@ -510,7 +510,7 @@ class TaskPanel:
         self.obj = vobj.Object
         self.deleteOnReject = deleteOnReject
         self.form = FreeCADGui.PySideUic.loadUi(":/panels/PathEdit.ui")
-        self.template = PathJobDlg.JobTemplateExport(self.obj, self.form.jobBox.widget(1))
+        self.template = PathJobDlg.JobTemplateExport(self.obj, self.form.jobBox.widget(2))
 
         vUnit = FreeCAD.Units.Quantity(1, FreeCAD.Units.Velocity).getUserPreferred()[2]
         self.form.toolControllerList.horizontalHeaderItem(1).setText('#')

@@ -32,6 +32,7 @@ import PathScripts.PathSetupSheetOpPrototype as PathSetupSheetOpPrototype
 import PathScripts.PathSetupSheetOpPrototypeGui as PathSetupSheetOpPrototypeGui
 import PathScripts.PathUtil as PathUtil
 
+from collections import Counter
 from PySide import QtCore, QtGui
 
 __title__ = "Setup Sheet Editor"
@@ -292,27 +293,53 @@ class GlobalEditor(object):
             if val != value:
                 PathGui.setProperty(self.obj, name, value)
 
-        updateExpression('StartDepthExpression',        self.form.setupStartDepthExpr)
-        updateExpression('FinalDepthExpression',        self.form.setupFinalDepthExpr)
-        updateExpression('StepDownExpression',          self.form.setupStepDownExpr)
-        updateExpression('ClearanceHeightExpression',   self.form.setupClearanceHeightExpr)
-        updateExpression('SafeHeightExpression',        self.form.setupSafeHeightExpr)
-        self.clearanceHeightOffs.updateProperty()
-        self.safeHeightOffs.updateProperty()
+        updateExpression('StartDepthExpression',        self.form.setupStartDepthExpression)
+        updateExpression('FinalDepthExpression',        self.form.setupFinalDepthExpression)
+        updateExpression('StepDownExpression',          self.form.setupStepDownExpression)
+        updateExpression('ClearanceHeightExpression',   self.form.setupClearanceHeightExpression)
+        updateExpression('SafeHeightExpression',        self.form.setupSafeHeightExpression)
+
+        self.clearanceHeightOffset.updateProperty()
+        self.safeHeightOffset.updateProperty()
         self.rapidVertical.updateProperty()
         self.rapidHorizontal.updateProperty()
 
+        axes = []
+        if self.form.optionEnableAxisA.isChecked():
+            axes.append('A')
+        updateExpression('AxisA_ClearanceRadiusExpression', self.form.setupAxisAClearanceRadiusExpression)
+        updateExpression('AxisA_SafeRadiusExpression',      self.form.setupAxisASafeRadiusExpression)
+        self.axisAClearanceRadiusOffset.updateProperty()
+        self.axisASafeRadiusOffset.updateProperty()
+
+        if Counter(axes) != Counter(self.obj.AxesEnabled):
+            self.obj.AxesEnabled = axes
+
     def updateUI(self):
         PathLog.track()
-        self.form.setupStartDepthExpr.setText(       self.obj.StartDepthExpression)
-        self.form.setupFinalDepthExpr.setText(       self.obj.FinalDepthExpression)
-        self.form.setupStepDownExpr.setText(         self.obj.StepDownExpression)
-        self.form.setupClearanceHeightExpr.setText(  self.obj.ClearanceHeightExpression)
-        self.form.setupSafeHeightExpr.setText(       self.obj.SafeHeightExpression)
-        self.clearanceHeightOffs.updateSpinBox()
-        self.safeHeightOffs.updateSpinBox()
+        self.form.setupStartDepthExpression.setText(       self.obj.StartDepthExpression)
+        self.form.setupFinalDepthExpression.setText(       self.obj.FinalDepthExpression)
+        self.form.setupStepDownExpression.setText(         self.obj.StepDownExpression)
+        self.form.setupClearanceHeightExpression.setText(  self.obj.ClearanceHeightExpression)
+        self.form.setupSafeHeightExpression.setText(       self.obj.SafeHeightExpression)
+
+        self.clearanceHeightOffset.updateSpinBox()
+        self.safeHeightOffset.updateSpinBox()
         self.rapidVertical.updateSpinBox()
         self.rapidHorizontal.updateSpinBox()
+
+        enableAxisA = 'A' in self.obj.AxesEnabled
+        self.form.optionEnableAxisA.setChecked(enableAxisA)
+        self.form.setupAxisAGroup.setEnabled(enableAxisA)
+
+        self.form.setupAxisAClearanceRadiusExpression.setText(  self.obj.AxisA_ClearanceRadiusExpression)
+        self.form.setupAxisASafeRadiusExpression.setText(       self.obj.AxisA_SafeRadiusExpression)
+        self.axisAClearanceRadiusOffset.updateSpinBox()
+        self.axisASafeRadiusOffset.updateSpinBox()
+
+        enableAxisB = 'B' in self.obj.AxesEnabled
+        self.form.optionEnableAxisB.setChecked(enableAxisB)
+        self.form.setupAxisBGroup.setEnabled(enableAxisB)
 
     def updateModel(self, recomp = True):
         PathLog.track()
@@ -325,11 +352,18 @@ class GlobalEditor(object):
         self.updateUI()
 
     def setupUi(self):
-        self.clearanceHeightOffs = PathGui.QuantitySpinBox(self.form.setupClearanceHeightOffs, self.obj, 'ClearanceHeightOffset')
-        self.safeHeightOffs = PathGui.QuantitySpinBox(self.form.setupSafeHeightOffs, self.obj, 'SafeHeightOffset')
+        self.clearanceHeightOffset = PathGui.QuantitySpinBox(self.form.setupClearanceHeightOffset, self.obj, 'ClearanceHeightOffset')
+        self.safeHeightOffset = PathGui.QuantitySpinBox(self.form.setupSafeHeightOffset, self.obj, 'SafeHeightOffset')
         self.rapidHorizontal = PathGui.QuantitySpinBox(self.form.setupRapidHorizontal, self.obj, 'HorizRapid')
         self.rapidVertical = PathGui.QuantitySpinBox(self.form.setupRapidVertical, self.obj, 'VertRapid')
+
+        self.axisAClearanceRadiusOffset = PathGui.QuantitySpinBox(self.form.setupAxisAClearanceRadiusOffset, self.obj, 'AxisA_ClearanceRadiusOffset')
+        self.axisASafeRadiusOffset      = PathGui.QuantitySpinBox(self.form.setupAxisASafeRadiusOffset, self.obj,      'AxisA_SafeRadiusOffset')
+
         self.setFields()
+
+        self.form.optionEnableAxisA.stateChanged.connect(lambda state: self.updateModel())
+        self.form.optionEnableAxisB.stateChanged.connect(lambda state: self.updateModel())
 
 class TaskPanel:
     '''TaskPanel for the SetupSheet - if it is being edited directly.'''

@@ -32,7 +32,7 @@
          <x>0</x>
          <y>0</y>
          <width>458</width>
-         <height>1201</height>
+         <height>1186</height>
         </rect>
        </property>
        <attribute name="label">
@@ -107,13 +107,83 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="page_7">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>492</width>
+         <height>1201</height>
+        </rect>
+       </property>
+       <attribute name="label">
+        <string>Options</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_22">
+        <item>
+         <widget class="QGroupBox" name="groupBox_7">
+          <property name="title">
+           <string>Rotational Axes</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_21">
+           <item>
+            <widget class="QCheckBox" name="optionEnableAxisA">
+             <property name="text">
+              <string>Axis A</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="optionEnableAxisB">
+             <property name="text">
+              <string>Axis B</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Sunken</enum>
+             </property>
+             <property name="text">
+              <string>The center of all rotational axes is located at the origin (0,0,0).</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer_8">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>1021</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
       <widget class="QWidget" name="templateExport">
        <property name="geometry">
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>458</width>
-         <height>1201</height>
+         <width>100</width>
+         <height>30</height>
         </rect>
        </property>
        <attribute name="label">
@@ -989,8 +1059,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>204</width>
-         <height>266</height>
+         <width>458</width>
+         <height>1186</height>
         </rect>
        </property>
        <attribute name="label">
@@ -1011,7 +1081,7 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QLineEdit" name="setupStartDepthExpr">
+            <widget class="QLineEdit" name="setupStartDepthExpression">
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Expression set as the StartDepth of a newly created operation.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Default: OpStartDepth&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
@@ -1025,7 +1095,7 @@
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QLineEdit" name="setupFinalDepthExpr">
+            <widget class="QLineEdit" name="setupFinalDepthExpression">
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Expression set as the FinalDepth for a newly created operation.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Default: OpFinalDepth&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
@@ -1076,7 +1146,7 @@
             </widget>
            </item>
            <item row="1" column="1" colspan="2">
-            <widget class="QLineEdit" name="setupClearanceHeightExpr">
+            <widget class="QLineEdit" name="setupClearanceHeightExpression">
              <property name="toolTip">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Expression set as ClearanceHeight for new operations.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Default: &amp;quot;OpStockZMax+SetupSheet.ClearanceHeightOffset&amp;quot;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
@@ -1120,6 +1190,116 @@
          </widget>
         </item>
         <item>
+         <widget class="QGroupBox" name="setupAxisAGroup">
+          <property name="title">
+           <string>A axis</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_16">
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_17">
+             <property name="text">
+              <string>Clearance</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_20">
+             <property name="text">
+              <string>Safe</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="label_22">
+             <property name="text">
+              <string>Expression</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="setupAxisAClearanceRadiusExpression"/>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLabel" name="label_23">
+             <property name="text">
+              <string>Offset</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="Gui::QuantitySpinBox" name="setupAxisAClearanceRadiusOffset"/>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="setupAxisASafeRadiusExpression"/>
+           </item>
+           <item row="2" column="2">
+            <widget class="Gui::QuantitySpinBox" name="setupAxisASafeRadiusOffset"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="setupAxisBGroup">
+          <property name="title">
+           <string>B axis</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_15">
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_19">
+             <property name="text">
+              <string>Clearance</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_21">
+             <property name="text">
+              <string>Safe</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="setupAxisBClearanceRadiusExpression"/>
+           </item>
+           <item row="1" column="2">
+            <widget class="Gui::QuantitySpinBox" name="setupAxisBClearanceRadiusOffset"/>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLabel" name="label_24">
+             <property name="text">
+              <string>Expression</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLabel" name="label_25">
+             <property name="text">
+              <string>Offset</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="setupAxisBSafeRadiusExpression"/>
+           </item>
+           <item row="2" column="2">
+            <widget class="Gui::QuantitySpinBox" name="setupAxisBSafeRadiusOffset"/>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
          <spacer name="verticalSpacer_5">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -1153,7 +1333,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>458</width>
+         <width>512</width>
          <height>1201</height>
         </rect>
        </property>
@@ -1191,7 +1371,8 @@
               </property>
               <property name="icon">
                <iconset theme="object-flip-horizontal">
-                <normaloff>../../../../../../../../.designer/backup</normaloff>../../../../../../../../.designer/backup</iconset>
+                <normaloff/>
+               </iconset>
               </property>
              </column>
              <column>
@@ -1200,7 +1381,8 @@
               </property>
               <property name="icon">
                <iconset theme="object-flip-vertical">
-                <normaloff>../../../../../../../../.designer/backup</normaloff>../../../../../../../../.designer/backup</iconset>
+                <normaloff/>
+               </iconset>
               </property>
              </column>
              <column>
@@ -1253,8 +1435,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>115</width>
-         <height>94</height>
+         <width>244</width>
+         <height>145</height>
         </rect>
        </property>
        <attribute name="label">
@@ -1489,7 +1671,7 @@
   </customwidget>
   <customwidget>
    <class>Gui::QuantitySpinBox</class>
-   <extends>QWidget</extends>
+   <extends>QDoubleSpinBox</extends>
    <header>Gui/QuantitySpinBox.h</header>
   </customwidget>
  </customwidgets>

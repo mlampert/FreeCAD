@@ -58,7 +58,13 @@ class Template:
     FinalDepthExpression = 'FinalDepthExpression'
     StepDownExpression = 'StepDownExpression'
 
-    All = [HorizRapid, VertRapid, SafeHeightOffset, SafeHeightExpression, ClearanceHeightOffset, ClearanceHeightExpression, StartDepthExpression, FinalDepthExpression, StepDownExpression]
+    AxesEnabled = 'AxesEnabled'
+    AxisA_ClearanceRadiusExpression = 'AxisA_ClearanceRadiusExpression'
+    AxisA_ClearanceRadiusOffset     = 'AxisA_ClearanceRadiusOffset'
+    AxisA_SafeRadiusExpression = 'AxisA_SafeRadiusExpression'
+    AxisA_SafeRadiusOffset     = 'AxisA_SafeRadiusOffset'
+
+    All = [HorizRapid, VertRapid, SafeHeightOffset, SafeHeightExpression, ClearanceHeightOffset, ClearanceHeightExpression, StartDepthExpression, FinalDepthExpression, StepDownExpression, AxesEnabled, AxisA_ClearanceRadiusExpression, AxisA_ClearanceRadiusOffset, AxisA_SafeRadiusExpression, AxisA_SafeRadiusOffset ]
 
 
 def _traverseTemplateAttributes(attrs, codec):
@@ -88,11 +94,17 @@ class SetupSheet:
     DefaultSafeHeightExpression      = "OpStockZMax+${SetupSheet}.SafeHeightOffset"
     DefaultClearanceHeightExpression = "OpStockZMax+${SetupSheet}.ClearanceHeightOffset"
 
+    DefaultAxisA_SafeRadiusOffset      = DefaultSafeHeightOffset
+    DefaultAxisA_ClearanceRadiusOffset = DefaultClearanceHeightOffset
+    DefaultAxisA_SafeRadiusExpression       = "OpStockRadiusA+${SetupSheet}.AxisA_SafeRadiusOffset"
+    DefaultAxisA_ClearanceRadiusExpression  = "OpStockRadiusA+${SetupSheet}.AxisA_ClearanceRadiusOffset"
+
     DefaultStartDepthExpression = 'OpStartDepth'
     DefaultFinalDepthExpression = 'OpFinalDepth'
     DefaultStepDownExpression   = 'OpToolDiameter'
 
     def __init__(self, obj):
+        PathLog.track()
         self.obj = obj
         obj.addProperty('App::PropertySpeed', 'VertRapid',  'ToolController', translate('PathSetupSheet', 'Default speed for horizontal rapid moves.'))
         obj.addProperty('App::PropertySpeed', 'HorizRapid', 'ToolController', translate('PathSetupSheet', 'Default speed for vertical rapid moves.'))
@@ -115,7 +127,27 @@ class SetupSheet:
         obj.FinalDepthExpression = self.decodeAttributeString(self.DefaultFinalDepthExpression)
         obj.StepDownExpression   = self.decodeAttributeString(self.DefaultStepDownExpression)
 
+        self.setupAxesProperties(obj)
         obj.Proxy = self
+
+    def setupAxesProperties(self, obj):
+        PathLog.track()
+        if not hasattr(self, 'AxesEnabled'):
+            obj.addProperty('App::PropertyStringList', 'AxesEnabled',                'RotationAxes', translate('PathSetupSheet', 'List of enabled axes.'))
+            obj.AxesEnabled = []
+
+            obj.addProperty('App::PropertyLength', 'AxisA_SafeRadiusOffset',          'RotationAxes', translate('PathSetupSheet', 'The usage of this field depends on SafeRadiusExpression - by default its value is added to StartDepth and used for SafeRadius of an operation.'))
+            obj.addProperty('App::PropertyString', 'AxisA_SafeRadiusExpression',      'RotationAxes', translate('PathSetupSheet', 'Expression set for the SafeRadius of new operations.'))
+            obj.addProperty('App::PropertyLength', 'AxisA_ClearanceRadiusOffset',     'RotationAxes', translate('PathSetupSheet', 'The usage of this field depends on ClearanceRadiusExpression - by default is value is added to StartDepth and used for ClearanceRadius of an operation.'))
+            obj.addProperty('App::PropertyString', 'AxisA_ClearanceRadiusExpression', 'RotationAxes', translate('PathSetupSheet', 'Expression set for the ClearanceRadius of new operations.'))
+
+            obj.AxisA_SafeRadiusOffset          = self.decodeAttributeString(self.DefaultAxisA_SafeRadiusOffset)
+            obj.AxisA_ClearanceRadiusOffset     = self.decodeAttributeString(self.DefaultAxisA_ClearanceRadiusOffset)
+            obj.AxisA_SafeRadiusExpression      = self.decodeAttributeString(self.DefaultAxisA_SafeRadiusExpression)
+            obj.AxisA_ClearanceRadiusExpression = self.decodeAttributeString(self.DefaultAxisA_ClearanceRadiusExpression)
+
+    def onDocumentRestored(self, obj):
+        self.setupAxesProperties(obj)
 
     def __getstate__(self):
         return None
@@ -148,6 +180,18 @@ class SetupSheet:
             return False
         if self.obj.StepDownExpression != self.DefaultStepDownExpression:
             return False
+        return True
+
+    def hasDefaultOperationAxes(self):
+        if self.obj.AxesEnabled:
+            if self.obj.AxesAClearanceRadiusExpression != self.decodeAttributeString(self.DefaultAxisA_ClearanceRadiusExpression):
+                return False
+            if self.obj.AxesAClearanceRadiusOffset.UserString != FreeCAD.Units.Quantity(self.DefaultAxisA_ClearanceRadiusOffset).UserString:
+                return False
+            if self.obj.AxesASafeRadiusExpression != self.decodeAttributeString(self.DefaultAxisA_SafeRadiusExpression):
+                return False
+            if self.obj.AxesASafeRadiusOffset.UserString != FreeCAD.Units.Quantity(self.DefaultAxisA_SafeRadiusOffset).UserString:
+                return False
         return True
 
     def setFromTemplate(self, attrs):
