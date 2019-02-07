@@ -108,11 +108,16 @@ class ObjectOp(object):
         if 'tooldia' in values:
             obj.addProperty("App::PropertyDistance", "OpToolDiameter", "Op Values", QtCore.QT_TRANSLATE_NOOP("PathOp", "Holds the diameter of the tool"))
             obj.setEditorMode('OpToolDiameter', 1)  # read-only
-        if 'stockz' in values:
+        if 'stockZ' in values:
             obj.addProperty("App::PropertyDistance", "OpStockZMax", "Op Values", QtCore.QT_TRANSLATE_NOOP("PathOp", "Holds the max Z value of Stock"))
             obj.setEditorMode('OpStockZMax', 1)  # read-only
             obj.addProperty("App::PropertyDistance", "OpStockZMin", "Op Values", QtCore.QT_TRANSLATE_NOOP("PathOp", "Holds the min Z value of Stock"))
             obj.setEditorMode('OpStockZMin', 1)  # read-only
+        if 'stockR' in values:
+            obj.addProperty("App::PropertyDistance", "OpStockRadiusA", "Op Values", QtCore.QT_TRANSLATE_NOOP("PathOp", "Holds the max distance of Stock from the X axis"))
+            obj.setEditorMode('OpStockRadiusA', 1)  # read-only
+            obj.addProperty("App::PropertyDistance", "OpStockRadiusB", "Op Values", QtCore.QT_TRANSLATE_NOOP("PathOp", "Holds the min distance of Stock from the Y axis"))
+            obj.setEditorMode('OpStockRadiusB', 1)  # read-only
 
     def __init__(self, obj, name):
         PathLog.track()
@@ -144,7 +149,7 @@ class ObjectOp(object):
             obj.addProperty("App::PropertyDistance", "StartDepth", "Depth", QtCore.QT_TRANSLATE_NOOP("PathOp", "Starting Depth internal use only for derived values"))
             obj.setEditorMode('StartDepth', 1)  # read-only
 
-        self.addOpValues(obj, ['stockz'])
+        self.addOpValues(obj, ['stockZ', 'stockR'])
 
         if FeatureStepDown & features:
             obj.addProperty("App::PropertyDistance", "StepDown", "Depth", QtCore.QT_TRANSLATE_NOOP("PathOp", "Incremental Step Down of Tool"))
@@ -200,7 +205,9 @@ class ObjectOp(object):
                 obj.setEditorMode('OpFinalDepth', 2)
 
         if not hasattr(obj, 'OpStockZMax'):
-            self.addOpValues(obj, ['stockz'])
+            self.addOpValues(obj, ['stockZ'])
+        if not hasattr(obj, 'OpStockRadiusA'):
+            self.addOpValues(obj, ['stockR'])
 
         self.setEditorModes(obj, features)
         self.opOnDocumentRestored(obj)
@@ -372,6 +379,19 @@ class ObjectOp(object):
 
         obj.OpStockZMin = zmin
         obj.OpStockZMax = zmax
+
+        rotCenter = FreeCAD.Vector(0, 0, 0)
+        rYZ = FreeCAD.Vector(rotCenter.x, stockBB.YMax, stockBB.ZMax).distanceToPoint(rotCenter)
+        rYz = FreeCAD.Vector(rotCenter.x, stockBB.YMax, stockBB.ZMin).distanceToPoint(rotCenter)
+        ryZ = FreeCAD.Vector(rotCenter.x, stockBB.YMin, stockBB.ZMax).distanceToPoint(rotCenter)
+        ryz = FreeCAD.Vector(rotCenter.x, stockBB.YMin, stockBB.ZMin).distanceToPoint(rotCenter)
+        obj.OpStockRadiusA = max(rYZ, rYz, ryZ, ryz)
+
+        rXZ = FreeCAD.Vector(stockBB.XMax, rotCenter.y, stockBB.ZMax).distanceToPoint(rotCenter)
+        rXz = FreeCAD.Vector(stockBB.XMax, rotCenter.y, stockBB.ZMin).distanceToPoint(rotCenter)
+        rxZ = FreeCAD.Vector(stockBB.XMin, rotCenter.y, stockBB.ZMax).distanceToPoint(rotCenter)
+        rxz = FreeCAD.Vector(stockBB.XMin, rotCenter.y, stockBB.ZMin).distanceToPoint(rotCenter)
+        obj.OpStockRadiusB = max(rXZ, rXz, rxZ, rxz)
 
         if hasattr(obj, 'Base') and obj.Base:
             for base, sublist in obj.Base:
