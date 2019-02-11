@@ -261,21 +261,16 @@ class ObjectOp(PathOp.ObjectOp):
     def alignAxisTo(self, obj, axis, dest = None):
         theta = getThetaAxisA(axis)
         angle = theta * 180 / math.pi
-        self.commandlist.append(Path.Command('G0', {'Z': obj.OpStockRadiusA.Value, 'F': self.vertRapid}))
-        params = {'A': angle}
+        obj.OpStockZMax = obj.OpStockRadiusA
+        obj.OpStockZMin = -obj.OpStockRadiusA
+        self.commandlist.append(Path.Command('G0', {'Z': obj.getPropertyValue('ClearanceHeight').Value, 'F': self.vertRapid}))
 
+        params = {'A': angle}
         # if we know where we want to end up once turned, we might as well reposition while turning
         if dest:
             params.update({'X': dest['x'], 'Y': dest['y']})
 
         self.commandlist.append(Path.Command('G0', params))
-
-        sin = math.sin(theta)
-        cos = math.cos(theta)
-        stockBB = self.stock.Shape.BoundBox
-        obj.OpStockZMin = cos * stockBB.ZMin + sin * stockBB.YMin
-        obj.OpStockZMax = math.fabs(cos * stockBB.ZMax + sin * stockBB.YMax)
-        print("alignAxisTo(%.2f, %.2f, %.2f): angel=%g/%g -> zmax=%g" % (axis.x, axis.y, axis.z, angle, theta, obj.OpStockZMax))
 
     def opExecute(self, obj):
         '''opExecute(obj) ... processes all Base features and Locations and collects
