@@ -394,6 +394,36 @@ PyObject*  DocumentObjectPy::getPathsByOutList(PyObject *args)
     }
 }
 
+PyObject* DocumentObjectPy::getPropertyValue(PyObject *args)
+{
+    char *name;
+    if (!PyArg_ParseTuple(args, "s", &name)) {
+        return NULL;
+    }
+
+    try {
+        DocumentObject* obj = this->getDocumentObjectPtr();
+        ObjectIdentifier oid = ObjectIdentifier(obj, name);
+        boost::any value = obj->ExpressionEngine.getPathValue(oid);
+        Property *prop = obj->getPropertyByName(name);
+        if (prop) {
+            if (value.type() == typeid(PropertyExpressionEngine::ExpressionInfo)) {
+                PropertyExpressionEngine::ExpressionInfo info = boost::any_cast<PropertyExpressionEngine::ExpressionInfo>(value);
+                std::unique_ptr<Expression> res(info.expression->eval());
+
+                prop->setPathValue(oid, res->getValueAsAny());
+            }
+            return prop->getPyObject();
+        }
+
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+    catch (const Base::Exception& e) {
+        throw Py::RuntimeError(e.what());
+    }
+}
+
 PyObject *DocumentObjectPy::getCustomAttributes(const char* attr) const
 {
     // search for dynamic property

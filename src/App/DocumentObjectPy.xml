@@ -79,6 +79,11 @@
                 <UserDocu>Get all paths from this object to another object following the OutList.</UserDocu>
             </Documentation>
         </Methode>
+      <Methode Name="getPropertyValue">
+          <Documentation>
+              <UserDocu>Return the value of the property, evaluating it's expression if required.</UserDocu>
+          </Documentation>
+      </Methode>
     <Attribute Name="OutList" ReadOnly="true">
       <Documentation>
         <UserDocu>A list of all objects this object links to.</UserDocu>
