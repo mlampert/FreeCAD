@@ -78,7 +78,7 @@ class ObjectDrilling(PathCircularHoleBase.ObjectOp):
         self.commandlist.append(Path.Command("(Begin Drilling)"))
 
         # rapid to clearance height
-        self.commandlist.append(Path.Command('G0', {'Z': obj.ClearanceHeight.Value, 'F': self.vertRapid}))
+        self.commandlist.append(Path.Command('G0', {'Z': obj.getPropertyValue('ClearanceHeight').Value, 'F': self.vertRapid}))
 
         tiplength = 0.0
         if obj.AddTipLength:

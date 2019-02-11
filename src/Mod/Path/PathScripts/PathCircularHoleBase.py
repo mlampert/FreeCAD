@@ -29,7 +29,6 @@ import Part
 import PathScripts.PathLog as PathLog
 import PathScripts.PathOp as PathOp
 import PathScripts.PathUtils as PathUtils
-import string
 import sys
 
 from PySide import QtCore
@@ -51,6 +50,149 @@ if False:
 else:
     PathLog.setLevel(PathLog.Level.INFO, PathLog.thisModule())
 
+
+def baseIsArchPanel(base):
+    '''baseIsArchPanel(base) ... return true if op deals with an Arch.Panel.'''
+    return hasattr(base, "Proxy") and isinstance(base.Proxy, ArchPanel.PanelSheet)
+
+def getArchPanelEdge(base, sub):
+    '''getArchPanelEdge(base, sub) ... helper function to identify a specific edge of an Arch.Panel.
+    Edges are identified by 3 numbers:
+        <holeId>.<wireId>.<edgeId>
+    Let's say the edge is specified as "3.2.7", then the 7th edge of the 2nd wire in the 3rd hole returned
+    by the panel sheet is the edge returned.
+    Obviously this is as fragile as can be, but currently the best we can do while the panel sheets
+    hide the actual features from Path and they can't be referenced directly.
+    '''
+    ids = sub.split('.')
+    holeId = int(ids[0])
+    wireId = int(ids[1])
+    edgeId = int(ids[2])
+
+    for holeNr, hole in enumerate(base.Proxy.getHoles(base, transform=True)):
+        if holeNr == holeId:
+            for wireNr, wire in enumerate(hole.Wires):
+                if wireNr == wireId:
+                    for edgeNr, edge in enumerate(wire.Edges):
+                        if edgeNr == edgeId:
+                            return edge
+
+def getThetaAxisA(axis):
+    theta = axis.getAngle(FreeCAD.Vector(0, 0, 1))
+    if axis.y < 0:
+        return -theta
+    return theta
+
+class CircularHole(object):
+    def __init__(self, pos, dia, norm):
+        self.pos = pos
+        self.dia = dia
+        self.norm = norm
+
+    def position(self):
+        '''position() ... returns a Vector for the position.
+        Note that the value for Z is set to 0.'''
+        return self.pos
+
+    def diameter(self):
+        '''diameter() ... returns the diameter.'''
+        return self.dia
+
+    def axis(self):
+        '''axis() ... returns the axis of the hole.'''
+        return self.norm
+
+    def getRotationMatrix(self):
+        '''getRotationMatrix() ... returns the matrix to align the axis with the Z axis.'''
+        theta = getThetaAxisA(self.norm)
+        sin = math.sin(theta)
+        cos = math.cos(theta)
+        return FreeCAD.Matrix(1,0,0,0, 0,cos,-sin,0, 0,sin,cos,0, 0,0,0,0)
+
+
+class LocationBasedCircularHole(CircularHole):
+
+    def __init__(self, pos):
+        super(self, self.__class__).__init__(pos, 0, FreeCAD.Vector(0, 0, 1))
+
+class FeatureBasedCircularHole(CircularHole):
+    '''Hole representation providing its features.'''
+
+    def __init__(self, obj, base, sub):
+        self.obj  = obj
+        self.base = base
+        self.sub  = sub
+        self.shape = base.Shape.getElement(sub)
+        self._setupHole()
+
+    def _setupHole(self):
+        if hasattr(self.base, "Proxy") and isinstance(self.base.Proxy, ArchPanel.PanelSheet):
+            self._setupHoleArchPanel()
+        elif self.shape.ShapeType == 'Vertex':
+            self._setupHoleVertex()
+        elif self.shape.ShapeType == 'Edge' and hasattr(self.shape.Curve, 'Center'):
+            self._setupHoleEdge()
+        elif self.shape.ShapeType == 'Face':
+            self._setupHoleFace()
+        else:
+            PathLog.error(translate("Path", "Feature %s.%s cannot be processed as a circular hole - please remove from Base geometry list.") % (self.base.Label, self.sub))
+            return None
+        return self
+
+    def _setupHoleArchPanel(self):
+        edge = getArchPanelEdge(self.base, self.sub)
+        self.pos = edge.Curve.Center
+        self.dia = edge.BoundBox.XLength
+        self.norm = FreeCAD.Vector(0, 0, 1)
+
+    def _setupHoleVertex(self):
+        self.pos = self.shape.Point
+        self.dia = 0
+        self.norm = FreeCAD.Vector(0, 0, 1)
+
+    def _setupHoleEdge(self):
+        self.pos = self.shape.Curve.Center
+        self.dia = self.shape.Curve.Radius * 2
+        # orientation is undetermined
+        self.norm = self.shape.Curve.Axis
+
+    def _setupHoleFace(self):
+        if hasattr(self.shape.Surface, 'Center'):
+            self.setupHoleFaceHull()
+        elif len(self.shape.Edges) == 1 and type(self.shape.Edges[0].Curve) == Part.Circle:
+            self.setupHoleFaceBottom()
+
+    def _setupHoleFaceHull(self):
+        self.pos = self.shape.Surface.Center
+        self.dia = self.shape.Surface.Radius * 2
+        # orientation is undetermined
+        self.norm = self.shape.Surface.Axis
+
+    def _setupHoleFaceBottom(self):
+        self.pos = self.shape.Edges[0].Curve.Center
+        self.dia = self.shape.Edges[0].Curve.Radius * 2
+        self.norm = self.shape.Surface.Axis if 'Forward' == self.shape.Orientation else -self.shape.Surface.Axis
+
+    def isEnabled(self):
+        '''isHoleEnabled(obj, base, sub) ... return true if hole is enabled.'''
+        name = "%s.%s" % (self.base.Name, self.sub)
+        return not name in self.obj.Disabled
+
+    def isAccessibleFrom(self, vector):
+        '''isAccessibleFrom(vector) ... returns true if the hole can be reached through vector.'''
+        nv = vector.normalize()
+
+        # "A hole is only accessible if vector is parallel to the hole's axis."
+        if PathGeom.pointsCoincide(self.norm, nv) or PathGeom.pointsCoincide(self.norm, -nv):
+            # "A hole is accessible if a laser from the center of the hole along its axis in the
+            # given direction of vector does not intersect with the base."
+            # There are edge conditions where above statement is not true - but for now we roll with that.
+            startPt = self.pos
+            endPt = startPt + self.base.Shape.BoundBox.DiagonalLength * vector
+            laser = Part.LineSegment(startPt, endPt)
+            if not PathGeom.isRoughly(0, self.base.Shape.distToShape(Part.Edge(laser))[0]):
+                return True
+        return False
 
 class ObjectOp(PathOp.ObjectOp):
     '''Base class for proxy objects of all operations on circular holes.'''
@@ -76,36 +218,10 @@ class ObjectOp(PathOp.ObjectOp):
         Can safely be overwritten by subclasses.'''
         pass
 
-    def baseIsArchPanel(self, obj, base):
-        '''baseIsArchPanel(obj, base) ... return true if op deals with an Arch.Panel.'''
-        return hasattr(base, "Proxy") and isinstance(base.Proxy, ArchPanel.PanelSheet)
-
-    def getArchPanelEdge(self, obj, base, sub):
-        '''getArchPanelEdge(obj, base, sub) ... helper function to identify a specific edge of an Arch.Panel.
-        Edges are identified by 3 numbers:
-            <holeId>.<wireId>.<edgeId>
-        Let's say the edge is specified as "3.2.7", then the 7th edge of the 2nd wire in the 3rd hole returned
-        by the panel sheet is the edge returned.
-        Obviously this is as fragile as can be, but currently the best we can do while the panel sheets
-        hide the actual features from Path and they can't be referenced directly.
-        '''
-        ids = sub.split(".")
-        holeId = int(ids[0])
-        wireId = int(ids[1])
-        edgeId = int(ids[2])
-
-        for holeNr, hole in enumerate(base.Proxy.getHoles(base, transform=True)):
-            if holeNr == holeId:
-                for wireNr, wire in enumerate(hole.Wires):
-                    if wireNr == wireId:
-                        for edgeNr, edge in enumerate(wire.Edges):
-                            if edgeNr == edgeId:
-                                return edge
-
     def holeDiameter(self, obj, base, sub):
         '''holeDiameter(obj, base, sub) ... returns the diameter of the specified hole.'''
-        if self.baseIsArchPanel(obj, base):
-            edge = self.getArchPanelEdge(obj, base, sub)
+        if baseIsArchPanel(base):
+            edge = getArchPanelEdge(base, sub)
             return edge.BoundBox.XLength
 
         shape = base.Shape.getElement(sub)
@@ -118,34 +234,48 @@ class ObjectOp(PathOp.ObjectOp):
         # for all other shapes the diameter is just the dimension in X
         return shape.BoundBox.XLength
 
-    def holePosition(self, obj, base, sub):
-        '''holePosition(obj, base, sub) ... returns a Vector for the position defined by the given features.
-        Note that the value for Z is set to 0.'''
-        if self.baseIsArchPanel(obj, base):
-            edge = self.getArchPanelEdge(obj, base, sub)
-            center = edge.Curve.Center
-            return FreeCAD.Vector(center.x, center.y, 0)
-
-        shape = base.Shape.getElement(sub)
-        if shape.ShapeType == 'Vertex':
-            return FreeCAD.Vector(shape.X, shape.Y, 0)
-
-        if shape.ShapeType == 'Edge' and hasattr(shape.Curve, 'Center'):
-            return FreeCAD.Vector(shape.Curve.Center.x, shape.Curve.Center.y, 0)
-
-        if shape.ShapeType == 'Face':
-            if hasattr(shape.Surface, 'Center'):
-                return FreeCAD.Vector(shape.Surface.Center.x, shape.Surface.Center.y, 0)
-            if len(shape.Edges) == 1 and type(shape.Edges[0].Curve) == Part.Circle:
-                return shape.Edges[0].Curve.Center
-
-        PathLog.error(translate("Path", "Feature %s.%s cannot be processed as a circular hole - please remove from Base geometry list.") % (base.Label, sub))
-        return None
-
     def isHoleEnabled(self, obj, base, sub):
         '''isHoleEnabled(obj, base, sub) ... return true if hole is enabled.'''
         name = "%s.%s" % (base.Name, sub)
         return not name in obj.Disabled
+
+    def getHoles(self, obj):
+        '''getHoles() ...  answer the collection of all holes.'''
+
+        def haveLocations(self, obj):
+            if PathOp.FeatureLocations & self.opFeatures(obj):
+                return len(obj.Locations) != 0
+            return False
+
+        holes = []
+        for base, subs in obj.Base:
+            for sub in subs:
+                holes.append(FeatureBasedCircularHole(obj, base, sub))
+
+        if haveLocations(self, obj):
+            for location in obj.Locations:
+                holes.append(LocationBasedCircularHole(location))
+
+        return holes
+
+    def alignAxisTo(self, obj, axis, dest = None):
+        theta = getThetaAxisA(axis)
+        angle = theta * 180 / math.pi
+        self.commandlist.append(Path.Command('G0', {'Z': obj.OpStockRadiusA.Value, 'F': self.vertRapid}))
+        params = {'A': angle}
+
+        # if we know where we want to end up once turned, we might as well reposition while turning
+        if dest:
+            params.update({'X': dest['x'], 'Y': dest['y']})
+
+        self.commandlist.append(Path.Command('G0', params))
+
+        sin = math.sin(theta)
+        cos = math.cos(theta)
+        stockBB = self.stock.Shape.BoundBox
+        obj.OpStockZMin = cos * stockBB.ZMin + sin * stockBB.YMin
+        obj.OpStockZMax = math.fabs(cos * stockBB.ZMax + sin * stockBB.YMax)
+        print("alignAxisTo(%.2f, %.2f, %.2f): angel=%g/%g -> zmax=%g" % (axis.x, axis.y, axis.z, angle, theta, obj.OpStockZMax))
 
     def opExecute(self, obj):
         '''opExecute(obj) ... processes all Base features and Locations and collects
@@ -156,25 +286,29 @@ class ObjectOp(PathOp.ObjectOp):
         Do not overwrite, implement circularHoleExecute(obj, holes) instead.'''
         PathLog.track()
 
-        def haveLocations(self, obj):
-            if PathOp.FeatureLocations & self.opFeatures(obj):
-                return len(obj.Locations) != 0
-            return False
+        holes = self.getHoles(obj)
 
-        holes = []
+        zAxis = FreeCAD.Vector(0, 0, 1)
+        # Start out aligned to Z axis, and rotation is a noop
+        axis = zAxis
+        rotm = FreeCAD.Matrix(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,0)
 
-        for base, subs in obj.Base:
-            for sub in subs:
-                if self.isHoleEnabled(obj, base, sub):
-                    pos = self.holePosition(obj, base, sub)
-                    if pos:
-                        holes.append({'x': pos.x, 'y': pos.y, 'r': self.holeDiameter(obj, base, sub)})
-        if haveLocations(self, obj):
-            for location in obj.Locations:
-                holes.append({'x': location.x, 'y': location.y, 'r': 0})
+        def rotateHole(hole, m):
+            v = m.multVec(hole.position())
+            return {'x': v.x, 'y': v.y, 'z': v.z}
 
-        if len(holes) > 0:
-            self.circularHoleExecute(obj, holes)
+        while holes:
+            aligned = [hole for hole in holes if hole.isAccessibleFrom(axis)]
+            if aligned:
+                self.circularHoleExecute(obj, [rotateHole(v, rotm) for v in aligned])
+                holes = [hole for hole in holes if not hole in aligned]
+            if holes:
+                hole = holes[0]
+                axis = hole.axis()
+                rotm = hole.getRotationMatrix()
+                self.alignAxisTo(obj, axis, rotateHole(hole, rotm))
+        if not PathGeom.pointsCoincide(axis, zAxis):
+            self.alignAxisTo(obj, zAxis)
 
     def circularHoleExecute(self, obj, holes):
         '''circularHoleExecute(obj, holes) ... implement processing of holes.
@@ -187,7 +321,7 @@ class ObjectOp(PathOp.ObjectOp):
         if not self.getJob(obj):
             return
         features = []
-        if 1 == len(self.model) and self.baseIsArchPanel(obj, self.model[0]):
+        if 1 == len(self.model) and baseIsArchPanel(self.model[0]):
             panel = self.model[0]
             holeshapes = panel.Proxy.getHoles(panel, transform=True)
             tooldiameter = obj.ToolController.Proxy.getTool(obj.ToolController).Diameter
