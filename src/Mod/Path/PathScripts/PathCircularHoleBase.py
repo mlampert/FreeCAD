@@ -299,11 +299,15 @@ class ObjectOp(PathOp.ObjectOp):
                 self.circularHoleExecute(obj, [rotateHole(v, rotm) for v in aligned])
                 holes = [hole for hole in holes if not hole in aligned]
             PathLog.debug("  %d left" % (len(holes)))
-            if holes:
-                hole = holes[0]
-                axis = hole.axis()
-                rotm = PathGeom.getRotationMatrixA(axis)
-                self.alignAxisAWith(obj, axis, rotateHole(hole, rotm))
+            if self.job.Proxy.hasSupportForAxisA(self.job):
+                if holes:
+                    hole = holes[0]
+                    axis = hole.axis()
+                    rotm = PathGeom.getRotationMatrixA(axis)
+                    self.alignAxisAWith(obj, axis, rotateHole(hole, rotm))
+            else:
+                # if we can't rotate the stock, z-axis aligned holes is all we can process
+                break
         if not PathGeom.pointsCoincide(axis, zAxis):
             self.alignAxisAWith(obj, zAxis)
 
