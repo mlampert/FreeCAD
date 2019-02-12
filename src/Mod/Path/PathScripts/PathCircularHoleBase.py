@@ -296,7 +296,7 @@ class ObjectOp(PathOp.ObjectOp):
 
         def rotateHole(hole, m):
             v = m.multVec(hole.position())
-            return {'x': v.x, 'y': v.y, 'z': v.z}
+            return {'x': v.x, 'y': v.y, 'z': v.z, 'd': hole.diameter() / 2}
 
         for i,h in enumerate(holes):
             PathLog.debug("hole #%d: axis = (%.2f, %.2f, %.2f)" % (i, h.norm.x, h.norm.y, h.norm.z))
@@ -318,7 +318,7 @@ class ObjectOp(PathOp.ObjectOp):
 
     def circularHoleExecute(self, obj, holes):
         '''circularHoleExecute(obj, holes) ... implement processing of holes.
-        holes is a list of dictionaries with 'x', 'y' and 'r' specified for each hole.
+        holes is a list of dictionaries with 'x', 'y' and 'd' specified for each hole.
         Note that for Vertexes, non-circular Edges and Locations r=0.
         Must be overwritten by subclasses.'''
         pass

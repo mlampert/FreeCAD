@@ -61,14 +61,14 @@ class ObjectHelix(PathCircularHoleBase.ObjectOp):
         PathLog.track()
         self.commandlist.append(Path.Command('(helix cut operation)'))
 
-        self.commandlist.append(Path.Command('G0', {'Z': obj.ClearanceHeight.Value, 'F': self.vertRapid}))
+        self.commandlist.append(Path.Command('G0', {'Z': obj.getPropertyValue('ClearanceHeight').Value, 'F': self.vertRapid}))
 
-        zsafe = max(baseobj.Shape.BoundBox.ZMax for baseobj, features in obj.Base) + obj.ClearanceHeight.Value
+        zsafe = max(baseobj.Shape.BoundBox.ZMax for baseobj, features in obj.Base) + obj.getPropertyValue('ClearanceHeight').Value
         output = ''
         output += "G0 Z" + fmt(zsafe)
 
         for hole in holes:
-            output += self.helix_cut(obj, hole['x'], hole['y'], hole['r'] / 2, 0.0, (float(obj.StepOver.Value)/50.0) * self.radius)
+            output += self.helix_cut(obj, hole['x'], hole['y'], hole['d'] / 2, 0.0, (float(obj.StepOver.Value)/50.0) * self.radius)
         PathLog.debug(output)
 
     def helix_cut(self, obj, x0, y0, r_out, r_in, dr):
@@ -82,7 +82,7 @@ class ObjectHelix(PathCircularHoleBase.ObjectOp):
             return ""
 
         out = "(helix_cut <{0}, {1}>, {2})".format(x0, y0,
-                    ", ".join(map(str, (r_out, r_in, dr, obj.StartDepth.Value, obj.FinalDepth.Value, obj.StepDown.Value, obj.SafeHeight.Value,
+                    ", ".join(map(str, (r_out, r_in, dr, obj.StartDepth.Value, obj.FinalDepth.Value, obj.StepDown.Value, obj.getPropertyValue('SafeHeight').Value,
                                         self.radius, self.vertFeed, self.horizFeed, obj.Direction, obj.StartSide))))
 
         nz = max(int(ceil((obj.StartDepth.Value - obj.FinalDepth.Value)/obj.StepDown.Value)), 2)
@@ -120,7 +120,7 @@ class ObjectHelix(PathCircularHoleBase.ObjectOp):
             out += rapid(x=x0+r, y=y0)
             self.commandlist.append(Path.Command('G0', {'X': x0 + r, 'Y': y0, 'F': self.horizRapid}))
             out += rapid(z=obj.StartDepth.Value + 2*self.radius)
-            self.commandlist.append(Path.Command('G0', {'Z': obj.SafeHeight.Value, 'F': self.vertRapid}))
+            self.commandlist.append(Path.Command('G0', {'Z': obj.getPropertyValue('SafeHeight').Value, 'F': self.vertRapid}))
             out += feed(z=obj.StartDepth.Value, f=self.vertFeed)
             self.commandlist.append(Path.Command('G1', {'Z': obj.StartDepth.Value, 'F': self.vertFeed}))
             # z = obj.FinalDepth.Value
@@ -134,8 +134,8 @@ class ObjectHelix(PathCircularHoleBase.ObjectOp):
             out += arc(x0+r, y0, i=r,  j=0.0, z=obj.FinalDepth.Value, f=self.horizFeed)
             self.commandlist.append(Path.Command(arc_cmd, {'X': x0+r, 'Y': y0, 'Z': obj.FinalDepth.Value,   'I':  r, 'J': 0.0, 'F': self.horizFeed}))
             out += feed(z=obj.StartDepth.Value + 2*self.radius, f=self.vertFeed)
-            out += rapid(z=obj.SafeHeight.Value)
-            self.commandlist.append(Path.Command('G0', {'Z': obj.SafeHeight.Value, 'F': self.vertRapid}))
+            out += rapid(z=obj.getPropertyValue('SafeHeight').Value)
+            self.commandlist.append(Path.Command('G0', {'Z': obj.getPropertyValue('SafeHeight').Value, 'F': self.vertRapid}))
             return out
 
         assert(r_out > 0.0)
