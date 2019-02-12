@@ -102,6 +102,10 @@ class CircularHole(object):
         '''axis() ... returns the axis of the hole.'''
         return self.norm
 
+    def flipAxis(self):
+        '''flipAxis() ... flips the direction of the axis.'''
+        self.norm = -self.norm
+
     def getRotationMatrix(self):
         '''getRotationMatrix() ... returns the matrix to align the axis with the Z axis.'''
         theta = getThetaAxisA(self.norm)
@@ -124,6 +128,8 @@ class FeatureBasedCircularHole(CircularHole):
         self.sub  = sub
         self.shape = base.Shape.getElement(sub)
         self._setupHole()
+        if not self.isAccessibleFrom(self.norm):
+            self.flipAxis()
 
     def _setupHole(self):
         if hasattr(self.base, "Proxy") and isinstance(self.base.Proxy, ArchPanel.PanelSheet):
@@ -158,9 +164,9 @@ class FeatureBasedCircularHole(CircularHole):
 
     def _setupHoleFace(self):
         if hasattr(self.shape.Surface, 'Center'):
-            self.setupHoleFaceHull()
+            self._setupHoleFaceHull()
         elif len(self.shape.Edges) == 1 and type(self.shape.Edges[0].Curve) == Part.Circle:
-            self.setupHoleFaceBottom()
+            self._setupHoleFaceBottom()
 
     def _setupHoleFaceHull(self):
         self.pos = self.shape.Surface.Center
@@ -292,11 +298,16 @@ class ObjectOp(PathOp.ObjectOp):
             v = m.multVec(hole.position())
             return {'x': v.x, 'y': v.y, 'z': v.z}
 
+        for i,h in enumerate(holes):
+            PathLog.debug("hole #%d: axis = (%.2f, %.2f, %.2f)" % (i, h.norm.x, h.norm.y, h.norm.z))
+
         while holes:
             aligned = [hole for hole in holes if hole.isAccessibleFrom(axis)]
+            PathLog.debug("%d holes aligned with (%.2f, %.2f, %.2f)" % (len(aligned), axis.x, axis.y, axis.z))
             if aligned:
                 self.circularHoleExecute(obj, [rotateHole(v, rotm) for v in aligned])
                 holes = [hole for hole in holes if not hole in aligned]
+            PathLog.debug("  %d left" % (len(holes)))
             if holes:
                 hole = holes[0]
                 axis = hole.axis()
