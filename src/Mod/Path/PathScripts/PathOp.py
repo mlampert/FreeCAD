@@ -269,6 +269,12 @@ class ObjectOp(object):
         Should be overwritten by subclasses.'''
         return False
 
+    def opStockOrientationForBase(self, obj, base, sub):
+        '''opStockOrientationForBase(obj, base, sub) ... return a vector representing how the stock should be oriented for processing the given base feature.
+        Note that this method is only invoked if rotational axes are enabled. The default orientation is the Z axis.
+        Can be overwritten by subclasses.'''
+        return FreeCAD.Vector(0, 0, 1)
+
     def onChanged(self, obj, prop):
         '''onChanged(obj, prop) ... base implementation of the FC notification framework.
         Do not overwrite, overwrite opOnChanged() instead.'''
@@ -397,10 +403,21 @@ class ObjectOp(object):
             for base, sublist in obj.Base:
                 bb = base.Shape.BoundBox
                 zmax = max(zmax, bb.ZMax)
+                print("%.2f : %.2f" % (zmin, zmax))
                 for sub in sublist:
-                    fbb = base.Shape.getElement(sub).BoundBox
-                    zmin = max(zmin, faceZmin(bb, fbb))
-                    zmax = max(zmax, fbb.ZMax)
+                    if self.job.Proxy.hasSupportForAxisA(self.job):
+                        axis = self.opStockOrientationForBase(obj, base, sub)
+                        print("rotate stock for %s: (%.2f, %.2f, %.2f)" % (sub, axis.x, axis.y, axis.z))
+                        rotm = PathGeom.getRotationMatrixA(axis)
+                        rbb = bb.transformed(rotm)
+                        fbb = base.Shape.getElement(sub).BoundBox.transformed(rotm)
+                    else:
+                        rbb = bb
+                        fbb = base.Shape.getElement(sub).BoundBox
+                    print("  %s : %s" % (rbb, fbb))
+                    zmin = max(zmin, faceZmin(rbb, fbb))
+                    zmax = max(zmax, rbb.ZMax, fbb.ZMax)
+                    print("  -> %.2f : %.2f" % (zmin, zmax))
         else:
             # clearing with stock boundaries
             job = PathUtils.findParentJob(obj)

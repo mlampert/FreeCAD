@@ -118,6 +118,18 @@ def getAngle(vector):
         return -a
     return a
 
+def getThetaAxisA(axis):
+    theta = axis.getAngle(FreeCAD.Vector(0, 0, 1))
+    if axis.y < 0:
+        return -theta
+    return theta
+
+def getThetaAxisB(axis):
+    theta = axis.getAngle(FreeCAD.Vector(0, 0, 1))
+    if axis.x < 0:
+        return -theta
+    return theta
+
 def diffAngle(a1, a2, direction = 'CW'):
     """(a1, a2, [direction='CW'])
     Returns the difference between two angles (a1 -> a2) into a given direction."""
@@ -130,6 +142,13 @@ def diffAngle(a1, a2, direction = 'CW'):
             a2 += 2*math.pi
         a = a2 - a1
     return a
+
+def getRotationMatrixA(axis):
+    '''getRotationMatrixA() ... returns the matrix to align the axis with the Z axis by rotation around X.'''
+    theta = getThetaAxisA(axis)
+    sin = math.sin(theta)
+    cos = math.cos(theta)
+    return FreeCAD.Matrix(1,0,0,0, 0,cos,-sin,0, 0,sin,cos,0, 0,0,0,0)
 
 def isVertical(obj):
     '''isVertical(obj) ... answer True if obj points into Z'''

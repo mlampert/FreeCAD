@@ -132,7 +132,7 @@ class SetupSheet:
 
     def setupAxesProperties(self, obj):
         PathLog.track()
-        if not hasattr(self, 'AxesEnabled'):
+        if not hasattr(obj, 'AxesEnabled'):
             obj.addProperty('App::PropertyStringList', 'AxesEnabled',                'RotationAxes', translate('PathSetupSheet', 'List of enabled axes.'))
             obj.AxesEnabled = []
 

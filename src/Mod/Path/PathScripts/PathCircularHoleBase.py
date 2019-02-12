@@ -77,12 +77,6 @@ def getArchPanelEdge(base, sub):
                         if edgeNr == edgeId:
                             return edge
 
-def getThetaAxisA(axis):
-    theta = axis.getAngle(FreeCAD.Vector(0, 0, 1))
-    if axis.y < 0:
-        return -theta
-    return theta
-
 class CircularHole(object):
     def __init__(self, pos, dia, norm):
         self.pos = pos
@@ -105,14 +99,6 @@ class CircularHole(object):
     def flipAxis(self):
         '''flipAxis() ... flips the direction of the axis.'''
         self.norm = -self.norm
-
-    def getRotationMatrix(self):
-        '''getRotationMatrix() ... returns the matrix to align the axis with the Z axis.'''
-        theta = getThetaAxisA(self.norm)
-        sin = math.sin(theta)
-        cos = math.cos(theta)
-        return FreeCAD.Matrix(1,0,0,0, 0,cos,-sin,0, 0,sin,cos,0, 0,0,0,0)
-
 
 class LocationBasedCircularHole(CircularHole):
 
@@ -191,12 +177,13 @@ class FeatureBasedCircularHole(CircularHole):
         # "A hole is only accessible if vector is parallel to the hole's axis."
         if PathGeom.pointsCoincide(self.norm, nv) or PathGeom.pointsCoincide(self.norm, -nv):
             # "A hole is accessible if a laser from the center of the hole along its axis in the
-            # given direction of vector does not intersect with the base."
+            # given direction of vector does not intersect with the base or it only intersects once."
             # There are edge conditions where above statement is not true - but for now we roll with that.
             startPt = self.pos
             endPt = startPt + self.base.Shape.BoundBox.DiagonalLength * vector
             laser = Part.LineSegment(startPt, endPt)
-            if not PathGeom.isRoughly(0, self.base.Shape.distToShape(Part.Edge(laser))[0]):
+            dist = self.base.Shape.distToShape(Part.Edge(laser))
+            if not PathGeom.isRoughly(0, dist[0]) or 1 == len(dist[1]):
                 return True
         return False
 
@@ -264,8 +251,8 @@ class ObjectOp(PathOp.ObjectOp):
 
         return holes
 
-    def alignAxisTo(self, obj, axis, dest = None):
-        theta = getThetaAxisA(axis)
+    def alignAxisAWith(self, obj, axis, dest = None):
+        theta = PathGeom.getThetaAxisA(axis)
         angle = theta * 180 / math.pi
         obj.OpStockZMax = obj.OpStockRadiusA
         obj.OpStockZMin = -obj.OpStockRadiusA
@@ -277,6 +264,10 @@ class ObjectOp(PathOp.ObjectOp):
             params.update({'X': dest['x'], 'Y': dest['y']})
 
         self.commandlist.append(Path.Command('G0', params))
+
+    def opStockOrientationForBase(self, obj, base, sub):
+        hole = FeatureBasedCircularHole(obj, base, sub)
+        return hole.axis()
 
     def opExecute(self, obj):
         '''opExecute(obj) ... processes all Base features and Locations and collects
@@ -311,10 +302,10 @@ class ObjectOp(PathOp.ObjectOp):
             if holes:
                 hole = holes[0]
                 axis = hole.axis()
-                rotm = hole.getRotationMatrix()
-                self.alignAxisTo(obj, axis, rotateHole(hole, rotm))
+                rotm = PathGeom.getRotationMatrixA(axis)
+                self.alignAxisAWith(obj, axis, rotateHole(hole, rotm))
         if not PathGeom.pointsCoincide(axis, zAxis):
-            self.alignAxisTo(obj, zAxis)
+            self.alignAxisAWith(obj, zAxis)
 
     def circularHoleExecute(self, obj, holes):
         '''circularHoleExecute(obj, holes) ... implement processing of holes.

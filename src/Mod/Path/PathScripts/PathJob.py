@@ -383,6 +383,9 @@ class ObjectJob:
             for op in self.allOperations():
                 op.Path.Center = center
 
+    def hasSupportForAxisA(self, obj):
+        return 'A' in obj.SetupSheet.AxesEnabled
+
     @classmethod
     def baseCandidates(cls):
         '''Answer all objects in the current document which could serve as a Base for a job.'''
