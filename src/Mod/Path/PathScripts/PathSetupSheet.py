@@ -59,12 +59,8 @@ class Template:
     StepDownExpression = 'StepDownExpression'
 
     AxesEnabled = 'AxesEnabled'
-    AxisA_ClearanceRadiusExpression = 'AxisA_ClearanceRadiusExpression'
-    AxisA_ClearanceRadiusOffset     = 'AxisA_ClearanceRadiusOffset'
-    AxisA_SafeRadiusExpression = 'AxisA_SafeRadiusExpression'
-    AxisA_SafeRadiusOffset     = 'AxisA_SafeRadiusOffset'
 
-    All = [HorizRapid, VertRapid, SafeHeightOffset, SafeHeightExpression, ClearanceHeightOffset, ClearanceHeightExpression, StartDepthExpression, FinalDepthExpression, StepDownExpression, AxesEnabled, AxisA_ClearanceRadiusExpression, AxisA_ClearanceRadiusOffset, AxisA_SafeRadiusExpression, AxisA_SafeRadiusOffset ]
+    All = [HorizRapid, VertRapid, SafeHeightOffset, SafeHeightExpression, ClearanceHeightOffset, ClearanceHeightExpression, StartDepthExpression, FinalDepthExpression, StepDownExpression, AxesEnabled ]
 
 
 def _traverseTemplateAttributes(attrs, codec):
@@ -93,11 +89,6 @@ class SetupSheet:
     DefaultClearanceHeightOffset = '5 mm'
     DefaultSafeHeightExpression      = "OpStockZMax+${SetupSheet}.SafeHeightOffset"
     DefaultClearanceHeightExpression = "OpStockZMax+${SetupSheet}.ClearanceHeightOffset"
-
-    DefaultAxisA_SafeRadiusOffset      = DefaultSafeHeightOffset
-    DefaultAxisA_ClearanceRadiusOffset = DefaultClearanceHeightOffset
-    DefaultAxisA_SafeRadiusExpression       = "OpStockRadiusA+${SetupSheet}.AxisA_SafeRadiusOffset"
-    DefaultAxisA_ClearanceRadiusExpression  = "OpStockRadiusA+${SetupSheet}.AxisA_ClearanceRadiusOffset"
 
     DefaultStartDepthExpression = 'OpStartDepth'
     DefaultFinalDepthExpression = 'OpFinalDepth'
@@ -136,16 +127,6 @@ class SetupSheet:
             obj.addProperty('App::PropertyStringList', 'AxesEnabled',                'RotationAxes', translate('PathSetupSheet', 'List of enabled axes.'))
             obj.AxesEnabled = []
 
-            obj.addProperty('App::PropertyLength', 'AxisA_SafeRadiusOffset',          'RotationAxes', translate('PathSetupSheet', 'The usage of this field depends on SafeRadiusExpression - by default its value is added to StartDepth and used for SafeRadius of an operation.'))
-            obj.addProperty('App::PropertyString', 'AxisA_SafeRadiusExpression',      'RotationAxes', translate('PathSetupSheet', 'Expression set for the SafeRadius of new operations.'))
-            obj.addProperty('App::PropertyLength', 'AxisA_ClearanceRadiusOffset',     'RotationAxes', translate('PathSetupSheet', 'The usage of this field depends on ClearanceRadiusExpression - by default is value is added to StartDepth and used for ClearanceRadius of an operation.'))
-            obj.addProperty('App::PropertyString', 'AxisA_ClearanceRadiusExpression', 'RotationAxes', translate('PathSetupSheet', 'Expression set for the ClearanceRadius of new operations.'))
-
-            obj.AxisA_SafeRadiusOffset          = self.decodeAttributeString(self.DefaultAxisA_SafeRadiusOffset)
-            obj.AxisA_ClearanceRadiusOffset     = self.decodeAttributeString(self.DefaultAxisA_ClearanceRadiusOffset)
-            obj.AxisA_SafeRadiusExpression      = self.decodeAttributeString(self.DefaultAxisA_SafeRadiusExpression)
-            obj.AxisA_ClearanceRadiusExpression = self.decodeAttributeString(self.DefaultAxisA_ClearanceRadiusExpression)
-
     def onDocumentRestored(self, obj):
         self.setupAxesProperties(obj)
 
@@ -183,16 +164,7 @@ class SetupSheet:
         return True
 
     def hasDefaultOperationAxes(self):
-        if self.obj.AxesEnabled:
-            if self.obj.AxesAClearanceRadiusExpression != self.decodeAttributeString(self.DefaultAxisA_ClearanceRadiusExpression):
-                return False
-            if self.obj.AxesAClearanceRadiusOffset.UserString != FreeCAD.Units.Quantity(self.DefaultAxisA_ClearanceRadiusOffset).UserString:
-                return False
-            if self.obj.AxesASafeRadiusExpression != self.decodeAttributeString(self.DefaultAxisA_SafeRadiusExpression):
-                return False
-            if self.obj.AxesASafeRadiusOffset.UserString != FreeCAD.Units.Quantity(self.DefaultAxisA_SafeRadiusOffset).UserString:
-                return False
-        return True
+        return not self.obj.AxesEnabled
 
     def setFromTemplate(self, attrs):
         '''setFromTemplate(attrs) ... sets the default values from the given dictionary.'''

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>478</width>
+    <width>532</width>
     <height>1310</height>
    </rect>
   </property>
@@ -31,7 +31,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>458</width>
+         <width>512</width>
          <height>1186</height>
         </rect>
        </property>
@@ -135,6 +135,9 @@
            </item>
            <item>
             <widget class="QCheckBox" name="optionEnableAxisB">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Axis B</string>
              </property>
@@ -495,7 +498,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>458</width>
+         <width>512</width>
          <height>1201</height>
         </rect>
        </property>
@@ -1059,7 +1062,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>458</width>
+         <width>512</width>
          <height>1186</height>
         </rect>
        </property>
@@ -1185,116 +1188,6 @@
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SafeHeightOffset can be for expressions to set the SafeHeight for new operations.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Default: &amp;quot;5 mm&amp;quot;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="setupAxisAGroup">
-          <property name="title">
-           <string>A axis</string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_16">
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_17">
-             <property name="text">
-              <string>Clearance</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_20">
-             <property name="text">
-              <string>Safe</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLabel" name="label_22">
-             <property name="text">
-              <string>Expression</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLineEdit" name="setupAxisAClearanceRadiusExpression"/>
-           </item>
-           <item row="0" column="2">
-            <widget class="QLabel" name="label_23">
-             <property name="text">
-              <string>Offset</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="Gui::QuantitySpinBox" name="setupAxisAClearanceRadiusOffset"/>
-           </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="setupAxisASafeRadiusExpression"/>
-           </item>
-           <item row="2" column="2">
-            <widget class="Gui::QuantitySpinBox" name="setupAxisASafeRadiusOffset"/>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <widget class="QGroupBox" name="setupAxisBGroup">
-          <property name="title">
-           <string>B axis</string>
-          </property>
-          <layout class="QGridLayout" name="gridLayout_15">
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_19">
-             <property name="text">
-              <string>Clearance</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_21">
-             <property name="text">
-              <string>Safe</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLineEdit" name="setupAxisBClearanceRadiusExpression"/>
-           </item>
-           <item row="1" column="2">
-            <widget class="Gui::QuantitySpinBox" name="setupAxisBClearanceRadiusOffset"/>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLabel" name="label_24">
-             <property name="text">
-              <string>Expression</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QLabel" name="label_25">
-             <property name="text">
-              <string>Offset</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="setupAxisBSafeRadiusExpression"/>
-           </item>
-           <item row="2" column="2">
-            <widget class="Gui::QuantitySpinBox" name="setupAxisBSafeRadiusOffset"/>
            </item>
           </layout>
          </widget>

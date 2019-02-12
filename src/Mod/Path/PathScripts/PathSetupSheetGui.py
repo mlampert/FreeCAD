@@ -307,10 +307,6 @@ class GlobalEditor(object):
         axes = []
         if self.form.optionEnableAxisA.isChecked():
             axes.append('A')
-        updateExpression('AxisA_ClearanceRadiusExpression', self.form.setupAxisAClearanceRadiusExpression)
-        updateExpression('AxisA_SafeRadiusExpression',      self.form.setupAxisASafeRadiusExpression)
-        self.axisAClearanceRadiusOffset.updateProperty()
-        self.axisASafeRadiusOffset.updateProperty()
 
         if Counter(axes) != Counter(self.obj.AxesEnabled):
             self.obj.AxesEnabled = axes
@@ -330,16 +326,6 @@ class GlobalEditor(object):
 
         enableAxisA = 'A' in self.obj.AxesEnabled
         self.form.optionEnableAxisA.setChecked(enableAxisA)
-        self.form.setupAxisAGroup.setEnabled(enableAxisA)
-
-        self.form.setupAxisAClearanceRadiusExpression.setText(  self.obj.AxisA_ClearanceRadiusExpression)
-        self.form.setupAxisASafeRadiusExpression.setText(       self.obj.AxisA_SafeRadiusExpression)
-        self.axisAClearanceRadiusOffset.updateSpinBox()
-        self.axisASafeRadiusOffset.updateSpinBox()
-
-        enableAxisB = 'B' in self.obj.AxesEnabled
-        self.form.optionEnableAxisB.setChecked(enableAxisB)
-        self.form.setupAxisBGroup.setEnabled(enableAxisB)
 
     def updateModel(self, recomp = True):
         PathLog.track()
@@ -357,13 +343,9 @@ class GlobalEditor(object):
         self.rapidHorizontal = PathGui.QuantitySpinBox(self.form.setupRapidHorizontal, self.obj, 'HorizRapid')
         self.rapidVertical = PathGui.QuantitySpinBox(self.form.setupRapidVertical, self.obj, 'VertRapid')
 
-        self.axisAClearanceRadiusOffset = PathGui.QuantitySpinBox(self.form.setupAxisAClearanceRadiusOffset, self.obj, 'AxisA_ClearanceRadiusOffset')
-        self.axisASafeRadiusOffset      = PathGui.QuantitySpinBox(self.form.setupAxisASafeRadiusOffset, self.obj,      'AxisA_SafeRadiusOffset')
-
         self.setFields()
 
         self.form.optionEnableAxisA.stateChanged.connect(lambda state: self.updateModel())
-        self.form.optionEnableAxisB.stateChanged.connect(lambda state: self.updateModel())
 
 class TaskPanel:
     '''TaskPanel for the SetupSheet - if it is being edited directly.'''
