@@ -915,10 +915,28 @@ class TaskPanel:
                     feature = model.Shape.getElement(name)
                     bb = feature.BoundBox
                     offset = FreeCAD.Vector(axis.x * bb.XMax, axis.y * bb.YMax, axis.z * bb.ZMax)
-                    PathLog.track(feature.BoundBox.ZMax, offset)
                     p = model.Placement
                     p.move(offset)
                     model.Placement = p
+
+    def modelSetCenter(self, axis):
+        with selectionEx() as selection:
+            bb = FreeCAD.BoundBox()
+            for sel in selection:
+                model = sel.Object
+                for name in sel.SubElementNames:
+                    feature = model.Shape.getElement(name)
+                    if bb.isValid():
+                        bb = bb.united(feature.BoundBox)
+                    else:
+                        bb = feature.BoundBox
+            offset = FreeCAD.Vector(axis.x * bb.Center.x, axis.y * bb.Center.y, axis.z * bb.Center.z)
+            for sel in selection:
+                model = sel.Object
+                p = model.Placement
+                p.move(offset)
+                model.Placement = p
+
 
     def modelMove(self, axis):
         scale = self.form.modelMoveValue.value()
@@ -1075,6 +1093,9 @@ class TaskPanel:
             self.form.modelSetX0.setEnabled(True)
             self.form.modelSetY0.setEnabled(True)
             self.form.modelSetZ0.setEnabled(True)
+            self.form.modelSetXCenter.setEnabled(True)
+            self.form.modelSetYCenter.setEnabled(True)
+            self.form.modelSetYCenter.setEnabled(True)
             self.form.modelMoveGroup.setEnabled(True)
             self.form.modelRotateGroup.setEnabled(True)
             self.form.modelRotateCompound.setEnabled(len(sel) > 1)
@@ -1082,6 +1103,9 @@ class TaskPanel:
             self.form.modelSetX0.setEnabled(False)
             self.form.modelSetY0.setEnabled(False)
             self.form.modelSetZ0.setEnabled(False)
+            self.form.modelSetXCenter.setEnabled(False)
+            self.form.modelSetYCenter.setEnabled(False)
+            self.form.modelSetYCenter.setEnabled(False)
             self.form.modelMoveGroup.setEnabled(False)
             self.form.modelRotateGroup.setEnabled(False)
 
@@ -1182,6 +1206,9 @@ class TaskPanel:
         self.form.modelSetX0.clicked.connect(lambda: self.modelSet0(FreeCAD.Vector(-1,  0,  0)))
         self.form.modelSetY0.clicked.connect(lambda: self.modelSet0(FreeCAD.Vector( 0, -1,  0)))
         self.form.modelSetZ0.clicked.connect(lambda: self.modelSet0(FreeCAD.Vector( 0,  0, -1)))
+        self.form.modelSetXCenter.clicked.connect(lambda: self.modelSetCenter(FreeCAD.Vector(-1,  0,  0)))
+        self.form.modelSetYCenter.clicked.connect(lambda: self.modelSetCenter(FreeCAD.Vector( 0, -1,  0)))
+        self.form.modelSetZCenter.clicked.connect(lambda: self.modelSetCenter(FreeCAD.Vector( 0,  0, -1)))
 
         self.form.setOrigin.clicked.connect(self.alignSetOrigin)
         self.form.moveToOrigin.clicked.connect(self.alignMoveToOrigin)
